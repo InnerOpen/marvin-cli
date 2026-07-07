@@ -1,6 +1,4 @@
 import { Command } from "commander";
-import { registerLoginCommands } from "./login.js";
-import { registerWorkspaceCommands } from "./workspaces.js";
 import { registerWorkspaceMemberCommands } from "./workspace-members.js";
 import { registerPlatformEntryCommands } from "./entries.js";
 import { registerPlatformCollectionCommands } from "./collections.js";
@@ -19,8 +17,6 @@ export function createPlatformCommand(): Command {
     .option("--user-token <token>", "User authentication token, overrides MARVIN_USER_TOKEN");
 
   // Register subcommands
-  registerLoginCommands(platform);
-  registerWorkspaceCommands(platform);
   registerWorkspaceMemberCommands(platform);
   registerPlatformEntryCommands(platform);
   registerPlatformCollectionCommands(platform);

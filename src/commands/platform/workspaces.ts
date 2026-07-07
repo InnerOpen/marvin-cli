@@ -5,9 +5,10 @@ import type { PlatformCommandOptions } from "../../shared/types.js";
 
 export function registerWorkspaceCommands(parent: Command): void {
   // Workspace group
-  const workspace = parent
-    .command("workspace")
+  const workspace = new Command("workspace")
     .description("Workspace management commands");
+
+  parent.addCommand(workspace);
 
   // Show current active workspace
   workspace
