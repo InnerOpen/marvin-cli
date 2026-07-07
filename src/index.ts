@@ -29,26 +29,4 @@ program.addCommand(createPublishCommand());
 program.addCommand(createPlatformCommand());
 program.addCommand(createSystemCommand());
 
-// Backward compatibility - root-level aliases for Publishing API commands
-// These allow users to run `marvin entries` instead of `marvin publish entries`
-const publishCmd = createPublishCommand();
-publishCmd.commands.forEach((cmd) => {
-  const aliasCmd = new Command(cmd.name())
-    .description(`${cmd.description()} (alias for 'marvin publish ${cmd.name()}')`)
-    .allowUnknownOption(true)
-    .action((...args) => {
-      // Re-parse with the publish command prefix
-      const argv = process.argv.slice(0, 2).concat(['publish', cmd.name()]).concat(process.argv.slice(3));
-      program.parse(argv);
-    });
-
-  // Copy options from the original command
-  cmd.options.forEach(opt => aliasCmd.addOption(opt));
-
-  program.addCommand(aliasCmd);
-});
-
-// Add --token as an alias for --site-token at the root level (backward compat)
-program.option("--token <token>", "Site client token (alias for --site-token in publish commands)");
-
 program.parse();
