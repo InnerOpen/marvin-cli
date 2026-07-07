@@ -8,6 +8,7 @@ import { createPublishCommand } from "./commands/publish/index.js";
 import { createPlatformCommand } from "./commands/platform/index.js";
 import { createSystemCommand } from "./commands/system/index.js";
 import { createAdminCommand } from "./commands/admin/index.js";
+import { createUserCommand } from "./commands/user/index.js";
 import { registerAuthCommands } from "./commands/auth.js";
 import { registerWorkspaceCommands } from "./commands/platform/workspaces.js";
 
@@ -38,5 +39,6 @@ program.addCommand(createPublishCommand());
 program.addCommand(createPlatformCommand());
 program.addCommand(createAdminCommand());
 program.addCommand(createSystemCommand());
+program.addCommand(createUserCommand());
 
 program.parse();
