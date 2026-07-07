@@ -19,12 +19,12 @@ export function registerNotificationCommands(parent: Command): void {
         const items = await client.notifications.list();
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(items as any, [
-          { key: 'id', header: 'ID' },
-          { key: 'name', header: 'Name' },
-          { key: 'eventType', header: 'Event Type' },
-          { key: 'enabled', header: 'Enabled' },
-        ] as any, globalOpts.output as any || 'table');
+        renderList(items as any, {
+          id: 'id',
+          name: 'name',
+          eventType: 'eventType',
+          enabled: 'enabled',
+        } as any, globalOpts.output as any || 'table');
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;
