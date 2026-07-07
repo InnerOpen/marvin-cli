@@ -80,7 +80,7 @@ export function registerWorkspaceCommands(parent: Command): void {
         console.log("─".repeat(70));
 
         workspaces.forEach(w => {
-          const active = w.is_active ? "✓ ACTIVE" : "";
+          const active = w.isActive ? "✓ ACTIVE" : "";
           const hasSiteToken = credentialsManager.getSiteToken(w.workspace.slug) ? "🔑" : "";
           console.log(`${w.workspace.name} (${w.workspace.slug}) ${hasSiteToken}`);
           console.log(`  Role: ${w.role}  ${active}`);

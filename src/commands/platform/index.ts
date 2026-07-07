@@ -6,6 +6,8 @@ import { registerPlatformResourceCommands } from "./resources.js";
 import { registerPlatformAssetCommands } from "./assets.js";
 import { registerEntryTypeCommands } from "./entry-types.js";
 import { registerAPIClientCommands } from "./api-clients.js";
+import { registerNotificationCommands } from "./notifications.js";
+import { registerWebhookCommands } from "./webhooks.js";
 
 /**
  * Create the 'platform' command group
@@ -24,6 +26,8 @@ export function createPlatformCommand(): Command {
   registerPlatformAssetCommands(platform);
   registerEntryTypeCommands(platform);
   registerAPIClientCommands(platform);
+  registerNotificationCommands(platform);
+  registerWebhookCommands(platform);
 
   return platform;
 }
