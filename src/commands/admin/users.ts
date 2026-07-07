@@ -27,8 +27,9 @@ export function registerAdminUsersCommands(parent: Command): void {
         renderList(result.items || [] as any, {
           id: 'id',
           username: 'username',
+          fullName: 'fullName',
           email: 'email',
-          admin: 'admin',
+          platformRole: 'platformRole',
         } as any, globalOpts.output as any || 'table');
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
