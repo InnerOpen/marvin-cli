@@ -1,0 +1,122 @@
+import { Command } from "commander";
+import { clientFactory } from "../../shared/clients.js";
+import { renderList, renderData } from "../../output.js";
+import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
+import { platformCollectionColumns } from "../../shared/columns.js";
+import { readFileSync } from "fs";
+
+export function registerPlatformCollectionCommands(parent: Command): void {
+  const collections = parent
+    .command("collections")
+    .description("Collection CRUD operations");
+
+  collections
+    .command("list")
+    .description("List collections")
+    .action(async function(this: Command) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const collections = await client.collections.list();
+        renderList(collections as any[], platformCollectionColumns, getOutputMode(opts));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  collections
+    .command("get <id>")
+    .description("Get collection by ID")
+    .action(async function(this: Command, id: string) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const collection = await client.collections.get(id);
+        renderData(collection, getOutputMode(opts));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  collections
+    .command("create")
+    .description("Create a new collection")
+    .option("--json <json>", "Collection data as JSON string")
+    .option("--file <path>", "Path to JSON file with collection data")
+    .action(async function(this: Command, cmdOpts) {
+      try {
+        let data: any;
+        if (cmdOpts.json) {
+          data = JSON.parse(cmdOpts.json);
+        } else if (cmdOpts.file) {
+          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        } else {
+          console.error("Error: Provide collection data via --json or --file");
+          process.exitCode = 1;
+          return;
+        }
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const collection = await client.collections.create(data);
+        console.log(`✓ Created collection: ${collection.id}`);
+        renderData(collection, getOutputMode(opts));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  collections
+    .command("update <id>")
+    .description("Update a collection")
+    .option("--json <json>", "Collection data as JSON string")
+    .option("--file <path>", "Path to JSON file with collection data")
+    .action(async function(this: Command, id: string, cmdOpts) {
+      try {
+        let data: any;
+        if (cmdOpts.json) {
+          data = JSON.parse(cmdOpts.json);
+        } else if (cmdOpts.file) {
+          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        } else {
+          console.error("Error: Provide collection data via --json or --file");
+          process.exitCode = 1;
+          return;
+        }
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const collection = await client.collections.update(id, data);
+        console.log(`✓ Updated collection: ${collection.id}`);
+        renderData(collection, getOutputMode(opts));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  collections
+    .command("delete <id>")
+    .description("Delete a collection")
+    .option("--yes", "Skip confirmation prompt")
+    .action(async function(this: Command, id: string, cmdOpts) {
+      try {
+        if (!cmdOpts.yes) {
+          console.error("Error: Delete requires --yes confirmation flag");
+          process.exitCode = 1;
+          return;
+        }
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        await client.collections.delete(id);
+        console.log(`✓ Deleted collection: ${id}`);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+}

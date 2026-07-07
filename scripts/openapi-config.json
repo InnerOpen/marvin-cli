@@ -1,0 +1,26 @@
+{
+  "openapi_url": "http://localhost:8080/openapi.json",
+  "sdk_output_dir": "../marvin-sdk/src/generated",
+  "cli_output_dir": "./src/generated",
+  "include_groups": [
+    "Platform: Entry Types",
+    "Platform: Entries",
+    "Platform: Collections",
+    "Platform: API Clients",
+    "Platform: Resources",
+    "Platform: Assets",
+    "Platform: Workspace Members",
+    "Publishing API"
+  ],
+  "exclude_groups": [
+    "Admin:",
+    "Authentication",
+    "Users:",
+    "Groups:"
+  ],
+  "type_mappings": {
+    "UUID4": "string",
+    "datetime": "string",
+    "AnyUrl": "string"
+  }
+}

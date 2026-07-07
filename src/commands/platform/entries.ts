@@ -1,0 +1,135 @@
+import { Command } from "commander";
+import { clientFactory } from "../../shared/clients.js";
+import { renderList, renderData } from "../../output.js";
+import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
+import { platformEntryColumns } from "../../shared/columns.js";
+import { readFileSync } from "fs";
+
+export function registerPlatformEntryCommands(parent: Command): void {
+  const entries = parent
+    .command("entries")
+    .description("Entry CRUD operations");
+
+  // List entries
+  entries
+    .command("list")
+    .description("List entries")
+    .action(async function(this: Command) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+
+        const entries = await client.entries.list();
+
+        renderList(entries as any[], platformEntryColumns, getOutputMode(opts));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Get entry by ID
+  entries
+    .command("get <id>")
+    .description("Get entry by ID")
+    .action(async function(this: Command, id: string) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+
+        const entry = await client.entries.get(id);
+        renderData(entry, getOutputMode(opts));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Create entry
+  entries
+    .command("create")
+    .description("Create a new entry")
+    .option("--json <json>", "Entry data as JSON string")
+    .option("--file <path>", "Path to JSON file with entry data")
+    .action(async function(this: Command, cmdOpts) {
+      try {
+        let data: any;
+
+        if (cmdOpts.json) {
+          data = JSON.parse(cmdOpts.json);
+        } else if (cmdOpts.file) {
+          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        } else {
+          console.error("Error: Provide entry data via --json or --file");
+          process.exitCode = 1;
+          return;
+        }
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+
+        const entry = await client.entries.create(data);
+        console.log(`✓ Created entry: ${entry.id}`);
+        renderData(entry, getOutputMode(opts));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Update entry
+  entries
+    .command("update <id>")
+    .description("Update an entry")
+    .option("--json <json>", "Entry data as JSON string")
+    .option("--file <path>", "Path to JSON file with entry data")
+    .action(async function(this: Command, id: string, cmdOpts) {
+      try {
+        let data: any;
+
+        if (cmdOpts.json) {
+          data = JSON.parse(cmdOpts.json);
+        } else if (cmdOpts.file) {
+          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        } else {
+          console.error("Error: Provide entry data via --json or --file");
+          process.exitCode = 1;
+          return;
+        }
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+
+        const entry = await client.entries.update(id, data);
+        console.log(`✓ Updated entry: ${entry.id}`);
+        renderData(entry, getOutputMode(opts));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Delete entry
+  entries
+    .command("delete <id>")
+    .description("Delete an entry")
+    .option("--yes", "Skip confirmation prompt")
+    .action(async function(this: Command, id: string, cmdOpts) {
+      try {
+        if (!cmdOpts.yes) {
+          console.error("Error: Delete requires --yes confirmation flag");
+          process.exitCode = 1;
+          return;
+        }
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+
+        await client.entries.delete(id);
+        console.log(`✓ Deleted entry: ${id}`);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+}
