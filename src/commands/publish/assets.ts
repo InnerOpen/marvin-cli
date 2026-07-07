@@ -50,12 +50,7 @@ export function registerAssetCommands(parent: Command): void {
         }
 
         const client = clientFactory.createPublishClient(opts);
-        const assets = await client.assets.list();
-        const asset = assets.find(a => a.slug === slug);
-
-        if (!asset) {
-          throw new Error(`Asset not found: ${slug}`);
-        }
+        const asset = await client.assets.get(slug);
 
         renderList([asset] as MarvinAsset[], assetColumns, getOutputMode(opts));
       } catch (error) {

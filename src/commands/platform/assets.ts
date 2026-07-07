@@ -3,7 +3,8 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { platformAssetColumns } from "../../shared/columns.js";
-import { readFileSync } from "fs";
+import { readFileSync, statSync } from "fs";
+import { basename } from "path";
 
 export function registerPlatformAssetCommands(parent: Command): void {
   const assets = parent
@@ -33,6 +34,58 @@ export function registerPlatformAssetCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const asset = await client.assets.get(id);
+        renderData(asset, getOutputMode(opts));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  assets
+    .command("upload <path>")
+    .description("Upload a new asset file")
+    .requiredOption("--slug <slug>", "Asset slug (URL-friendly identifier)")
+    .requiredOption("--name <name>", "Asset name")
+    .option("--alt-text <text>", "Alt text for accessibility")
+    .option("--description <text>", "Description of the asset")
+    .option("--metadata <json>", "Custom metadata as JSON string")
+    .action(async function(this: Command, path: string, cmdOpts) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+
+        // Read file
+        const fileBuffer = readFileSync(path);
+        const stats = statSync(path);
+        const filename = basename(path);
+
+        // Create blob from buffer
+        const file = new Blob([fileBuffer]);
+
+        // Parse metadata if provided
+        const metadata = cmdOpts.metadata ? JSON.parse(cmdOpts.metadata) : undefined;
+
+        // Upload
+        console.log(`Uploading ${filename} (${(stats.size / 1024).toFixed(2)} KB)...`);
+        const asset = await client.assets.upload(file, {
+          slug: cmdOpts.slug,
+          name: cmdOpts.name,
+          altText: cmdOpts.altText,
+          description: cmdOpts.description,
+          metadata,
+        });
+
+        console.log(`✓ Uploaded asset: ${asset.id}`);
+        console.log(`  Public URL: ${asset.publicUrl || 'N/A'}`);
+        console.log(`  Type: ${asset.assetType}`);
+        console.log(`  MIME: ${asset.mimeType}`);
+        console.log(`  Size: ${(asset.fileSize / 1024).toFixed(2)} KB`);
+        console.log(`  Checksum: ${asset.checksum}`);
+
+        if (asset.width && asset.height) {
+          console.log(`  Dimensions: ${asset.width} × ${asset.height}`);
+        }
+
         renderData(asset, getOutputMode(opts));
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
