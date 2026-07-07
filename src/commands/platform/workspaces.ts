@@ -35,25 +35,25 @@ export function registerWorkspaceCommands(parent: Command): void {
       }
     });
 
-  // Set active workspace (by slug)
+  // Set active workspace (by slug or ID)
   workspace
-    .command("use <slug>")
-    .description("Set active workspace by slug")
-    .action(async (slug: string) => {
+    .command("use <workspace>")
+    .description("Set active workspace by slug or ID")
+    .action(async (workspaceIdentifier: string) => {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
 
-        // Use the SDK's convenience method to set by slug
-        const workspace = await client.workspaces.setActiveBySlug(slug);
+        // Backend now accepts slug OR ID directly
+        const workspace = await client.workspaces.setActive(workspaceIdentifier);
 
         // Also save slug locally for convenience
-        credentialsManager.setActiveWorkspace(slug);
+        credentialsManager.setActiveWorkspace(workspace.slug);
 
-        console.log(`✓ Active workspace set to: ${workspace.name} (${slug})`);
+        console.log(`✓ Active workspace set to: ${workspace.name} (${workspace.slug})`);
       } catch (error) {
         if (error instanceof Error && error.message.includes('not found')) {
           console.error(error.message);
-          console.log("\nTry: marvin platform workspace list");
+          console.log("\nTry: marvin workspace list");
         } else {
           console.error(error instanceof Error ? error.message : error);
         }
