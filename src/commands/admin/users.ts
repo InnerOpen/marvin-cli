@@ -24,12 +24,12 @@ export function registerAdminUsersCommands(parent: Command): void {
         const result = await client.adminUsers.list(page, perPage);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(result.items || [] as any, [
-          { key: 'id', header: 'ID' },
-          { key: 'username', header: 'Username' },
-          { key: 'email', header: 'Email' },
-          { key: 'admin', header: 'Admin' },
-        ] as any, globalOpts.output as any || 'table');
+        renderList(result.items || [] as any, {
+          id: 'id',
+          username: 'username',
+          email: 'email',
+          admin: 'admin',
+        } as any, globalOpts.output as any || 'table');
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;
