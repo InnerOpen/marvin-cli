@@ -9,13 +9,19 @@ import type {
   MarvinResource,
 } from "@inneropen/marvin-sdk/types";
 import { renderData, renderList, type OutputMode } from "./output.js";
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const packageJson = JSON.parse(readFileSync(join(__dirname, "../package.json"), "utf-8"));
 
 const program = new Command();
 
 program
   .name("marvin")
   .description("Official CLI for Marvin CMS Publishing API")
-  .version("1.0.0")
+  .version(packageJson.version)
   .option("--api-url <url>", "Marvin API URL, overrides MARVIN_API_URL")
   .option("--token <token>", "Site client token, overrides MARVIN_SITE_CLIENT_TOKEN")
   .option("--workspace <slug>", "Workspace slug, overrides MARVIN_WORKSPACE_SLUG")
