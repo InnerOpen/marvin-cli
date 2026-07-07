@@ -4,9 +4,14 @@ import { join } from "path";
 import { tmpdir } from "os";
 import { randomBytes } from "crypto";
 
+export interface WorkspaceCredentials {
+  siteToken?: string;
+}
+
 export interface Credentials {
   userToken?: string;
   activeWorkspace?: string;
+  workspaces?: Record<string, WorkspaceCredentials>;
 }
 
 export class CredentialsManager {
@@ -113,6 +118,52 @@ export class CredentialsManager {
     const credentials = this.load();
     credentials.activeWorkspace = workspace;
     this.save(credentials);
+  }
+
+  /**
+   * Get the site token for a specific workspace
+   */
+  getSiteToken(workspace: string): string | undefined {
+    const credentials = this.load();
+    return credentials.workspaces?.[workspace]?.siteToken;
+  }
+
+  /**
+   * Set the site token for a specific workspace
+   */
+  setSiteToken(workspace: string, token: string): void {
+    const credentials = this.load();
+
+    // Initialize workspaces object if it doesn't exist
+    if (!credentials.workspaces) {
+      credentials.workspaces = {};
+    }
+
+    // Initialize workspace credentials if it doesn't exist
+    if (!credentials.workspaces[workspace]) {
+      credentials.workspaces[workspace] = {};
+    }
+
+    credentials.workspaces[workspace].siteToken = token;
+    this.save(credentials);
+  }
+
+  /**
+   * Remove site token for a specific workspace
+   */
+  removeSiteToken(workspace: string): void {
+    const credentials = this.load();
+
+    if (credentials.workspaces?.[workspace]) {
+      delete credentials.workspaces[workspace].siteToken;
+
+      // Clean up empty workspace entries
+      if (Object.keys(credentials.workspaces[workspace]).length === 0) {
+        delete credentials.workspaces[workspace];
+      }
+
+      this.save(credentials);
+    }
   }
 }
 

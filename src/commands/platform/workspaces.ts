@@ -81,12 +81,77 @@ export function registerWorkspaceCommands(parent: Command): void {
 
         workspaces.forEach(w => {
           const active = w.is_active ? "✓ ACTIVE" : "";
-          console.log(`${w.workspace.name} (${w.workspace.slug})`);
+          const hasSiteToken = credentialsManager.getSiteToken(w.workspace.slug) ? "🔑" : "";
+          console.log(`${w.workspace.name} (${w.workspace.slug}) ${hasSiteToken}`);
           console.log(`  Role: ${w.role}  ${active}`);
           console.log(`  ID: ${w.workspace.id}`);
           console.log();
         });
 
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Set site token for workspace
+  workspace
+    .command("token <site-token>")
+    .description("Store site token for current workspace (for Publishing API)")
+    .option("--for <slug>", "Workspace slug (defaults to active workspace)")
+    .action(async (siteToken: string, cmdOpts: { for?: string }) => {
+      try {
+        // Resolve workspace (use --for option or active workspace)
+        const workspaceSlug = cmdOpts.for || credentialsManager.getActiveWorkspace();
+
+        if (!workspaceSlug) {
+          console.error("No active workspace set.");
+          console.log("Either:");
+          console.log("  1. Set active workspace: marvin workspace use <slug>");
+          console.log("  2. Specify workspace: marvin workspace token <token> --for <slug>");
+          process.exitCode = 1;
+          return;
+        }
+
+        // Save the token
+        credentialsManager.setSiteToken(workspaceSlug, siteToken);
+
+        console.log(`✓ Site token saved for workspace: ${workspaceSlug}`);
+        console.log("\nYou can now use Publishing API commands without --site-token flag:");
+        console.log("  marvin publish entries");
+        console.log("  marvin publish collections");
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Remove site token for workspace
+  workspace
+    .command("token:remove")
+    .description("Remove stored site token for current workspace")
+    .option("--for <slug>", "Workspace slug (defaults to active workspace)")
+    .action(async (cmdOpts: { for?: string }) => {
+      try {
+        // Resolve workspace
+        const workspaceSlug = cmdOpts.for || credentialsManager.getActiveWorkspace();
+
+        if (!workspaceSlug) {
+          console.error("No active workspace set.");
+          process.exitCode = 1;
+          return;
+        }
+
+        // Check if token exists
+        const hasToken = credentialsManager.getSiteToken(workspaceSlug);
+        if (!hasToken) {
+          console.log(`No site token stored for workspace: ${workspaceSlug}`);
+          return;
+        }
+
+        // Remove the token
+        credentialsManager.removeSiteToken(workspaceSlug);
+        console.log(`✓ Site token removed for workspace: ${workspaceSlug}`);
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;
