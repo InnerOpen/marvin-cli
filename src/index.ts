@@ -177,8 +177,7 @@ program
   .action((slug) =>
     run(
       async () => {
-        const collection = await client().collections.get(slug);
-        return collection.entries || [];
+        return client().collections.entries(slug);
       },
       (data) => renderList(data as MarvinEntry[], entryColumns, outputMode()),
     ),
