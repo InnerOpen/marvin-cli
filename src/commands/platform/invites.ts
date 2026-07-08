@@ -5,87 +5,62 @@
  */
 
 import { Command } from 'commander';
-import chalk from 'chalk';
-import { getSdk } from '../../shared/sdk.js';
-import { formatJson, formatTable } from '../../shared/formatters.js';
-import { handleError } from '../../shared/error-handler.js';
+import { clientFactory } from '../../shared/clients.js';
+import { renderList, renderData } from '../../output.js';
+import { getOutputMode, type PlatformCommandOptions } from '../../shared/types.js';
 
-export function createInvitesCommand(): Command {
-  const invites = new Command('invites')
+export function registerInviteCommands(parent: Command): void {
+  const invites = parent
+    .command('invites')
     .description('Manage workspace invitation tokens');
 
   // List invite tokens
   invites
     .command('list')
     .description('List all invitation tokens for the current workspace')
-    .option('--json', 'Output as JSON')
-    .action(async (options) => {
+    .action(async (_options, command: Command) => {
       try {
-        const sdk = getSdk();
+        const opts = command.optsWithGlobals<PlatformCommandOptions>();
+        const mode = getOutputMode(opts);
+        const sdk = await clientFactory.createPlatformClient(opts);
+
         const tokens = await sdk.invites.list();
 
-        if (options.json) {
-          console.log(formatJson(tokens));
-        } else {
-          if (tokens.length === 0) {
-            console.log(chalk.dim('No invitation tokens found'));
-            return;
-          }
-
-          const rows = tokens.map(token => ({
-            'Token': token.token?.substring(0, 20) + '...',
-            'Uses Left': token.usesLeft,
-            'Created': token.createdAt ? new Date(token.createdAt).toLocaleDateString() : 'Unknown',
-          }));
-
-          console.log(formatTable(rows));
-          console.log(chalk.dim(`\nTotal: ${tokens.length} invitation token(s)`));
+        if (!tokens || tokens.length === 0) {
+          console.log('No invitation tokens found');
+          return;
         }
+
+        const rows = tokens.map((token: any) => ({
+          'Token': token.token?.substring(0, 20) + '...',
+          'Uses Left': token.usesLeft,
+          'Created': token.createdAt ? new Date(token.createdAt).toLocaleDateString() : 'Unknown',
+        }));
+
+        const columns = {
+          'Token': (row: any) => row['Token'],
+          'Uses Left': (row: any) => row['Uses Left'],
+          'Created': (row: any) => row['Created'],
+        };
+        renderList(rows as any[], columns, mode);
+        console.log(`\nTotal: ${tokens.length} invitation token(s)`);
       } catch (error) {
-        handleError(error, 'Failed to list invitation tokens');
+        console.error('Failed to list invitation tokens:', error);
+        process.exit(1);
       }
     });
 
-  // Create invite token
-  invites
-    .command('create')
-    .description('Create a new invitation token')
-    .option('--uses <number>', 'Number of uses allowed', '1')
-    .option('--json', 'Output as JSON')
-    .action(async (options) => {
-      try {
-        const sdk = getSdk();
-        const token = await sdk.invites.create({
-          usesLeft: parseInt(options.uses),
-        });
-
-        if (options.json) {
-          console.log(formatJson(token));
-        } else {
-          console.log(chalk.green('✓ Invitation token created'));
-          console.log(chalk.dim('Token:'), chalk.cyan(token.token));
-          console.log(chalk.dim('Uses remaining:'), token.usesLeft);
-
-          // Show the invitation URL
-          const inviteUrl = `${process.env.MARVIN_API_URL || 'http://localhost:8080'}/register?token=${token.token}`;
-          console.log(chalk.dim('\nInvitation URL:'));
-          console.log(chalk.cyan(inviteUrl));
-        }
-      } catch (error) {
-        handleError(error, 'Failed to create invitation token');
-      }
-    });
-
-  // Invite command (create token and optionally send email)
+  // Create and optionally send invitation
   invites
     .command('invite')
     .description('Create an invitation and optionally send via email')
     .option('--email <email>', 'Email address to send invitation to')
     .option('--uses <number>', 'Number of uses allowed', '1')
-    .option('--json', 'Output as JSON')
-    .action(async (options) => {
+    .action(async (options, command: Command) => {
       try {
-        const sdk = getSdk();
+        const opts = command.optsWithGlobals<PlatformCommandOptions>();
+        const mode = getOutputMode(opts);
+        const sdk = await clientFactory.createPlatformClient(opts);
 
         // Create a token
         const token = await sdk.invites.create({
@@ -101,66 +76,73 @@ export function createInvitesCommand(): Command {
             token: token.token!,
           });
 
-          if (options.json) {
-            console.log(formatJson({
+          if (mode === 'json') {
+            console.log(JSON.stringify({
               token: token.token,
               inviteUrl,
               email: options.email,
               emailSent: result.success,
               error: result.error,
-            }));
+            }, null, 2));
           } else {
             if (result.success) {
-              console.log(chalk.green('✓ Invitation email sent to'), chalk.cyan(options.email));
+              console.log(`✓ Invitation email sent to ${options.email}`);
             } else {
-              console.log(chalk.yellow('⚠ Email failed:'), result.error);
-              console.log(chalk.dim('\nYou can still share the link manually:'));
+              console.log(`⚠ Email failed: ${result.error}`);
+              console.log('\nYou can still share the link manually:');
             }
-            console.log(chalk.dim('\nInvitation URL:'));
-            console.log(chalk.cyan(inviteUrl));
-            console.log(chalk.dim('Token:'), chalk.cyan(token.token));
+            console.log(`\nInvitation URL:`);
+            console.log(inviteUrl);
+            console.log(`Token: ${token.token}`);
           }
         } else {
           // No email, just show the link
-          if (options.json) {
-            console.log(formatJson({
+          if (mode === 'json') {
+            console.log(JSON.stringify({
               token: token.token,
               inviteUrl,
               usesLeft: token.usesLeft,
-            }));
+            }, null, 2));
           } else {
-            console.log(chalk.green('✓ Invitation created'));
-            console.log(chalk.dim('\nInvitation URL:'));
-            console.log(chalk.cyan(inviteUrl));
-            console.log(chalk.dim('\nToken:'), chalk.cyan(token.token));
-            console.log(chalk.dim('Uses remaining:'), token.usesLeft);
+            console.log('✓ Invitation created');
+            console.log(`\nInvitation URL:`);
+            console.log(inviteUrl);
+            console.log(`\nToken: ${token.token}`);
+            console.log(`Uses remaining: ${token.usesLeft}`);
           }
         }
       } catch (error) {
-        handleError(error, 'Failed to create invitation');
+        console.error('Failed to create invitation:', error);
+        process.exit(1);
       }
     });
 
-  // Get invitation link
+  // Generate link from token
   invites
     .command('link')
     .description('Generate an invitation link from a token')
     .requiredOption('--token <token>', 'Invitation token')
-    .action(async (options) => {
-      const sdk = getSdk();
-      const inviteUrl = sdk.invites.getInvitationUrl(options.token);
+    .action(async (options, command: Command) => {
+      try {
+        const opts = command.optsWithGlobals<PlatformCommandOptions>();
+        const sdk = await clientFactory.createPlatformClient(opts);
+        const inviteUrl = sdk.invites.getInvitationUrl(options.token);
 
-      console.log(chalk.dim('Invitation URL:'));
-      console.log(chalk.cyan(inviteUrl));
+        console.log('Invitation URL:');
+        console.log(inviteUrl);
+      } catch (error) {
+        console.error('Failed to generate link:', error);
+        process.exit(1);
+      }
     });
 
-  // Revoke/delete invitation
+  // Revoke invitation
   invites
     .command('revoke')
     .description('Revoke an invitation token')
     .requiredOption('--id <id>', 'Invitation token ID')
     .option('--yes', 'Skip confirmation')
-    .action(async (options) => {
+    .action(async (options, command: Command) => {
       try {
         if (!options.yes) {
           const readline = await import('readline/promises');
@@ -169,23 +151,23 @@ export function createInvitesCommand(): Command {
             output: process.stdout,
           });
 
-          const answer = await rl.question(chalk.yellow('Revoke this invitation? The link will stop working. (y/N) '));
+          const answer = await rl.question('Revoke this invitation? The link will stop working. (y/N) ');
           rl.close();
 
           if (answer.toLowerCase() !== 'y') {
-            console.log(chalk.dim('Cancelled'));
+            console.log('Cancelled');
             return;
           }
         }
 
-        const sdk = getSdk();
+        const opts = command.optsWithGlobals<PlatformCommandOptions>();
+        const sdk = await clientFactory.createPlatformClient(opts);
         await sdk.invites.delete(options.id);
 
-        console.log(chalk.green('✓ Invitation revoked'));
+        console.log('✓ Invitation revoked');
       } catch (error) {
-        handleError(error, 'Failed to revoke invitation');
+        console.error('Failed to revoke invitation:', error);
+        process.exit(1);
       }
     });
-
-  return invites;
 }

@@ -6,8 +6,6 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { platformAssetColumns } from "../../shared/columns.js";
-import { readFileSync, statSync } from "fs";
-import { basename } from "path";
 
 export function registerPlatformAssetCommands(parent: Command): void {
   const assets = parent
@@ -63,7 +61,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         const filename = basename(path);
 
         // Create blob from buffer
-        const file = new Blob([fileBuffer]);
+        const file = new Blob([fileBuffer]) as File;
 
         // Parse metadata if provided
         const metadata = cmdOpts.metadata ? JSON.parse(cmdOpts.metadata) : undefined;
@@ -89,55 +87,6 @@ export function registerPlatformAssetCommands(parent: Command): void {
           console.log(`  Dimensions: ${asset.width} × ${asset.height}`);
         }
 
-        renderData(asset, getOutputMode(opts));
-      } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
-      }
-    });
-
-  assets
-    .command("create")
-    .description("Create a new asset")
-    .option("--json <json>", "Asset data as JSON string")
-    .option("--file <path>", "Path to JSON file with asset data")
-    .action(async function(this: Command, cmdOpts) {
-      try {
-        // Read the file
-        const fileBuffer = readFileSync(filePath);
-        const fileName = basename(filePath);
-
-        // Create a File-like Blob from the buffer
-        const blob = new Blob([fileBuffer]) as File;
-
-        // Parse metadata if provided
-        let metadata = undefined;
-        if (cmdOpts.metadata) {
-          try {
-            metadata = JSON.parse(cmdOpts.metadata);
-          } catch (e) {
-            console.error("Error: Invalid JSON in --metadata");
-            process.exitCode = 1;
-            return;
-          }
-        }
-
-        // Build upload metadata
-        const uploadData = {
-          slug: cmdOpts.slug,
-          name: cmdOpts.name,
-          altText: cmdOpts.altText,
-          description: cmdOpts.description,
-          metadata,
-        };
-
-        const opts = this.optsWithGlobals<PlatformCommandOptions>();
-        const client = await clientFactory.createPlatformClient(opts);
-
-        // Upload via SDK
-        const asset = await client.assets.upload(blob, uploadData);
-
-        console.log(`✓ Uploaded asset: ${asset.id}`);
         renderData(asset, getOutputMode(opts));
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);

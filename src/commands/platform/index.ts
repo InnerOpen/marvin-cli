@@ -8,7 +8,7 @@ import { registerEntryTypeCommands } from "./entry-types.js";
 import { registerAPIClientCommands } from "./api-clients.js";
 import { registerNotificationCommands } from "./notifications.js";
 import { registerWebhookCommands } from "./webhooks.js";
-import { createInvitesCommand } from "./invites.js";
+import { registerInviteCommands } from "./invites.js";
 
 /**
  * Create the 'platform' command group
@@ -29,7 +29,7 @@ export function createPlatformCommand(): Command {
   registerAPIClientCommands(platform);
   registerNotificationCommands(platform);
   registerWebhookCommands(platform);
-  platform.addCommand(createInvitesCommand());
+  registerInviteCommands(platform);
 
   return platform;
 }
