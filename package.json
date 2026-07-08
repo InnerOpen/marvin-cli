@@ -1,6 +1,6 @@
 {
   "name": "@inneropen/marvin-cli",
-  "version": "2.5.5",
+  "version": "2.5.6",
   "description": "Official CLI for Marvin CMS - interact with the Marvin Publishing API",
   "type": "module",
   "bin": {
@@ -12,7 +12,7 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@inneropen/marvin-sdk": "^1.10.3",
+    "@inneropen/marvin-sdk": "^1.10.4",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5"
   },
