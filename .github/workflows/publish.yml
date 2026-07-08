@@ -30,14 +30,7 @@ jobs:
       - name: Build package
         run: npm run build
 
-      - name: Publish to npm (@next tag for develop)
-        if: github.ref == 'refs/heads/develop'
+      - name: Publish to npm (@next tag)
         run: npm publish --access public --tag next
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish to npm (latest tag for main)
-        if: github.ref == 'refs/heads/main'
-        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

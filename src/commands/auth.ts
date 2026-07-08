@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import { credentialsManager } from "../../config/credentials.js";
-import { env } from "../../config/environment.js";
+import { credentialsManager } from "../config/credentials.js";
+import { env } from "../config/environment.js";
 import * as readline from "readline";
 
 /**
@@ -25,7 +25,7 @@ function promptForToken(): Promise<string> {
     process.stdin.on("data", (char) => {
       const key = char.toString();
 
-      if (key === "\n" || key === "\r" || key === "") {
+      if (key === "\n" || key === "\r" || key === "") {
         // Enter or Ctrl+D
         console.log(); // New line after input
         if (stdin.isTTY) {
@@ -33,11 +33,11 @@ function promptForToken(): Promise<string> {
         }
         rl.close();
         resolve(token);
-      } else if (key === "") {
+      } else if (key === "") {
         // Ctrl+C
         console.log("\nCancelled");
         process.exit(0);
-      } else if (key === "" || key === "\b") {
+      } else if (key === "" || key === "\b") {
         // Backspace
         if (token.length > 0) {
           token = token.slice(0, -1);
@@ -49,17 +49,17 @@ function promptForToken(): Promise<string> {
   });
 }
 
-export function registerLoginCommands(parent: Command): void {
+export function registerAuthCommands(parent: Command): void {
   // Login command
   parent
     .command("login")
-    .description("Authenticate with Marvin Platform API and save credentials")
-    .option("--token <token>", "User token (if not provided, will prompt)")
+    .description("Authenticate with Marvin and save credentials")
+    .option("--user-token <token>", "User token (if not provided, will prompt)")
     .option("--workspace <slug>", "Set active workspace after login")
     .action(async function(this: Command, cmdOpts) {
       try {
         // Get token from: flag > env > prompt
-        let userToken = cmdOpts.token || env.userToken;
+        let userToken = cmdOpts.userToken || env.userToken;
 
         if (!userToken) {
           userToken = await promptForToken();
@@ -70,9 +70,6 @@ export function registerLoginCommands(parent: Command): void {
           process.exitCode = 1;
           return;
         }
-
-        // TODO: Validate token by making a test API request
-        // For now, just save it
 
         // Save credentials
         credentialsManager.setUserToken(userToken);
@@ -85,7 +82,7 @@ export function registerLoginCommands(parent: Command): void {
         } else {
           console.log(`✓ Logged in successfully`);
           console.log(`  Credentials saved to ~/.marvin/credentials.json`);
-          console.log(`  Set active workspace with: marvin platform workspace use <slug>`);
+          console.log(`  Set active workspace with: marvin workspace use <slug>`);
         }
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);

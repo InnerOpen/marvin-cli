@@ -14,13 +14,22 @@ export class ClientFactory {
    *
    * Configuration precedence:
    * - apiUrl: --api-url flag > MARVIN_API_URL env var
-   * - siteClientToken: --token/--site-token flag > MARVIN_SITE_CLIENT_TOKEN env var
-   * - workspaceSlug: --workspace flag > MARVIN_WORKSPACE_SLUG env var
+   * - siteClientToken: --token/--site-token flag > stored token for workspace > MARVIN_SITE_CLIENT_TOKEN env var
+   * - workspaceSlug: --workspace flag > active workspace > MARVIN_WORKSPACE_SLUG env var
    */
   createPublishClient(options: PublishCommandOptions): MarvinClient {
     const apiUrl = options.apiUrl || env.apiUrl;
-    const siteClientToken = options.token || env.siteClientToken;
-    const workspaceSlug = options.workspace || env.workspaceSlug;
+
+    // Resolve workspace first (needed to look up stored token)
+    const workspaceSlug = options.workspace || credentialsManager.getActiveWorkspace() || env.workspaceSlug;
+
+    // Resolve site token with stored token support
+    let siteClientToken = options.token || env.siteClientToken;
+
+    // If no token from flag/env, check stored token for the workspace
+    if (!siteClientToken && workspaceSlug) {
+      siteClientToken = credentialsManager.getSiteToken(workspaceSlug);
+    }
 
     if (!apiUrl) {
       throw new Error(
@@ -36,7 +45,10 @@ export class ClientFactory {
         "Site client token is required for Publishing API.\n" +
         "Provide via:\n" +
         "  --token or --site-token flag\n" +
-        "  MARVIN_SITE_CLIENT_TOKEN environment variable"
+        "  MARVIN_SITE_CLIENT_TOKEN environment variable\n" +
+        (workspaceSlug
+          ? `  Run 'marvin workspace token <site-token>' to save for workspace '${workspaceSlug}'`
+          : "  Set active workspace first with 'marvin workspace use <slug>'")
       );
     }
 
@@ -45,7 +57,8 @@ export class ClientFactory {
         "Workspace slug is required.\n" +
         "Provide via:\n" +
         "  --workspace flag\n" +
-        "  MARVIN_WORKSPACE_SLUG environment variable"
+        "  MARVIN_WORKSPACE_SLUG environment variable\n" +
+        "  Set active workspace with 'marvin workspace use <slug>'"
       );
     }
 
