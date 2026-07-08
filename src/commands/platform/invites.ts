@@ -33,12 +33,14 @@ export function registerInviteCommands(parent: Command): void {
 
         const rows = tokens.map((token: any) => ({
           'Token': token.token?.substring(0, 20) + '...',
+          'Role': token.workspaceRole || 'EDITOR',
           'Uses Left': token.usesLeft,
           'Created': (token.createdAt || token.created_at) ? new Date(token.createdAt || token.created_at).toLocaleDateString() : 'Unknown',
         }));
 
         const columns = {
           'Token': (row: any) => row['Token'],
+          'Role': (row: any) => row['Role'],
           'Uses Left': (row: any) => row['Uses Left'],
           'Created': (row: any) => row['Created'],
         };
@@ -56,6 +58,7 @@ export function registerInviteCommands(parent: Command): void {
     .description('Create an invitation and optionally send via email')
     .option('--email <email>', 'Email address to send invitation to')
     .option('--uses <number>', 'Number of uses allowed', '1')
+    .option('--role <role>', 'Workspace role for invited users (VIEWER, AUTHOR, EDITOR, ADMIN, OWNER)', 'EDITOR')
     .action(async (options, command: Command) => {
       try {
         const opts = command.optsWithGlobals<PlatformCommandOptions>();
@@ -65,6 +68,7 @@ export function registerInviteCommands(parent: Command): void {
         // Create a token
         const token = await sdk.invites.create({
           usesLeft: parseInt(options.uses),
+          workspaceRole: options.role,
         });
 
         const inviteUrl = sdk.invites.getInvitationUrl(token.token!);
@@ -102,12 +106,14 @@ export function registerInviteCommands(parent: Command): void {
               token: token.token,
               inviteUrl,
               usesLeft: token.usesLeft,
+              workspaceRole: token.workspaceRole,
             }, null, 2));
           } else {
             console.log('✓ Invitation created');
             console.log(`\nInvitation URL:`);
             console.log(inviteUrl);
             console.log(`\nToken: ${token.token}`);
+            console.log(`Workspace Role: ${token.workspaceRole || 'EDITOR'}`);
             console.log(`Uses remaining: ${token.usesLeft}`);
           }
         }
