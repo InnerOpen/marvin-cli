@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { credentialsManager } from "../../config/credentials.js";
 import { clientFactory } from "../../shared/clients.js";
 import type { PlatformCommandOptions } from "../../shared/types.js";
+import type { WorkspaceWithMembership } from "@inneropen/marvin-sdk/platform";
 
 export function registerWorkspaceCommands(parent: Command): void {
   // Workspace group
@@ -79,7 +80,7 @@ export function registerWorkspaceCommands(parent: Command): void {
         console.log("\nAccessible Workspaces:");
         console.log("─".repeat(70));
 
-        workspaces.forEach(w => {
+        workspaces.forEach((w: WorkspaceWithMembership) => {
           const active = w.isActive ? "✓ ACTIVE" : "";
           const hasSiteToken = credentialsManager.getSiteToken(w.workspace.slug) ? "🔑" : "";
           console.log(`${w.workspace.name} (${w.workspace.slug}) ${hasSiteToken}`);
