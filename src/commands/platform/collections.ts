@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { readFileSync } from "fs";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
