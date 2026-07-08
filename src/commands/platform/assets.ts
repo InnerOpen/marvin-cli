@@ -41,35 +41,6 @@ export function registerPlatformAssetCommands(parent: Command): void {
     });
 
   assets
-    .command("create")
-    .description("Create a new asset")
-    .option("--json <json>", "Asset data as JSON string")
-    .option("--file <path>", "Path to JSON file with asset data")
-    .action(async function(this: Command, cmdOpts) {
-      try {
-        let data: any;
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
-        } else {
-          console.error("Error: Provide asset data via --json or --file");
-          process.exitCode = 1;
-          return;
-        }
-
-        const opts = this.optsWithGlobals<PlatformCommandOptions>();
-        const client = await clientFactory.createPlatformClient(opts);
-        const asset = await client.assets.create(data);
-        console.log(`✓ Created asset: ${asset.id}`);
-        renderData(asset, getOutputMode(opts));
-      } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
-      }
-    });
-
-  assets
     .command("update <id>")
     .description("Update an asset")
     .option("--json <json>", "Asset data as JSON string")
