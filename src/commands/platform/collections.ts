@@ -3,7 +3,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { platformCollectionColumns } from "../../shared/columns.js";
-import { readFileSync } from "fs";
+import { readJsonInput } from "../../shared/json-input.js";
 
 export function registerPlatformCollectionCommands(parent: Command): void {
   const collections = parent
@@ -44,7 +44,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
     .command("create")
     .description("Create a new collection")
     .option("--json <json>", "Collection data as JSON string")
-    .option("--file <path>", "Path to JSON file with collection data")
+    .option("--file <path>", "Path to JSON file with collection data (use '-' for stdin)")
     .action(async function(this: Command, cmdOpts) {
       try {
         let data: any;
@@ -73,7 +73,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
     .command("update <id>")
     .description("Update a collection")
     .option("--json <json>", "Collection data as JSON string")
-    .option("--file <path>", "Path to JSON file with collection data")
+    .option("--file <path>", "Path to JSON file with collection data (use '-' for stdin)")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         let data: any;

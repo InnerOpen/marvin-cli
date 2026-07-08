@@ -3,7 +3,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { platformResourceColumns } from "../../shared/columns.js";
-import { readFileSync } from "fs";
+import { readJsonInput } from "../../shared/json-input.js";
 
 export function registerPlatformResourceCommands(parent: Command): void {
   const resources = parent
@@ -44,19 +44,10 @@ export function registerPlatformResourceCommands(parent: Command): void {
     .command("create")
     .description("Create a new resource")
     .option("--json <json>", "Resource data as JSON string")
-    .option("--file <path>", "Path to JSON file with resource data")
+    .option("--file <path>", "Path to JSON file with resource data (use '-' for stdin)")
     .action(async function(this: Command, cmdOpts) {
       try {
-        let data: any;
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
-        } else {
-          console.error("Error: Provide resource data via --json or --file");
-          process.exitCode = 1;
-          return;
-        }
+        const data = await readJsonInput(cmdOpts);
 
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
@@ -73,19 +64,10 @@ export function registerPlatformResourceCommands(parent: Command): void {
     .command("update <id>")
     .description("Update a resource")
     .option("--json <json>", "Resource data as JSON string")
-    .option("--file <path>", "Path to JSON file with resource data")
+    .option("--file <path>", "Path to JSON file with resource data (use '-' for stdin)")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
-        let data: any;
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
-        } else {
-          console.error("Error: Provide resource data via --json or --file");
-          process.exitCode = 1;
-          return;
-        }
+        const data = await readJsonInput(cmdOpts);
 
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
