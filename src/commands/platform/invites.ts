@@ -34,7 +34,7 @@ export function registerInviteCommands(parent: Command): void {
         const rows = tokens.map((token: any) => ({
           'Token': token.token?.substring(0, 20) + '...',
           'Uses Left': token.usesLeft,
-          'Created': token.createdAt ? new Date(token.createdAt).toLocaleDateString() : 'Unknown',
+          'Created': (token.createdAt || token.created_at) ? new Date(token.createdAt || token.created_at).toLocaleDateString() : 'Unknown',
         }));
 
         const columns = {
