@@ -9,6 +9,7 @@ Official command-line interface for [Marvin CMS](https://github.com/jmashburn/Ma
 - 🔍 **Filter and query** - Filter by entry type, collection, asset type
 - 🚀 **Fast** - Direct HTTP calls to publishing API
 - 🔐 **Site client tokens** - Uses publishing API (not admin API)
+- 👥 **Workspace roles** - Create invitation tokens with specific roles (VIEWER, AUTHOR, EDITOR, ADMIN, OWNER)
 
 ## Prerequisites
 
