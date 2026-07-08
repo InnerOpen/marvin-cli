@@ -1,3 +1,16 @@
+# [2.6.0-next.1](https://github.com/inneropen/marvin-cli/compare/v2.5.7...v2.6.0-next.1) (2026-07-08)
+
+
+### Bug Fixes
+
+* Add npm-production environment to release workflow ([c00de05](https://github.com/inneropen/marvin-cli/commit/c00de050fc79ae71d888a7c97fb1c58d1a180a96))
+* Update Node.js version to 22.14 in release workflow ([d7247ed](https://github.com/inneropen/marvin-cli/commit/d7247ed92540196c9b529f08ca93b96ad333229f))
+
+
+### Features
+
+* Add semantic-release automation ([5f199fa](https://github.com/inneropen/marvin-cli/commit/5f199faba7dc72d8caa2800fba75f7200ade118b))
+
 # Changelog
 
 ## [1.1.0] - 2026-07-07
