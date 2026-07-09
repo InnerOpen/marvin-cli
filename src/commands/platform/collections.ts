@@ -120,4 +120,69 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         process.exitCode = 1;
       }
     });
+
+  collections
+    .command("entries <id>")
+    .description("List entries in a collection (ordered)")
+    .action(async function(this: Command, id: string) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const entries = await client.collections.getEntries(id);
+
+        // Show entries with order column
+        const entriesWithOrder = entries.map((entry, index) => ({
+          order: entry.order ?? index,
+          id: entry.id,
+          title: entry.title,
+          status: entry.status,
+          publishedAt: entry.publishedAt,
+        }));
+
+        renderList(
+          entriesWithOrder as any[],
+          ['order', 'id', 'title', 'status', 'publishedAt'],
+          getOutputMode(opts)
+        );
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  collections
+    .command("reorder <id>")
+    .description("Reorder entries in a collection")
+    .option("--json <json>", "Array of {entryId, sortOrder} as JSON string")
+    .option("--file <path>", "Path to JSON file with reorder data")
+    .action(async function(this: Command, id: string, cmdOpts) {
+      try {
+        let entries: Array<{ entryId: string; sortOrder: number }>;
+
+        if (cmdOpts.json) {
+          entries = JSON.parse(cmdOpts.json);
+        } else if (cmdOpts.file) {
+          entries = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        } else {
+          console.error("Error: Provide reorder data via --json or --file");
+          console.error('Example: --json \'[{"entryId":"abc","sortOrder":0},{"entryId":"def","sortOrder":1}]\'');
+          process.exitCode = 1;
+          return;
+        }
+
+        if (!Array.isArray(entries) || entries.length === 0) {
+          console.error("Error: Reorder data must be a non-empty array");
+          process.exitCode = 1;
+          return;
+        }
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        await client.collections.reorderEntries(id, entries);
+        console.log(`✓ Reordered ${entries.length} entries in collection ${id}`);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
 }
