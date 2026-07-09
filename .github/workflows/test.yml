@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           # Replace file dependency with published SDK version for CI
-          npm pkg set dependencies.@inneropen/marvin-sdk="@inneropen/marvin-sdk@develop"
+          npm pkg set dependencies.@inneropen/marvin-sdk="develop"
           npm ci
 
       - name: Build package
