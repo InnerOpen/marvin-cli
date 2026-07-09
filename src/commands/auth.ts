@@ -86,8 +86,7 @@ export function registerAuthCommands(parent: Command): void {
           console.log(`  Set active workspace with: marvin workspace use <slug>`);
         }
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -101,8 +100,7 @@ export function registerAuthCommands(parent: Command): void {
         console.log("✓ Logged out successfully");
         console.log("  Credentials cleared from ~/.marvin/credentials.json");
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 }
