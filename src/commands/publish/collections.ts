@@ -58,7 +58,7 @@ export function registerCollectionCommands(parent: Command): void {
   // Get entries in a collection
   parent
     .command("collection-entries <slug>")
-    .description("Fetch entries in a collection")
+    .description("Fetch entries in a collection (ordered)")
     .action(async function(this: Command, slug: string) {
       try {
         const opts = this.optsWithGlobals<PublishCommandOptions>();
@@ -71,7 +71,13 @@ export function registerCollectionCommands(parent: Command): void {
         const client = clientFactory.createPublishClient(opts);
         const entries = await client.collections.entries(slug);
 
-        renderList(entries as MarvinEntry[], entryColumns, getOutputMode(opts));
+        // Custom columns to include order
+        const collectionEntryColumns = {
+          Order: (entry: any) => entry.order !== undefined && entry.order !== null ? String(entry.order) : "-",
+          ...entryColumns,
+        };
+
+        renderList(entries as MarvinEntry[], collectionEntryColumns, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }
