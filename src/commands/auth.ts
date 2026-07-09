@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { credentialsManager } from "../config/credentials.js";
 import { env } from "../config/environment.js";
 import * as readline from "readline";
+import { handleCommandError } from "../shared/error-handler.js";
 
 /**
  * Prompt for user token input (hides input)
