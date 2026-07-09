@@ -3,6 +3,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
 import { assetColumns } from "../../shared/columns.js";
+import { handleCommandError } from "../../shared/error-handler.js";
 import type { MarvinAsset } from "@inneropen/marvin-sdk/types";
 
 export function registerAssetCommands(parent: Command): void {
@@ -31,8 +32,7 @@ export function registerAssetCommands(parent: Command): void {
 
         renderList(assets, assetColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -54,8 +54,7 @@ export function registerAssetCommands(parent: Command): void {
 
         renderList([asset] as MarvinAsset[], assetColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 }

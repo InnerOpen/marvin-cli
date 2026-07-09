@@ -3,6 +3,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
 import { resourceColumns, entryColumns } from "../../shared/columns.js";
+import { handleCommandError } from "../../shared/error-handler.js";
 import type { MarvinResource, MarvinEntry } from "@inneropen/marvin-sdk/types";
 
 export function registerResourceCommands(parent: Command): void {
@@ -31,8 +32,7 @@ export function registerResourceCommands(parent: Command): void {
 
         renderList(resources, resourceColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -54,8 +54,7 @@ export function registerResourceCommands(parent: Command): void {
 
         renderList([resource] as MarvinResource[], resourceColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -77,8 +76,7 @@ export function registerResourceCommands(parent: Command): void {
 
         renderList(entries as MarvinEntry[], entryColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 }

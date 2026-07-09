@@ -3,6 +3,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
 import { collectionColumns, entryColumns } from "../../shared/columns.js";
+import { handleCommandError } from "../../shared/error-handler.js";
 import type { MarvinCollection, MarvinEntry } from "@inneropen/marvin-sdk/types";
 
 export function registerCollectionCommands(parent: Command): void {
@@ -26,8 +27,7 @@ export function registerCollectionCommands(parent: Command): void {
 
         renderList(collections, collectionColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -47,11 +47,11 @@ export function registerCollectionCommands(parent: Command): void {
         const client = clientFactory.createPublishClient(opts);
         const collection = await client.collections.get(slug);
 
-        // Collection object has toJSON() method, use it for display
-        renderData(collection, getOutputMode(opts));
+        // Call toJSON() to get plain data object (Collection class has http client that shouldn't be serialized)
+        const data = typeof collection.toJSON === 'function' ? collection.toJSON() : collection;
+        renderData(data, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -73,8 +73,7 @@ export function registerCollectionCommands(parent: Command): void {
 
         renderList(entries as MarvinEntry[], entryColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 }
