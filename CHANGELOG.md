@@ -1,3 +1,24 @@
+# [2.6.0-next.2](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.1...v2.6.0-next.2) (2026-07-09)
+
+
+### Bug Fixes
+
+* Call toJSON() on Collection objects before rendering ([c0942e6](https://github.com/inneropen/marvin-cli/commit/c0942e6d7d5ad56dda074c0bc411bebbea2cc6e7))
+* Complete error handling migration in auth commands ([709ebce](https://github.com/inneropen/marvin-cli/commit/709ebce160f8af887e022f940ee18244d5749d4f))
+* Correct SDK dependency format in CI workflows ([eeb2909](https://github.com/inneropen/marvin-cli/commit/eeb2909c539cb1386bf3b3cad271819c079a3ad6))
+* Update error imports and collection entries display ([91da5ea](https://github.com/inneropen/marvin-cli/commit/91da5ea5a129b30c2b2f482c28a3de313a3661bf))
+* Update GitHub Actions workflows to use published SDK ([f9e7c15](https://github.com/inneropen/marvin-cli/commit/f9e7c152d619a8c624fa0714ffc8f3cd22d6b87e))
+* Use correct dist-tag format in CI workflows ([42fc506](https://github.com/inneropen/marvin-cli/commit/42fc506af94f33baf9422c1101f38600e1ab0ff8))
+
+
+### Features
+
+* Add collection entries and reorder commands ([1f63093](https://github.com/inneropen/marvin-cli/commit/1f630939e343535501162d87c52cb3d8376c4e58))
+* Add comprehensive error handling for CLI commands ([b0f154b](https://github.com/inneropen/marvin-cli/commit/b0f154b13c04430609df410821b9c481dbd5dc65))
+* Add event-log commands to Platform CLI ([c53b38a](https://github.com/inneropen/marvin-cli/commit/c53b38ad8eca2a9d0313467919b7ae737225bd6c))
+* Add order column to collection-entries command output ([728fca3](https://github.com/inneropen/marvin-cli/commit/728fca38ff97685bd0ebf38506d07bee1d1416ec))
+* Apply error handling to auth commands ([ce20a21](https://github.com/inneropen/marvin-cli/commit/ce20a2194f80117b002162912289e3b84f778ca8))
+
 # [2.6.0-next.1](https://github.com/inneropen/marvin-cli/compare/v2.5.7...v2.6.0-next.1) (2026-07-08)
 
 
