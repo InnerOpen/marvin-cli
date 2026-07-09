@@ -3,6 +3,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { readFileSync } from "fs";
+import { handleCommandError } from "../../shared/error-handler.js";
 
 export function registerAPIClientCommands(parent: Command): void {
   const apiClients = parent
@@ -24,8 +25,7 @@ export function registerAPIClientCommands(parent: Command): void {
           Created: (c: any) => c.createdAt ? new Date(c.createdAt).toISOString().split('T')[0] : "",
         }, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -39,8 +39,7 @@ export function registerAPIClientCommands(parent: Command): void {
         const apiClient = await client.apiClients.get(id);
         renderData(apiClient, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -80,8 +79,7 @@ export function registerAPIClientCommands(parent: Command): void {
         console.log(`   Token: ${(apiClient as any).token || 'N/A'}`);
         renderData(apiClient, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -118,8 +116,7 @@ export function registerAPIClientCommands(parent: Command): void {
         console.log(`✓ Updated API client: ${apiClient.id}`);
         renderData(apiClient, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -140,8 +137,7 @@ export function registerAPIClientCommands(parent: Command): void {
         await client.apiClients.delete(id);
         console.log(`✓ Deleted API client: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -159,8 +155,7 @@ export function registerAPIClientCommands(parent: Command): void {
         console.log(`   New Token: ${(apiClient as any).token || 'N/A'}`);
         renderData(apiClient, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -175,8 +170,7 @@ export function registerAPIClientCommands(parent: Command): void {
 
         renderData(apiClient, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 }

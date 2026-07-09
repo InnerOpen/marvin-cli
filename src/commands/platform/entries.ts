@@ -4,6 +4,7 @@ import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { platformEntryColumns } from "../../shared/columns.js";
 import { readJsonInput } from "../../shared/json-input.js";
+import { handleCommandError } from "../../shared/error-handler.js";
 
 export function registerPlatformEntryCommands(parent: Command): void {
   const entries = parent
@@ -23,8 +24,7 @@ export function registerPlatformEntryCommands(parent: Command): void {
 
         renderList(entries as any[], platformEntryColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -40,8 +40,7 @@ export function registerPlatformEntryCommands(parent: Command): void {
         const entry = await client.entries.get(id);
         renderData(entry, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -62,8 +61,7 @@ export function registerPlatformEntryCommands(parent: Command): void {
         console.log(`✓ Created entry: ${entry.id}`);
         renderData(entry, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -84,8 +82,7 @@ export function registerPlatformEntryCommands(parent: Command): void {
         console.log(`✓ Updated entry: ${entry.id}`);
         renderData(entry, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -108,8 +105,7 @@ export function registerPlatformEntryCommands(parent: Command): void {
         await client.entries.delete(id);
         console.log(`✓ Deleted entry: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 }
