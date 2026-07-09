@@ -2,7 +2,7 @@
  * Error handling utilities for CLI commands
  */
 
-import { MarvinApiError, MarvinAuthError, MarvinConfigError, MarvinValidationError } from "@inneropen/marvin-sdk/core/errors";
+import { MarvinApiError, MarvinAuthError, MarvinConfigError, MarvinValidationError } from "@inneropen/marvin-sdk";
 import chalk from "chalk";
 
 /**

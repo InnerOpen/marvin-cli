@@ -131,19 +131,15 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         const entries = await client.collections.getEntries(id);
 
         // Show entries with order column
-        const entriesWithOrder = entries.map((entry, index) => ({
-          order: entry.order ?? index,
-          id: entry.id,
-          title: entry.title,
-          status: entry.status,
-          publishedAt: entry.publishedAt,
-        }));
+        const entriesColumns = {
+          Order: (e: any) => e.order !== undefined && e.order !== null ? String(e.order) : '-',
+          ID: (e: any) => e.id,
+          Title: (e: any) => e.title,
+          Status: (e: any) => e.status || '-',
+          Published: (e: any) => e.publishedAt || '-',
+        };
 
-        renderList(
-          entriesWithOrder as any[],
-          ['order', 'id', 'title', 'status', 'publishedAt'],
-          getOutputMode(opts)
-        );
+        renderList(entries as any[], entriesColumns, getOutputMode(opts));
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;
