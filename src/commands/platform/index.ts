@@ -10,6 +10,7 @@ import { registerNotificationCommands } from "./notifications.js";
 import { registerWebhookCommands } from "./webhooks.js";
 import { registerInviteCommands } from "./invites.js";
 import { registerEventLogCommands } from "./event-log.js";
+import { createEmailTemplatesCommand } from "./email-templates.js";
 
 /**
  * Create the 'platform' command group
@@ -32,6 +33,7 @@ export function createPlatformCommand(): Command {
   registerWebhookCommands(platform);
   registerInviteCommands(platform);
   registerEventLogCommands(platform);
+  platform.addCommand(createEmailTemplatesCommand());
 
   return platform;
 }
