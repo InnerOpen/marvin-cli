@@ -3,43 +3,38 @@
  */
 
 import { Command } from 'commander';
-import { formatTable, requireWorkspace, getSDK, formatJson, formatYaml, formatCsv } from '../../lib/utils.js';
-import type { OutputFormat } from '../../lib/utils.js';
+import { clientFactory } from '../../shared/clients.js';
+import type { PlatformCommandOptions } from '../../shared/types.js';
+import { renderList, renderData } from '../../output.js';
 
-export function createEmailTemplatesCommand() {
+export function registerEmailTemplateCommands(parent: Command): void {
   const cmd = new Command('email-templates')
     .alias('templates')
     .description('Manage workspace email templates');
+
+  parent.addCommand(cmd);
 
   // List templates
   cmd
     .command('list')
     .alias('ls')
     .description('List email templates')
-    .option('--workspace <slug>', 'Workspace slug')
-    .option('--output <format>', 'Output format: table, json, yaml, csv', 'table')
-    .action(async (options) => {
-      const workspace = await requireWorkspace(options.workspace);
-      const sdk = await getSDK();
-      const format = options.output as OutputFormat;
+    .action(async function(this: Command) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const workspace = await client.workspaces.getCurrent();
+        const templates = await client.emailTemplates.list(workspace.id);
 
-      const templates = await sdk.emailTemplates.list(workspace.group.id);
-
-      if (format === 'json') {
-        console.log(formatJson(templates));
-      } else if (format === 'yaml') {
-        console.log(formatYaml(templates));
-      } else if (format === 'csv') {
-        console.log(formatCsv(templates, ['id', 'name', 'template_type', 'enabled', 'group_id']));
-      } else {
-        const rows = templates.map(t => ({
-          Name: t.name,
-          Type: t.template_type,
-          Enabled: t.enabled ? '✓' : '✗',
-          Scope: t.group_id ? 'Workspace' : 'System',
-          Created: new Date(t.created_at).toLocaleDateString(),
-        }));
-        console.log(formatTable(rows));
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderList(templates as any, {
+          name: 'name',
+          template_type: 'type',
+          enabled: 'enabled',
+          group_id: 'scope',
+        } as any, globalOpts.output as any || 'table');
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
       }
     });
 
@@ -47,41 +42,17 @@ export function createEmailTemplatesCommand() {
   cmd
     .command('get <template-id>')
     .description('Get email template details')
-    .option('--workspace <slug>', 'Workspace slug')
-    .option('--output <format>', 'Output format: table, json, yaml', 'table')
-    .action(async (templateId, options) => {
-      const workspace = await requireWorkspace(options.workspace);
-      const sdk = await getSDK();
-      const format = options.output as OutputFormat;
+    .action(async function(this: Command, templateId: string) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const workspace = await client.workspaces.getCurrent();
+        const template = await client.emailTemplates.get(workspace.id, templateId);
 
-      const template = await sdk.emailTemplates.get(workspace.group.id, templateId);
-
-      if (format === 'json') {
-        console.log(formatJson(template));
-      } else if (format === 'yaml') {
-        console.log(formatYaml(template));
-      } else {
-        const rows = [
-          { Field: 'ID', Value: template.id },
-          { Field: 'Name', Value: template.name },
-          { Field: 'Type', Value: template.template_type },
-          { Field: 'Subject', Value: template.subject },
-          { Field: 'Enabled', Value: template.enabled ? 'Yes' : 'No' },
-          { Field: 'Scope', Value: template.group_id ? 'Workspace' : 'System' },
-          { Field: 'Description', Value: template.description || '(none)' },
-        ];
-        console.log(formatTable(rows));
-
-        if (template.custom_html) {
-          console.log('\n--- Custom HTML ---');
-          console.log(template.custom_html.substring(0, 200) + '...');
-        } else {
-          console.log('\n--- Structured Template ---');
-          console.log('Header:', template.header_text || '(none)');
-          console.log('Message Top:', template.message_top || '(none)');
-          console.log('Button Text:', template.button_text || '(none)');
-          console.log('Message Bottom:', template.message_bottom || '(none)');
-        }
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderData(template as any, globalOpts.output as any || 'table');
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
       }
     });
 
@@ -99,37 +70,32 @@ export function createEmailTemplatesCommand() {
     .option('--button-text <text>', 'Button text (structured mode)')
     .option('--custom-html <html>', 'Custom HTML template (overrides structured fields)')
     .option('--disabled', 'Create as disabled', false)
-    .option('--workspace <slug>', 'Workspace slug')
-    .option('--output <format>', 'Output format: table, json, yaml', 'table')
-    .action(async (options) => {
-      const workspace = await requireWorkspace(options.workspace);
-      const sdk = await getSDK();
-      const format = options.output as OutputFormat;
+    .action(async function(this: Command, options: any) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const workspace = await client.workspaces.getCurrent();
 
-      const data = {
-        template_type: options.type,
-        name: options.name,
-        subject: options.subject,
-        description: options.description,
-        header_text: options.header,
-        message_top: options.messageTop,
-        message_bottom: options.messageBottom,
-        button_text: options.buttonText,
-        custom_html: options.customHtml,
-        enabled: !options.disabled,
-      };
+        const data = {
+          template_type: options.type,
+          name: options.name,
+          subject: options.subject,
+          description: options.description,
+          header_text: options.header,
+          message_top: options.messageTop,
+          message_bottom: options.messageBottom,
+          button_text: options.buttonText,
+          custom_html: options.customHtml,
+          enabled: !options.disabled,
+        };
 
-      const template = await sdk.emailTemplates.create(workspace.group.id, data);
+        const template = await client.emailTemplates.create(workspace.id, data);
 
-      if (format === 'json') {
-        console.log(formatJson(template));
-      } else if (format === 'yaml') {
-        console.log(formatYaml(template));
-      } else {
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderData(template as any, globalOpts.output as any || 'table');
         console.log(`✓ Created email template: ${template.name}`);
-        console.log(`  ID: ${template.id}`);
-        console.log(`  Type: ${template.template_type}`);
-        console.log(`  Subject: ${template.subject}`);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
       }
     });
 
@@ -147,34 +113,31 @@ export function createEmailTemplatesCommand() {
     .option('--custom-html <html>', 'Custom HTML template')
     .option('--enable', 'Enable the template')
     .option('--disable', 'Disable the template')
-    .option('--workspace <slug>', 'Workspace slug')
-    .option('--output <format>', 'Output format: table, json, yaml', 'table')
-    .action(async (templateId, options) => {
-      const workspace = await requireWorkspace(options.workspace);
-      const sdk = await getSDK();
-      const format = options.output as OutputFormat;
+    .action(async function(this: Command, templateId: string, options: any) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const workspace = await client.workspaces.getCurrent();
 
-      const data: any = {};
-      if (options.name) data.name = options.name;
-      if (options.subject) data.subject = options.subject;
-      if (options.description) data.description = options.description;
-      if (options.header) data.header_text = options.header;
-      if (options.messageTop) data.message_top = options.messageTop;
-      if (options.messageBottom) data.message_bottom = options.messageBottom;
-      if (options.buttonText) data.button_text = options.buttonText;
-      if (options.customHtml) data.custom_html = options.customHtml;
-      if (options.enable) data.enabled = true;
-      if (options.disable) data.enabled = false;
+        const data: any = {};
+        if (options.name) data.name = options.name;
+        if (options.subject) data.subject = options.subject;
+        if (options.description) data.description = options.description;
+        if (options.header) data.header_text = options.header;
+        if (options.messageTop) data.message_top = options.messageTop;
+        if (options.messageBottom) data.message_bottom = options.messageBottom;
+        if (options.buttonText) data.button_text = options.buttonText;
+        if (options.customHtml) data.custom_html = options.customHtml;
+        if (options.enable) data.enabled = true;
+        if (options.disable) data.enabled = false;
 
-      const template = await sdk.emailTemplates.update(workspace.group.id, templateId, data);
+        const template = await client.emailTemplates.update(workspace.id, templateId, data);
 
-      if (format === 'json') {
-        console.log(formatJson(template));
-      } else if (format === 'yaml') {
-        console.log(formatYaml(template));
-      } else {
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderData(template as any, globalOpts.output as any || 'table');
         console.log(`✓ Updated email template: ${template.name}`);
-        console.log(`  ID: ${template.id}`);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
       }
     });
 
@@ -183,30 +146,23 @@ export function createEmailTemplatesCommand() {
     .command('delete <template-id>')
     .alias('rm')
     .description('Delete an email template')
-    .option('--workspace <slug>', 'Workspace slug')
     .option('--yes', 'Skip confirmation', false)
-    .action(async (templateId, options) => {
-      const workspace = await requireWorkspace(options.workspace);
-      const sdk = await getSDK();
+    .action(async function(this: Command, templateId: string, options: any) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const workspace = await client.workspaces.getCurrent();
 
-      if (!options.yes) {
-        const { default: inquirer } = await import('inquirer');
-        const { confirm } = await inquirer.prompt([
-          {
-            type: 'confirm',
-            name: 'confirm',
-            message: 'Are you sure you want to delete this template?',
-            default: false,
-          },
-        ]);
-        if (!confirm) {
-          console.log('Cancelled');
-          return;
+        if (!options.yes) {
+          console.log('Delete template? Use --yes to confirm');
+          process.exit(1);
         }
-      }
 
-      await sdk.emailTemplates.delete(workspace.group.id, templateId);
-      console.log(`✓ Deleted template: ${templateId}`);
+        await client.emailTemplates.delete(workspace.id, templateId);
+        console.log(`✓ Deleted template: ${templateId}`);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
+      }
     });
 
   // Test send
@@ -214,15 +170,16 @@ export function createEmailTemplatesCommand() {
     .command('test-send <template-id> <email>')
     .alias('test')
     .description('Send a test email using a template')
-    .option('--workspace <slug>', 'Workspace slug')
-    .action(async (templateId, email, options) => {
-      const workspace = await requireWorkspace(options.workspace);
-      const sdk = await getSDK();
-
-      const result = await sdk.emailTemplates.sendTest(workspace.group.id, templateId, email);
-      console.log(`✓ ${result.message}`);
-      console.log(`  Recipient: ${email}`);
+    .action(async function(this: Command, templateId: string, email: string) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const workspace = await client.workspaces.getCurrent();
+        const result = await client.emailTemplates.sendTest(workspace.id, templateId, email);
+        console.log(`✓ ${result.message}`);
+        console.log(`  Recipient: ${email}`);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exit(1);
+      }
     });
-
-  return cmd;
 }
