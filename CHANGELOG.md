@@ -1,3 +1,10 @@
+# [2.6.0-next.7](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.6...v2.6.0-next.7) (2026-07-10)
+
+
+### Bug Fixes
+
+* Use PUBLISHING_TOKEN parameter name ([1596319](https://github.com/inneropen/marvin-cli/commit/15963195450f0f2658d169abc55b44b10dc16db5))
+
 # [2.6.0-next.6](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.5...v2.6.0-next.6) (2026-07-10)
 
 
