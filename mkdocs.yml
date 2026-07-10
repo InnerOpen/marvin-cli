@@ -1,0 +1,120 @@
+site_name: Marvin CLI Documentation
+site_description: Official command-line interface for Marvin CMS
+site_author: Marvin Project
+site_url: https://github.com/inneropen/marvin-cli
+
+repo_name: inneropen/marvin-cli
+repo_url: https://github.com/inneropen/marvin-cli
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.annotation
+    - content.code.copy
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/inneropen/marvin-cli
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+      - Configuration: getting-started/configuration.md
+  - Commands:
+      - Overview: commands/overview.md
+      - Publishing API:
+          - Site: commands/site.md
+          - Entries: commands/entries.md
+          - Collections: commands/collections.md
+          - Resources: commands/resources.md
+          - Assets: commands/assets.md
+      - Platform API:
+          - Workspaces: commands/workspaces.md
+          - Entry Types: commands/entry-types.md
+          - Email Templates: commands/email-templates.md
+          - Webhooks: commands/webhooks.md
+          - Forms: commands/forms.md
+          - API Clients: commands/api-clients.md
+          - Event Log: commands/event-log.md
+          - Notifications: commands/notifications.md
+          - Scheduled Tasks: commands/scheduled-tasks.md
+      - Admin API:
+          - Users: commands/admin-users.md
+          - System: commands/admin-system.md
+          - Maintenance: commands/admin-maintenance.md
+      - Authentication: commands/auth.md
+      - Output Formats: commands/output-formats.md
+  - Usage Guides:
+      - Filtering & Querying: guides/filtering.md
+      - Scripting & Automation: guides/scripting.md
+      - Data Pipelines: guides/pipelines.md
+      - CI/CD Integration: guides/ci-cd.md
+  - Examples:
+      - Common Tasks: examples/common-tasks.md
+      - Export & Import: examples/export-import.md
+      - Reporting: examples/reporting.md
+      - Automation Recipes: examples/automation.md
+  - Reference:
+      - Authentication: reference/authentication.md
+      - Error Handling: reference/error-handling.md
+      - Environment Variables: reference/environment-variables.md
+      - API Mapping: reference/api-mapping.md
+  - Contributing: contributing.md

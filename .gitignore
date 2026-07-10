@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+site/
 build/
 *.js
 *.js.map
@@ -39,3 +40,10 @@ coverage/
 # Temporary files
 *.tmp
 *.temp
+
+# Python
+__pycache__/
+*.pyc
+.python-version
+venv/
+.venv/
