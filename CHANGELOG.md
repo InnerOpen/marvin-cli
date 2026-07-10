@@ -1,3 +1,16 @@
+# [2.6.0-next.4](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.3...v2.6.0-next.4) (2026-07-10)
+
+
+### Bug Fixes
+
+* Adding deps to develop ([8a4fb5e](https://github.com/inneropen/marvin-cli/commit/8a4fb5ed2c35d568e4fc50b2720ab2375b865546))
+
+
+### Features
+
+* Add Forms module to Platform CLI ([d5f52ba](https://github.com/inneropen/marvin-cli/commit/d5f52bad7ec1766ef3531f6026f03945a24bb449))
+* Add scheduled-tasks commands to platform CLI ([269523b](https://github.com/inneropen/marvin-cli/commit/269523b259e6161a5df11d755194792b6dc46fa5))
+
 # [2.6.0-next.3](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.2...v2.6.0-next.3) (2026-07-10)
 
 
