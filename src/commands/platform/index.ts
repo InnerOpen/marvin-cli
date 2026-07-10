@@ -12,6 +12,7 @@ import { registerInviteCommands } from "./invites.js";
 import { registerEventLogCommands } from "./event-log.js";
 import { registerEmailTemplateCommands } from "./email-templates.js";
 import { registerScheduledTaskCommands } from "./scheduled-tasks.js";
+import { registerPlatformFormCommands } from "./forms.js";
 
 /**
  * Create the 'platform' command group
@@ -36,6 +37,7 @@ export function createPlatformCommand(): Command {
   registerEventLogCommands(platform);
   registerEmailTemplateCommands(platform);
   registerScheduledTaskCommands(platform);
+  registerPlatformFormCommands(platform);
 
   return platform;
 }
