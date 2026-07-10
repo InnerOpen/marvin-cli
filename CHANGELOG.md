@@ -1,3 +1,10 @@
+# [2.6.0-next.5](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.4...v2.6.0-next.5) (2026-07-10)
+
+
+### Features
+
+* Add automatic publishing to inneropen.io ([4170b64](https://github.com/inneropen/marvin-cli/commit/4170b6479a97daa1bd9a83145df3e7f2ce205c76))
+
 # [2.6.0-next.4](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.3...v2.6.0-next.4) (2026-07-10)
 
 
