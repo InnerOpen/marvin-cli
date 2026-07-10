@@ -11,6 +11,7 @@ import { registerWebhookCommands } from "./webhooks.js";
 import { registerInviteCommands } from "./invites.js";
 import { registerEventLogCommands } from "./event-log.js";
 import { registerEmailTemplateCommands } from "./email-templates.js";
+import { registerScheduledTaskCommands } from "./scheduled-tasks.js";
 
 /**
  * Create the 'platform' command group
@@ -34,6 +35,7 @@ export function createPlatformCommand(): Command {
   registerInviteCommands(platform);
   registerEventLogCommands(platform);
   registerEmailTemplateCommands(platform);
+  registerScheduledTaskCommands(platform);
 
   return platform;
 }
