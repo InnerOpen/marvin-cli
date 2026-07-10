@@ -1,3 +1,15 @@
+# [2.6.0-next.3](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.2...v2.6.0-next.3) (2026-07-10)
+
+
+### Bug Fixes
+
+* Update email templates commands to match CLI patterns and fix type errors ([0153166](https://github.com/inneropen/marvin-cli/commit/01531668691cc60f1610c728fe46c3594b79ca96))
+
+
+### Features
+
+* Add email templates commands to marvin-cli ([709097b](https://github.com/inneropen/marvin-cli/commit/709097b96aa8c38f6bfd4881286fb5e646a7c65e))
+
 # [2.6.0-next.2](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.1...v2.6.0-next.2) (2026-07-09)
 
 
