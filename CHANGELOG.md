@@ -1,3 +1,10 @@
+# [2.6.0-next.6](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.5...v2.6.0-next.6) (2026-07-10)
+
+
+### Bug Fixes
+
+* Map INNEROPEN_IO_TOKEN to GITHUB_TOKEN parameter ([7f96be8](https://github.com/inneropen/marvin-cli/commit/7f96be883566fa00ee995e02b2846d5fa0825679))
+
 # [2.6.0-next.5](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.4...v2.6.0-next.5) (2026-07-10)
 
 
