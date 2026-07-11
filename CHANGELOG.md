@@ -1,3 +1,10 @@
+# [2.6.0-next.8](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.7...v2.6.0-next.8) (2026-07-11)
+
+
+### Bug Fixes
+
+* **security:** Eliminate critical credential exposure vulnerabilities ([a96a86a](https://github.com/inneropen/marvin-cli/commit/a96a86a4c7f4238828a14b6cbe05160daf5e0543)), closes [HI#priority](https://github.com/HI/issues/priority)
+
 # [2.6.0-next.7](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.6...v2.6.0-next.7) (2026-07-10)
 
 
