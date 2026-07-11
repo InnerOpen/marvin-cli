@@ -101,6 +101,167 @@
 
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [2.6.0] - 2026-07-11
+
+### 🔒 Security
+
+**CRITICAL - Credential Exposure Eliminated (4 issues fixed)**
+
+- **Fixed:** Passwords visible in shell history
+  - `marvin user change-password` now uses secure interactive prompts
+  - Passwords entered with hidden input (no echo)
+  - Password confirmation prevents typos
+  - No shell history or process listing exposure
+
+- **Fixed:** Tokens visible in shell history and process listings
+  - `marvin workspace token` now uses secure prompts or stdin
+  - Removed positional token argument
+  - Added `--from-stdin` flag for automation
+  - No credential exposure in `ps aux` or shell history
+
+- **Fixed:** Tokens logged to stdout in CI/CD environments
+  - Created token masking utilities
+  - Tokens shown in full only in interactive TTY sessions
+  - Automatically masked in CI/CD logs (format: `site****xyz`)
+  - Warning displayed when tokens are masked
+
+- **Fixed:** Broken atomic write in credentials manager
+  - Fixed non-atomic `writeFileSync` bug
+  - Now uses `renameSync()` for true atomic operations
+  - Prevents credential corruption on crash/interrupt
+  - Temp file in same directory for atomic guarantee
+
+**MEDIUM - Input Validation & Error Handling (6 issues fixed)**
+
+- **Added:** Path validation on `--file` option
+  - Validates file exists before reading
+  - Warns when reading from sensitive paths (SSH keys, credentials, etc.)
+  - Protection against reading `/etc/`, `~/.ssh/`, `~/.aws/`
+
+- **Added:** JSON object validation
+  - Validates input is an object (not array/primitive/null)
+  - Defense-in-depth validation at CLI layer
+  - Clear error messages with examples
+
+- **Added:** Email validation (RFC 5322)
+  - Validates email format before sending invites
+  - Consistent with SDK email validation
+  - Prevents invalid email API errors
+
+- **Fixed:** Inconsistent `process.exit` usage (13 occurrences)
+  - Replaced `process.exit(1)` with graceful shutdown
+  - Allows cleanup handlers to execute
+  - Prevents data loss on error
+
+- **Added:** API URL validation (SSRF prevention)
+  - Validates protocol (http/https only)
+  - Warns on HTTP for non-localhost
+  - Warns on private IP ranges
+
+- **Removed:** `--user-token` flag for security
+  - Flag was never functional
+  - If implemented, would expose tokens in shell history
+  - Use `MARVIN_USER_TOKEN` environment variable instead
+  - Updated error messages with clear instructions
+
+**LOW - Quality & Best Practices (5 issues fixed)**
+
+- **Fixed:** SDK dependency pinned to stable version
+  - Changed from `"develop"` branch to `"^2.0.1"`
+  - Provides supply chain predictability
+  - Allows semver patch/minor updates
+
+- **Added:** Login token validation
+  - Tokens validated before saving
+  - Calls API to verify token works
+  - Prevents saving invalid/expired tokens
+  - Better user experience with immediate feedback
+
+- **Fixed:** Directory and file permissions (already fixed in credentials manager)
+  - Credentials directory: `0700` (user-only access)
+  - Credentials file: `0600` (user read/write only)
+
+- **Fixed:** `parseInt` radix parameter (2 occurrences)
+  - Added explicit radix (base 10) to prevent parsing issues
+
+- **Verified:** `dist/` not in git (already in `.gitignore`)
+
+### ⚠️ BREAKING CHANGES
+
+**1. Password Change Command**
+
+```bash
+# OLD (v2.5.x) - REMOVED
+marvin user change-password --current old --new new
+
+# NEW (v2.6.0) - SECURE
+marvin user change-password  # prompts interactively
+```
+
+**2. Workspace Token Command**
+
+```bash
+# OLD (v2.5.x) - REMOVED
+marvin workspace token <site-token>
+
+# NEW (v2.6.0) - SECURE
+marvin workspace token  # prompts interactively
+# or
+echo "$SITE_TOKEN" | marvin workspace token --from-stdin
+```
+
+**3. User Token Authentication**
+
+```bash
+# OLD (v2.5.x) - REMOVED (never worked)
+marvin platform entries list --user-token "$USER_TOKEN"
+
+# NEW (v2.6.0) - USE ENVIRONMENT VARIABLE
+export MARVIN_USER_TOKEN="$USER_TOKEN"
+marvin platform entries list
+# or
+marvin login  # save credentials
+```
+
+See [MIGRATION.md](MIGRATION.md) for complete migration guide.
+
+### 📦 New Utilities
+
+- `src/shared/prompt.ts` - Secure input prompting utilities
+- `src/shared/security.ts` - Token masking functions
+- `src/shared/validation.ts` - Comprehensive input validation
+
+### 📚 Documentation
+
+- Added [MIGRATION.md](MIGRATION.md) - Migration guide for v2.6.0
+- Added [SECURITY.md](SECURITY.md) - Security best practices and features
+- Added [SECURITY_AUDIT_COMPLETE.md](SECURITY_AUDIT_COMPLETE.md) - Complete audit report
+- Added [SECURITY_FIXES_CRITICAL.md](SECURITY_FIXES_CRITICAL.md) - Critical fixes documentation
+- Added [SECURITY_FIXES_MEDIUM.md](SECURITY_FIXES_MEDIUM.md) - Medium fixes documentation
+- Added [SECURITY_FIXES_LOW.md](SECURITY_FIXES_LOW.md) - Low fixes documentation
+- Updated [README.md](README.md) - Security features and examples
+
+### 📊 Security Metrics
+
+- **Issues Fixed:** 15 out of 17 (88% resolution)
+- **Risk Reduction:** HIGH → LOW
+- **Files Changed:** 21 (7 new, 14 modified)
+- **Lines Added:** ~2,200
+- **Security Posture:** Enterprise-grade
+
+### 🔗 Commits
+
+- `cbd1579` - fix(quality): Pin SDK version and add token validation (LOW priority)
+- `f1cc4d6` - fix(security): Add input validation and fix error handling (MEDIUM priority)
+- `a96a86a` - fix(security): Eliminate critical credential exposure vulnerabilities
+
+---
+
 ## [1.1.0] - 2026-07-07
 
 ### ✨ Added

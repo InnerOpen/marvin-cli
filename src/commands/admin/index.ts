@@ -9,8 +9,10 @@ import { registerAdminMaintenanceCommands } from "./maintenance.js";
  */
 export function createAdminCommand(): Command {
   const admin = new Command("admin")
-    .description("Administrative commands (requires SUPER_ADMIN)")
-    .option("--user-token <token>", "User authentication token, overrides MARVIN_USER_TOKEN");
+    .description("Administrative commands (requires SUPER_ADMIN)");
+
+  // Note: --user-token flag is intentionally not provided for security reasons
+  // (would expose token in shell history). Use MARVIN_USER_TOKEN env var or 'marvin login' instead.
 
   // Register subcommands
   registerAdminUsersCommands(admin);

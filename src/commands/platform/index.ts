@@ -20,8 +20,10 @@ import { registerPlatformFormCommands } from "./forms.js";
  */
 export function createPlatformCommand(): Command {
   const platform = new Command("platform")
-    .description("Platform API commands (CRUD operations, requires user token)")
-    .option("--user-token <token>", "User authentication token, overrides MARVIN_USER_TOKEN");
+    .description("Platform API commands (CRUD operations, requires user token)");
+
+  // Note: --user-token flag is intentionally not provided for security reasons
+  // (would expose token in shell history). Use MARVIN_USER_TOKEN env var or 'marvin login' instead.
 
   // Register subcommands
   registerWorkspaceMemberCommands(platform);

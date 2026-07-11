@@ -53,7 +53,7 @@ export class ClientFactory {
         "  --token or --site-token flag\n" +
         "  MARVIN_SITE_CLIENT_TOKEN environment variable\n" +
         (workspaceSlug
-          ? `  Run 'marvin workspace token <site-token>' to save for workspace '${workspaceSlug}'`
+          ? `  Run 'marvin workspace token' to save for workspace '${workspaceSlug}'`
           : "  Set active workspace first with 'marvin workspace use <slug>'")
       );
     }

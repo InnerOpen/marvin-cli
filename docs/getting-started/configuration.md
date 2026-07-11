@@ -2,14 +2,17 @@
 
 This guide covers configuring the Marvin CLI with credentials, environment variables, and settings.
 
+!!! info "Security Notice - v2.6.0+"
+    Version 2.6.0 introduces enhanced security features including secure credential storage, token masking in CI/CD, and input validation. See [SECURITY.md](../../SECURITY.md) for details.
+
 ## Configuration Methods
 
 The CLI supports multiple configuration methods, in order of precedence:
 
-1. **Command-line flags** - Highest priority
+1. **Command-line flags** - Highest priority (⚠️ not for credentials - use environment variables)
 2. **Environment variables** - Set in shell or `.env` file
-3. **Config file** - `.marvinrc` or `marvin.config.js` (future)
-4. **Interactive prompts** - For `auth login` command
+3. **Saved credentials** - Stored in `~/.marvin/credentials.json` (via `marvin login`)
+4. **Interactive prompts** - For sensitive input
 
 ## Environment Variables
 
@@ -23,19 +26,20 @@ MARVIN_API_URL=https://your-marvin-instance.com
 MARVIN_WORKSPACE_SLUG=your-workspace
 
 # Publishing API: Site client token
-MARVIN_SITE_CLIENT_TOKEN=marvin_sk_your_token_here
+MARVIN_SITE_TOKEN=site_client_your_token_here
 
-# Platform API: User credentials
-MARVIN_EMAIL=your@email.com
-MARVIN_PASSWORD=your_password
-
-# Platform API: API client credentials
-MARVIN_API_CLIENT_ID=your_client_id
-MARVIN_API_CLIENT_SECRET=your_client_secret
-
-# Admin API: Admin token
-MARVIN_ADMIN_TOKEN=your_admin_token
+# Platform API: User token (get via 'marvin login')
+MARVIN_USER_TOKEN=user_your_token_here
 ```
+
+!!! warning "Security - Credential Flags Removed (v2.6.0+)"
+    For security reasons, the following are NO LONGER supported as CLI flags:
+    
+    - `--user-token` - Use `MARVIN_USER_TOKEN` environment variable instead
+    - Password flags on `marvin user change-password` - Use interactive prompts
+    - Token argument on `marvin workspace token` - Use `--from-stdin` or interactive prompt
+    
+    See [MIGRATION.md](../../MIGRATION.md) for upgrade instructions.
 
 ### Optional Variables
 
@@ -132,24 +136,30 @@ marvin --api-url https://api.example.com --workspace prod --json publish entries
 
 ### Platform API (User Authentication)
 
-Use the `auth` commands for interactive login:
+**Recommended method (v2.6.0+):** Use `marvin login` for secure credential storage.
 
 ```bash
-# Log in with email/password
-marvin auth login
+# Log in (secure interactive prompt)
+marvin login
+Enter user token: [hidden]
+Validating token...
+✓ Token is valid
+✓ Logged in successfully
 
-# Check who's logged in
-marvin auth whoami
+# Check current workspace
+marvin workspace current
 
 # Log out
-marvin auth logout
+marvin logout
 ```
 
-The CLI stores your session token securely in:
+The CLI stores your token securely in `~/.marvin/credentials.json` with proper permissions (0600).
 
-- **macOS**: Keychain
-- **Linux**: Secret Service API or encrypted file
-- **Windows**: Credential Manager
+**Benefits:**
+- Token validated before saving (prevents invalid tokens)
+- Never visible in shell history
+- Automatic token masking in CI/CD logs
+- Atomic file writes prevent corruption
 
 ### Platform API (API Client)
 
@@ -418,13 +428,78 @@ export MARVIN_WORKSPACE_SLUG=correct-slug
 
 ## Security Best Practices
 
+!!! tip "Security Features (v2.6.0+)"
+    Marvin CLI includes enterprise-grade security features:
+    
+    - ✅ No shell history exposure (secure prompts)
+    - ✅ Automatic token masking in CI/CD
+    - ✅ Token validation before saving
+    - ✅ Atomic credential writes (no corruption)
+    - ✅ Input validation (paths, URLs, emails, JSON)
+    - ✅ Graceful error handling
+    
+    See [SECURITY.md](../../SECURITY.md) for complete security documentation.
+
+### Essential Security Practices
+
 1. **Never commit credentials** to version control
-2. **Use environment variables** or secret managers in production
-3. **Rotate tokens** regularly
-4. **Use API clients** instead of user credentials for automation
-5. **Restrict token permissions** to minimum required
-6. **Enable 2FA** for user accounts
-7. **Monitor token usage** in Marvin audit logs
+   ```gitignore
+   .marvin/
+   .env
+   .env.local
+   *credentials*
+   *secrets*
+   ```
+
+2. **Use environment variables** for CI/CD
+   ```yaml
+   # GitHub Actions
+   env:
+     MARVIN_USER_TOKEN: ${{ secrets.MARVIN_USER_TOKEN }}
+   ```
+
+3. **Use saved credentials** for development
+   ```bash
+   marvin login  # one-time setup
+   ```
+
+4. **Rotate tokens regularly**
+   ```bash
+   # Create new token
+   marvin platform api-clients create --name "Production-2026"
+   
+   # Update credentials
+   marvin login
+   
+   # Delete old token
+   marvin platform api-clients delete <old-id>
+   ```
+
+5. **Verify credential file permissions**
+   ```bash
+   ls -la ~/.marvin/
+   # Should show: drwx------ (700) and -rw------- (600)
+   ```
+
+6. **Use workspace-specific tokens** (principle of least privilege)
+   ```bash
+   marvin workspace token --for workspace-a
+   marvin workspace token --for workspace-b
+   ```
+
+7. **Never use `--user-token` flag** (removed for security in v2.6.0)
+   ```bash
+   # WRONG (removed)
+   marvin platform entries list --user-token "$TOKEN"
+   
+   # RIGHT (environment variable)
+   export MARVIN_USER_TOKEN="$TOKEN"
+   marvin platform entries list
+   
+   # RIGHT (saved credentials)
+   marvin login
+   marvin platform entries list
+   ```
 
 ## Related
 
