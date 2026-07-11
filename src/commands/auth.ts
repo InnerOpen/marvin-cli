@@ -72,6 +72,36 @@ export function registerAuthCommands(parent: Command): void {
           return;
         }
 
+        // Validate token by making an API call before saving
+        console.log("Validating token...");
+        try {
+          const { PlatformClient } = await import("@inneropen/marvin-sdk/platform");
+          const { env } = await import("../config/environment.js");
+
+          const apiUrl = env.apiUrl;
+          if (!apiUrl) {
+            console.error("Error: MARVIN_API_URL is required");
+            process.exitCode = 1;
+            return;
+          }
+
+          const client = new PlatformClient({ apiUrl, userToken });
+
+          // Verify token works by fetching user profile
+          await client.user.getProfile();
+
+          console.log("✓ Token is valid");
+        } catch (error) {
+          console.error("✗ Token validation failed");
+          if (error instanceof Error) {
+            console.error(error.message);
+          }
+          console.error("\nThe token you provided is invalid or expired.");
+          console.error("Please check your token and try again.");
+          process.exitCode = 1;
+          return;
+        }
+
         // Save credentials
         credentialsManager.setUserToken(userToken);
 
