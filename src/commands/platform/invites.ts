@@ -8,6 +8,7 @@ import { Command } from 'commander';
 import { clientFactory } from '../../shared/clients.js';
 import { renderList, renderData } from '../../output.js';
 import { getOutputMode, type PlatformCommandOptions } from '../../shared/types.js';
+import { formatTokenForOutput, displayTokenWarning } from '../../shared/security.js';
 
 export function registerInviteCommands(parent: Command): void {
   const invites = parent
@@ -82,7 +83,7 @@ export function registerInviteCommands(parent: Command): void {
 
           if (mode === 'json') {
             console.log(JSON.stringify({
-              token: token.token,
+              token: formatTokenForOutput(token.token!),
               inviteUrl,
               email: options.email,
               emailSent: result.success,
@@ -95,24 +96,26 @@ export function registerInviteCommands(parent: Command): void {
               console.log(`⚠ Email failed: ${result.error}`);
               console.log('\nYou can still share the link manually:');
             }
+            displayTokenWarning();
             console.log(`\nInvitation URL:`);
             console.log(inviteUrl);
-            console.log(`Token: ${token.token}`);
+            console.log(`Token: ${formatTokenForOutput(token.token!)}`);
           }
         } else {
           // No email, just show the link
           if (mode === 'json') {
             console.log(JSON.stringify({
-              token: token.token,
+              token: formatTokenForOutput(token.token!),
               inviteUrl,
               usesLeft: token.usesLeft,
               workspaceRole: token.workspaceRole,
             }, null, 2));
           } else {
+            displayTokenWarning();
             console.log('✓ Invitation created');
             console.log(`\nInvitation URL:`);
             console.log(inviteUrl);
-            console.log(`\nToken: ${token.token}`);
+            console.log(`\nToken: ${formatTokenForOutput(token.token!)}`);
             console.log(`Workspace Role: ${token.workspaceRole || 'EDITOR'}`);
             console.log(`Uses remaining: ${token.usesLeft}`);
           }

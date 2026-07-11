@@ -3,6 +3,7 @@ import { credentialsManager } from "../../config/credentials.js";
 import { clientFactory } from "../../shared/clients.js";
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import type { WorkspaceWithMembership } from "@inneropen/marvin-sdk/platform";
+import { promptSecure, readFromStdin } from "../../shared/prompt.js";
 
 export function registerWorkspaceCommands(parent: Command): void {
   // Workspace group
@@ -90,10 +91,11 @@ export function registerWorkspaceCommands(parent: Command): void {
 
   // Set site token for workspace
   workspace
-    .command("token <site-token>")
+    .command("token")
     .description("Store site token for current workspace (for Publishing API)")
     .option("--for <slug>", "Workspace slug (defaults to active workspace)")
-    .action(async (siteToken: string, cmdOpts: { for?: string }) => {
+    .option("--from-stdin", "Read token from stdin (pipe input)")
+    .action(async (cmdOpts: { for?: string; fromStdin?: boolean }) => {
       try {
         // Resolve workspace (use --for option or active workspace)
         const workspaceSlug = cmdOpts.for || credentialsManager.getActiveWorkspace();
@@ -102,7 +104,22 @@ export function registerWorkspaceCommands(parent: Command): void {
           console.error("No active workspace set.");
           console.log("Either:");
           console.log("  1. Set active workspace: marvin workspace use <slug>");
-          console.log("  2. Specify workspace: marvin workspace token <token> --for <slug>");
+          console.log("  2. Specify workspace: marvin workspace token --for <slug>");
+          process.exitCode = 1;
+          return;
+        }
+
+        let siteToken: string;
+
+        // Read token from stdin or prompt
+        if (cmdOpts.fromStdin) {
+          siteToken = await readFromStdin();
+        } else {
+          siteToken = await promptSecure("Enter site token (input hidden):");
+        }
+
+        if (!siteToken) {
+          console.error("Error: Site token is required");
           process.exitCode = 1;
           return;
         }
@@ -114,6 +131,9 @@ export function registerWorkspaceCommands(parent: Command): void {
         console.log("\nYou can now use Publishing API commands without --site-token flag:");
         console.log("  marvin publish entries");
         console.log("  marvin publish collections");
+        console.log("\nUsage examples:");
+        console.log("  Interactive: marvin workspace token");
+        console.log("  From stdin:  echo 'token' | marvin workspace token --from-stdin");
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;

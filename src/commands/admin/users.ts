@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
+import { formatTokenForOutput, displayTokenWarning } from "../../shared/security.js";
 
 export function registerAdminUsersCommands(parent: Command): void {
   const users = new Command("users")
@@ -63,8 +64,9 @@ export function registerAdminUsersCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.adminUsers.generatePasswordResetToken(userId);
 
-        console.log(`Password reset token: ${result.token}`);
-        console.log(`\nUser can reset password at: /reset-password?token=${result.token}`);
+        displayTokenWarning();
+        console.log(`Password reset token: ${formatTokenForOutput(result.token)}`);
+        console.log(`\nUser can reset password at: /reset-password?token=${formatTokenForOutput(result.token)}`);
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;

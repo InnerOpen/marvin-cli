@@ -4,6 +4,7 @@ import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { readFileSync } from "fs";
 import { handleCommandError } from "../../shared/error-handler.js";
+import { formatTokenForOutput, displayTokenWarning } from "../../shared/security.js";
 
 export function registerAPIClientCommands(parent: Command): void {
   const apiClients = parent
@@ -74,9 +75,12 @@ export function registerAPIClientCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
         const apiClient = await client.apiClients.create(data);
 
+        const token = (apiClient as any).token;
+
         console.log(`✓ Created API client: ${apiClient.id}`);
         console.log(`⚠️  Save this token securely - it won't be shown again!`);
-        console.log(`   Token: ${(apiClient as any).token || 'N/A'}`);
+        displayTokenWarning();
+        console.log(`   Token: ${formatTokenForOutput(token)}`);
         renderData(apiClient, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -150,9 +154,12 @@ export function registerAPIClientCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
         const apiClient = await client.apiClients.rotateToken(id);
 
+        const token = (apiClient as any).token;
+
         console.log(`✓ Rotated token for API client: ${apiClient.id}`);
         console.log(`⚠️  Save this token securely - it won't be shown again!`);
-        console.log(`   New Token: ${(apiClient as any).token || 'N/A'}`);
+        displayTokenWarning();
+        console.log(`   New Token: ${formatTokenForOutput(token)}`);
         renderData(apiClient, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
