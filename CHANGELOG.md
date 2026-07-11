@@ -1,3 +1,15 @@
+# [2.6.0-next.11](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.10...v2.6.0-next.11) (2026-07-11)
+
+
+### Bug Fixes
+
+* Add null check for collection.get() return value ([d362859](https://github.com/inneropen/marvin-cli/commit/d36285996b315c7d4e18433b99cf5025853cfab7))
+
+
+### Features
+
+* Add workspace export command ([b6bce79](https://github.com/inneropen/marvin-cli/commit/b6bce79b592e36f556984b53d409b589604a74f8))
+
 # [2.6.0-next.10](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.9...v2.6.0-next.10) (2026-07-11)
 
 
