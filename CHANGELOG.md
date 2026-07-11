@@ -1,3 +1,10 @@
+# [2.6.0-next.10](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.9...v2.6.0-next.10) (2026-07-11)
+
+
+### Bug Fixes
+
+* **quality:** Pin SDK version and add token validation (LOW priority) ([cbd1579](https://github.com/inneropen/marvin-cli/commit/cbd157941119c4fbed3ad604d4a51a41fa804fc9)), closes [#11](https://github.com/inneropen/marvin-cli/issues/11) [#12](https://github.com/inneropen/marvin-cli/issues/12) [#4](https://github.com/inneropen/marvin-cli/issues/4) [#13](https://github.com/inneropen/marvin-cli/issues/13)
+
 # [2.6.0-next.9](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.8...v2.6.0-next.9) (2026-07-11)
 
 
