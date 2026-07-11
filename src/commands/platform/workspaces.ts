@@ -1,3 +1,4 @@
+import { writeFileSync } from "node:fs";
 import { Command } from "commander";
 import { credentialsManager } from "../../config/credentials.js";
 import { clientFactory } from "../../shared/clients.js";
@@ -134,6 +135,38 @@ export function registerWorkspaceCommands(parent: Command): void {
         console.log("\nUsage examples:");
         console.log("  Interactive: marvin workspace token");
         console.log("  From stdin:  echo 'token' | marvin workspace token --from-stdin");
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Export workspace data
+  workspace
+    .command("export")
+    .description("Export workspace data as JSON (collections, entry types, entries, site config)")
+    .option("-o, --output <file>", "Write to file instead of stdout")
+    .option("--include-system-types", "Include system entry types in export", false)
+    .option("--no-pretty", "Output compact JSON instead of pretty-printed")
+    .action(async (cmdOpts: { output?: string; includeSystemTypes?: boolean; pretty?: boolean }) => {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+
+        const data = await client.workspaces.export({
+          includeSystemTypes: cmdOpts.includeSystemTypes,
+          pretty: cmdOpts.pretty,
+        });
+
+        const json = cmdOpts.pretty !== false
+          ? JSON.stringify(data, null, 2)
+          : JSON.stringify(data);
+
+        if (cmdOpts.output) {
+          writeFileSync(cmdOpts.output, json + "\n", "utf-8");
+          console.error(`✓ Workspace exported to ${cmdOpts.output}`);
+        } else {
+          process.stdout.write(json + "\n");
+        }
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;
