@@ -47,6 +47,12 @@ export function registerCollectionCommands(parent: Command): void {
         const client = clientFactory.createPublishClient(opts);
         const collection = await client.collections.get(slug);
 
+        if (!collection) {
+          console.error(`Collection not found: ${slug}`);
+          process.exitCode = 1;
+          return;
+        }
+
         // Call toJSON() to get plain data object (Collection class has http client that shouldn't be serialized)
         const data = typeof collection.toJSON === 'function' ? collection.toJSON() : collection;
         renderData(data, getOutputMode(opts));
