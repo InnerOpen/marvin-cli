@@ -1,3 +1,10 @@
+# [2.6.0-next.9](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.8...v2.6.0-next.9) (2026-07-11)
+
+
+### Bug Fixes
+
+* **security:** Add input validation and fix error handling (MEDIUM priority) ([f1cc4d6](https://github.com/inneropen/marvin-cli/commit/f1cc4d6c5c44e19047d95743ca11c80a2c3b863d))
+
 # [2.6.0-next.8](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.7...v2.6.0-next.8) (2026-07-11)
 
 
