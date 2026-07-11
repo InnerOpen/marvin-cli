@@ -131,6 +131,7 @@ export function validateOptions(options: Record<string, any>, required: string[]
     missing.forEach(key => {
       console.error(chalk.dim(`  --${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`));
     });
-    process.exit(1);
+    process.exitCode = 1;
+    throw new Error(`Missing required options: ${missing.join(', ')}`);
   }
 }

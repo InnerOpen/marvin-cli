@@ -9,6 +9,7 @@ import { clientFactory } from '../../shared/clients.js';
 import { renderList, renderData } from '../../output.js';
 import { getOutputMode, type PlatformCommandOptions } from '../../shared/types.js';
 import { formatTokenForOutput, displayTokenWarning } from '../../shared/security.js';
+import { requireValidEmail } from '../../shared/validation.js';
 
 export function registerInviteCommands(parent: Command): void {
   const invites = parent
@@ -49,7 +50,8 @@ export function registerInviteCommands(parent: Command): void {
         console.log(`\nTotal: ${tokens.length} invitation token(s)`);
       } catch (error) {
         console.error('Failed to list invitation tokens:', error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -74,8 +76,10 @@ export function registerInviteCommands(parent: Command): void {
 
         const inviteUrl = sdk.invites.getInvitationUrl(token.token!);
 
-        // If email provided, send it
+        // If email provided, validate and send it
         if (options.email) {
+          requireValidEmail(options.email);
+
           const result = await sdk.invites.sendEmail({
             email: options.email,
             token: token.token!,
@@ -122,7 +126,8 @@ export function registerInviteCommands(parent: Command): void {
         }
       } catch (error) {
         console.error('Failed to create invitation:', error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -141,7 +146,8 @@ export function registerInviteCommands(parent: Command): void {
         console.log(inviteUrl);
       } catch (error) {
         console.error('Failed to generate link:', error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -176,7 +182,8 @@ export function registerInviteCommands(parent: Command): void {
         console.log('✓ Invitation revoked');
       } catch (error) {
         console.error('Failed to revoke invitation:', error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 }

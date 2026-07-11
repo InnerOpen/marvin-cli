@@ -3,6 +3,7 @@ import { PlatformClient } from "@inneropen/marvin-sdk/platform";
 import { env } from "../config/environment.js";
 import { credentialsManager } from "../config/credentials.js";
 import { workspaceResolver } from "../config/workspace.js";
+import { validateApiUrl } from "./validation.js";
 import type { PublishCommandOptions, PlatformCommandOptions } from "./types.js";
 
 /**
@@ -19,6 +20,11 @@ export class ClientFactory {
    */
   createPublishClient(options: PublishCommandOptions): MarvinClient {
     const apiUrl = options.apiUrl || env.apiUrl;
+
+    // Validate API URL if provided
+    if (apiUrl) {
+      validateApiUrl(apiUrl);
+    }
 
     // Resolve workspace first (needed to look up stored token)
     const workspaceSlug = options.workspace || credentialsManager.getActiveWorkspace() || env.workspaceSlug;
@@ -74,13 +80,21 @@ export class ClientFactory {
    *
    * Configuration precedence:
    * - apiUrl: --api-url flag > MARVIN_API_URL env var
-   * - userToken: --user-token flag > MARVIN_USER_TOKEN env var > saved credentials
+   * - userToken: MARVIN_USER_TOKEN env var > saved credentials (no CLI flag for security)
    *
    * Note: Workspace context is managed at the server session level, not via client config
    */
   async createPlatformClient(options: PlatformCommandOptions): Promise<PlatformClient> {
     const apiUrl = options.apiUrl || env.apiUrl;
-    const userToken = options.userToken || env.userToken || credentialsManager.getUserToken();
+
+    // Validate API URL if provided
+    if (apiUrl) {
+      validateApiUrl(apiUrl);
+    }
+
+    // Note: --user-token flag is NOT supported for security reasons (shell history exposure)
+    // Only support env var and saved credentials
+    const userToken = env.userToken || credentialsManager.getUserToken();
 
     if (!apiUrl) {
       throw new Error(
@@ -95,9 +109,11 @@ export class ClientFactory {
       throw new Error(
         "User token is required for Platform API.\n" +
         "Provide via:\n" +
-        "  --user-token flag\n" +
         "  MARVIN_USER_TOKEN environment variable\n" +
-        "  Run 'marvin platform login' to save credentials"
+        "  Run 'marvin login' to save credentials\n" +
+        "\n" +
+        "Note: --user-token flag is not supported for security reasons.\n" +
+        "Use environment variable or save credentials via 'marvin login'."
       );
     }
 

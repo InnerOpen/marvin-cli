@@ -23,9 +23,14 @@ export interface PublishCommandOptions extends CommonCommandOptions {
 /**
  * Options for Platform API commands
  * Uses user token for authentication
+ *
+ * Note: userToken is NOT supported as a CLI flag for security reasons
+ * (would expose token in shell history). Use environment variable
+ * MARVIN_USER_TOKEN or save via 'marvin login' instead.
  */
 export interface PlatformCommandOptions extends CommonCommandOptions {
-  userToken?: string; // User authentication token
+  // userToken is intentionally not part of CLI options
+  // It's resolved from: env.userToken || credentialsManager.getUserToken()
 }
 
 /**
@@ -42,5 +47,6 @@ export function getOutputMode(opts: CommonCommandOptions): OutputMode {
   }
 
   console.error(`Unsupported output format: ${value}. Use table, json, yaml, or csv.`);
-  process.exit(1);
+  process.exitCode = 1;
+  throw new Error(`Unsupported output format: ${value}`);
 }

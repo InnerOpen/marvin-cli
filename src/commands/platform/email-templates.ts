@@ -34,7 +34,8 @@ export function registerEmailTemplateCommands(parent: Command): void {
         } as any, globalOpts.output as any || 'table');
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -52,7 +53,8 @@ export function registerEmailTemplateCommands(parent: Command): void {
         renderData(template as any, globalOpts.output as any || 'table');
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -95,7 +97,8 @@ export function registerEmailTemplateCommands(parent: Command): void {
         console.log(`✓ Created email template: ${template.name}`);
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -137,7 +140,8 @@ export function registerEmailTemplateCommands(parent: Command): void {
         console.log(`✓ Updated email template: ${template.name}`);
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -154,14 +158,16 @@ export function registerEmailTemplateCommands(parent: Command): void {
 
         if (!options.yes) {
           console.log('Delete template? Use --yes to confirm');
-          process.exit(1);
+          process.exitCode = 1;
+        return;
         }
 
         await client.emailTemplates.delete(workspace.id, templateId);
         console.log(`✓ Deleted template: ${templateId}`);
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -179,7 +185,8 @@ export function registerEmailTemplateCommands(parent: Command): void {
         console.log(`  Recipient: ${email}`);
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 }

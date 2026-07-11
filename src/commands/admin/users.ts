@@ -19,8 +19,8 @@ export function registerAdminUsersCommands(parent: Command): void {
     .action(async function(this: Command, cmdOpts) {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
-        const page = parseInt(cmdOpts.page);
-        const perPage = parseInt(cmdOpts.perPage);
+        const page = parseInt(cmdOpts.page, 10);
+        const perPage = parseInt(cmdOpts.perPage, 10);
 
         const result = await client.adminUsers.list(page, perPage);
 
