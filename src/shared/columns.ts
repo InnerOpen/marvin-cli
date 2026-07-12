@@ -3,6 +3,7 @@ import type {
   MarvinCollection,
   MarvinEntry,
   MarvinResource,
+  PublishedEntryType,
 } from "@inneropen/marvin-sdk/types";
 import type { ColumnSpec } from "../output.js";
 
@@ -38,6 +39,15 @@ export const resourceColumns: ColumnSpec<MarvinResource> = {
   Type: (resource) => resource.resourceType || "",
   Description: (resource) => (resource.description || "").substring(0, 50),
   URL: (resource) => resource.url || "",
+};
+
+export const entryTypeColumns: ColumnSpec<PublishedEntryType> = {
+  Name: (et) => et.name || "",
+  Slug: (et) => et.slug || "",
+  Renderer: (et) => et.rendering?.renderer || "",
+  Package: (et) => et.rendering?.package || "",
+  Publishable: (et) => et.capabilities?.publishable !== false ? "yes" : "no",
+  Routable: (et) => et.capabilities?.routable !== false ? "yes" : "no",
 };
 
 export const assetColumns: ColumnSpec<MarvinAsset> = {

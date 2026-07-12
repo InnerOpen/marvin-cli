@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
+import { handleCommandError } from "../../shared/error-handler.js";
 
 export function registerEntryTypeCommands(parent: Command): void {
   const entryTypes = parent
@@ -20,10 +21,13 @@ export function registerEntryTypeCommands(parent: Command): void {
           ID: "id",
           Name: "name",
           Slug: "slug",
+          Renderer: (et: any) => et.rendering?.renderer || "",
+          Package: (et: any) => et.rendering?.package || "",
+          Publishable: (et: any) => et.capabilities?.publishable !== false ? "yes" : "no",
+          Routable: (et: any) => et.capabilities?.routable !== false ? "yes" : "no",
         }, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -37,11 +41,7 @@ export function registerEntryTypeCommands(parent: Command): void {
         const entryType = await client.entryTypes.get(id);
         renderData(entryType, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
-
-  // Note: Entry types are read-only in the Platform API
-  // They are managed through configuration, not via API
 }
