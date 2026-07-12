@@ -1,3 +1,16 @@
+# [2.6.0-next.12](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.11...v2.6.0-next.12) (2026-07-12)
+
+
+### Bug Fixes
+
+* Update marvin-sdk dependency to next.20 with renderers rename ([fe591f6](https://github.com/inneropen/marvin-cli/commit/fe591f687e79665f6ae4728bef8d09ea9e4d8ceb))
+
+
+### Features
+
+* Add publish entry-types command and update platform entry-types ([a11126b](https://github.com/inneropen/marvin-cli/commit/a11126be875fcd1d38286c8494112cc4f43c170d))
+* Rename publish entry-types → publish renderers, add --all flag ([fdb6ba8](https://github.com/inneropen/marvin-cli/commit/fdb6ba8e040a4981cd12e9b6eadec2e7cf7594b1))
+
 # [2.6.0-next.11](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.10...v2.6.0-next.11) (2026-07-11)
 
 
