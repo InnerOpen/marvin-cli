@@ -7,6 +7,7 @@ Official command-line interface for [Marvin CMS](https://github.com/jmashburn/Ma
 - 📊 **Table output by default** - Human-readable tables in your terminal
 - 🔄 **Multiple output formats** - Table, JSON, YAML, CSV
 - 🔍 **Filter and query** - Filter by entry type, collection, asset type
+- 🎨 **Renderer inspection** - View entry type renderers and capabilities
 - 🚀 **Fast** - Direct HTTP calls to publishing API
 - 🔐 **Site client tokens** - Uses publishing API (not admin API)
 - 👥 **Workspace roles** - Create invitation tokens with specific roles (VIEWER, AUTHOR, EDITOR, ADMIN, OWNER)
@@ -357,6 +358,38 @@ marvin assets                # All assets
 marvin assets --type image   # Only images
 marvin assets --type video   # Only videos
 ```
+
+### Publish Renderers
+
+```bash
+marvin publish renderers [options]
+```
+
+List entry types with their renderer declarations and capabilities. By default, only shows entry types marked as rendered (`isRendered: true`).
+
+**Options:**
+- `--all` - Include all entry types, not just rendered ones
+
+**Examples:**
+```bash
+marvin publish renderers              # Rendered entry types only
+marvin publish renderers --all        # All entry types
+marvin publish renderers --json       # JSON output
+```
+
+Output:
+```
+┌──────────────────┬─────────────────┬───────────┬──────────────────────────────────┬─────────────┬──────────┐
+│ Name             │ Slug            │ Renderer  │ Package                          │ Publishable │ Routable │
+├──────────────────┼─────────────────┼───────────┼──────────────────────────────────┼─────────────┼──────────┤
+│ Page             │ page            │ page      │ @inneropen/marvin-renderers-core │ true        │ true     │
+│ Article          │ article         │ article   │ @inneropen/marvin-renderers-core │ true        │ true     │
+│ FAQ              │ faq             │ faq       │ @inneropen/marvin-renderers-core │ true        │ true     │
+│ Navigation Item  │ navigation-item │ navigation│ @inneropen/marvin-renderers-core │ true        │ false    │
+└──────────────────┴─────────────────┴───────────┴──────────────────────────────────┴─────────────┴──────────┘
+```
+
+See [Renderers Command Documentation](docs/commands/renderers.md) for details.
 
 ## Scripting Examples
 
