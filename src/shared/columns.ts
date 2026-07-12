@@ -41,7 +41,7 @@ export const resourceColumns: ColumnSpec<MarvinResource> = {
   URL: (resource) => resource.url || "",
 };
 
-export const entryTypeColumns: ColumnSpec<PublishedEntryType> = {
+export const rendererColumns: ColumnSpec<PublishedEntryType> = {
   Name: (et) => et.name || "",
   Slug: (et) => et.slug || "",
   Renderer: (et) => et.rendering?.renderer || "",

@@ -4,7 +4,7 @@ import { registerEntryCommands } from "./entries.js";
 import { registerCollectionCommands } from "./collections.js";
 import { registerResourceCommands } from "./resources.js";
 import { registerAssetCommands } from "./assets.js";
-import { registerEntryTypeCommands } from "./entry-types.js";
+import { registerRendererCommands } from "./renderers.js";
 
 /**
  * Create the 'publish' command group
@@ -22,7 +22,7 @@ export function createPublishCommand(): Command {
   registerCollectionCommands(publish);
   registerResourceCommands(publish);
   registerAssetCommands(publish);
-  registerEntryTypeCommands(publish);
+  registerRendererCommands(publish);
 
   return publish;
 }
