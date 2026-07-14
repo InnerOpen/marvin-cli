@@ -1,3 +1,10 @@
+# [2.6.0-next.16](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.15...v2.6.0-next.16) (2026-07-14)
+
+
+### Bug Fixes
+
+* Render single items as table rows, not raw JSON objects ([8bf2e8b](https://github.com/inneropen/marvin-cli/commit/8bf2e8bf80c7f2ac41bb0cd414266338bceab894))
+
 # [2.6.0-next.15](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.14...v2.6.0-next.15) (2026-07-14)
 
 
