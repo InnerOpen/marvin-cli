@@ -6,12 +6,12 @@ import type { PlatformCommandOptions } from "../../shared/types.js";
 import type { WorkspaceWithMembership } from "@inneropen/marvin-sdk/platform";
 import { promptSecure, readFromStdin } from "../../shared/prompt.js";
 
-export function registerWorkspaceCommands(parent: Command): void {
+export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boolean }): void {
   // Workspace group
   const workspace = new Command("workspace")
     .description("Workspace management commands");
 
-  parent.addCommand(workspace);
+  parent.addCommand(workspace, { hidden: opts?.hidden });
 
   // Show current active workspace
   workspace

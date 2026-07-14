@@ -29,12 +29,16 @@ export class ClientFactory {
     // Resolve workspace first (needed to look up stored token)
     const workspaceSlug = options.workspace || credentialsManager.getActiveWorkspace() || env.workspaceSlug;
 
-    // Resolve site token with stored token support
-    let siteClientToken = options.token || env.siteClientToken;
-
-    // If no token from flag/env, check stored token for the workspace
+    // Resolve site token — CLI flag > stored credentials > env var
+    // Stored credentials beat env vars so that 'marvin login --site-token' takes effect
+    // even when MARVIN_SITE_CLIENT_TOKEN is set in a project .env file.
+    // Env var is the fallback for CI/automation where no credentials file exists.
+    let siteClientToken = options.token;
     if (!siteClientToken && workspaceSlug) {
       siteClientToken = credentialsManager.getSiteToken(workspaceSlug);
+    }
+    if (!siteClientToken) {
+      siteClientToken = env.siteClientToken;
     }
 
     if (!apiUrl) {

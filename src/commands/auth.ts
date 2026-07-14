@@ -4,42 +4,35 @@ import { env } from "../config/environment.js";
 import * as readline from "readline";
 import { handleCommandError } from "../shared/error-handler.js";
 
-/**
- * Prompt for user token input (hides input)
- */
-function promptForToken(): Promise<string> {
+function promptForToken(label: string): Promise<string> {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
 
-    // Disable echo for password-like input
     const stdin = process.stdin as any;
     if (stdin.isTTY) {
       stdin.setRawMode(true);
     }
 
     let token = "";
-    console.log("Enter user token (input hidden):");
+    console.log(`Enter ${label} (input hidden):`);
 
     process.stdin.on("data", (char) => {
       const key = char.toString();
 
       if (key === "\n" || key === "\r" || key === "") {
-        // Enter or Ctrl+D
-        console.log(); // New line after input
+        console.log();
         if (stdin.isTTY) {
           stdin.setRawMode(false);
         }
         rl.close();
         resolve(token);
       } else if (key === "") {
-        // Ctrl+C
         console.log("\nCancelled");
         process.exit(0);
       } else if (key === "" || key === "\b") {
-        // Backspace
         if (token.length > 0) {
           token = token.slice(0, -1);
         }
@@ -51,84 +44,148 @@ function promptForToken(): Promise<string> {
 }
 
 export function registerAuthCommands(parent: Command): void {
-  // Login command
   parent
     .command("login")
     .description("Authenticate with Marvin and save credentials")
-    .option("--user-token <token>", "User token (if not provided, will prompt)")
-    .option("--workspace <slug>", "Set active workspace after login")
-    .action(async function(this: Command, cmdOpts) {
+    .option("--user-token <token>", "User token for platform access (if not provided, will prompt)")
+    .option("--site-token <token>", "Site client token for publish access")
+    .option("--workspace <slug>", "Workspace slug (required when saving a site token)")
+    .action(async function (this: Command, cmdOpts) {
       try {
-        // Get token from: flag > env > prompt
-        let userToken = cmdOpts.userToken || env.userToken;
-
-        if (!userToken) {
-          userToken = await promptForToken();
-        }
-
-        if (!userToken || userToken.trim() === "") {
-          console.error("Error: User token is required");
+        // Merge local + global opts so --workspace works whether passed before or after login
+        const allOpts = this.optsWithGlobals<typeof cmdOpts>();
+        const apiUrl = env.apiUrl;
+        if (!apiUrl) {
+          console.error("Error: MARVIN_API_URL is required");
           process.exitCode = 1;
           return;
         }
 
-        // Validate token by making an API call before saving
-        console.log("Validating token...");
-        try {
-          const { PlatformClient } = await import("@inneropen/marvin-sdk/platform");
-          const { env } = await import("../config/environment.js");
+        let savedAny = false;
 
-          const apiUrl = env.apiUrl;
-          if (!apiUrl) {
-            console.error("Error: MARVIN_API_URL is required");
+        // --- Site token path ---
+        if (allOpts.siteToken) {
+          const workspace =
+            allOpts.workspace ||
+            credentialsManager.getActiveWorkspace() ||
+            env.workspaceSlug;
+
+          if (!workspace) {
+            console.error(
+              "Error: --workspace <slug> is required when saving a site token.\n" +
+              "  marvin login --site-token <token> --workspace <slug>"
+            );
             process.exitCode = 1;
             return;
           }
 
-          const client = new PlatformClient({ apiUrl, userToken });
-
-          // Verify token works by fetching user profile
-          await client.user.getProfile();
-
-          console.log("✓ Token is valid");
-        } catch (error) {
-          console.error("✗ Token validation failed");
-          if (error instanceof Error) {
-            console.error(error.message);
+          console.log("Validating site token...");
+          try {
+            const { MarvinClient } = await import("@inneropen/marvin-sdk");
+            const client = new MarvinClient({
+              apiUrl,
+              siteClientToken: allOpts.siteToken,
+              workspaceSlug: workspace,
+            });
+            await client.collections.list();
+            console.log("✓ Site token is valid");
+          } catch (error) {
+            console.error("✗ Site token validation failed");
+            if (error instanceof Error) console.error(error.message);
+            process.exitCode = 1;
+            return;
           }
-          console.error("\nThe token you provided is invalid or expired.");
-          console.error("Please check your token and try again.");
-          process.exitCode = 1;
-          return;
+
+          credentialsManager.setSiteToken(workspace, allOpts.siteToken);
+          if (!credentialsManager.getActiveWorkspace()) {
+            credentialsManager.setActiveWorkspace(workspace);
+          }
+          console.log(`✓ Site token saved for workspace: ${workspace}`);
+          savedAny = true;
         }
 
-        // Save credentials
-        credentialsManager.setUserToken(userToken);
+        // --- User token path ---
+        const rawUserToken = allOpts.userToken || env.userToken;
+        const shouldLoginUser = rawUserToken || !allOpts.siteToken;
 
-        // Set active workspace if provided
-        if (cmdOpts.workspace) {
-          credentialsManager.setActiveWorkspace(cmdOpts.workspace);
-          console.log(`✓ Logged in successfully`);
-          console.log(`✓ Active workspace set to: ${cmdOpts.workspace}`);
-        } else {
-          console.log(`✓ Logged in successfully`);
-          console.log(`  Credentials saved to ~/.marvin/credentials.json`);
-          console.log(`  Set active workspace with: marvin workspace use <slug>`);
+        if (shouldLoginUser) {
+          let userToken = rawUserToken;
+
+          if (!userToken) {
+            userToken = await promptForToken("user token");
+          }
+
+          if (!userToken || userToken.trim() === "") {
+            console.error("Error: User token is required");
+            process.exitCode = 1;
+            return;
+          }
+
+          console.log("Validating user token...");
+          try {
+            const { PlatformClient } = await import("@inneropen/marvin-sdk/platform");
+            const client = new PlatformClient({ apiUrl, userToken });
+            await client.user.getProfile();
+            console.log("✓ User token is valid");
+          } catch (error) {
+            console.error("✗ User token validation failed");
+            if (error instanceof Error) console.error(error.message);
+            process.exitCode = 1;
+            return;
+          }
+
+          credentialsManager.setUserToken(userToken);
+
+          if (allOpts.workspace) {
+            credentialsManager.setActiveWorkspace(allOpts.workspace);
+            console.log(`✓ Logged in successfully`);
+            console.log(`✓ Active workspace set to: ${allOpts.workspace}`);
+          } else {
+            console.log(`✓ Logged in successfully`);
+            if (!savedAny) {
+              console.log(`  Credentials saved to ~/.marvin/credentials.json`);
+              console.log(`  Set active workspace with: marvin workspace use <slug>`);
+            }
+          }
+          savedAny = true;
+        }
+
+        if (!savedAny) {
+          console.error("Error: Provide --user-token, --site-token, or both");
+          process.exitCode = 1;
         }
       } catch (error) {
         handleCommandError(error);
       }
     });
 
-  // Logout command
   parent
     .command("logout")
     .description("Clear saved credentials")
-    .action(async () => {
+    .option("--site-token", "Clear only the site token for the active workspace")
+    .option("--all", "Clear all credentials (default: clears user token only)")
+    .action(async function (this: Command, cmdOpts) {
       try {
-        credentialsManager.clear();
-        console.log("✓ Logged out successfully");
-        console.log("  Credentials cleared from ~/.marvin/credentials.json");
+        if (cmdOpts.siteToken) {
+          const workspace =
+            credentialsManager.getActiveWorkspace() || env.workspaceSlug;
+          if (!workspace) {
+            console.error("Error: No active workspace — cannot clear site token");
+            process.exitCode = 1;
+            return;
+          }
+          credentialsManager.removeSiteToken(workspace);
+          console.log(`✓ Site token cleared for workspace: ${workspace}`);
+        } else if (cmdOpts.all) {
+          credentialsManager.clear();
+          console.log("✓ All credentials cleared");
+        } else {
+          const creds = credentialsManager.load();
+          delete creds.userToken;
+          credentialsManager.save(creds);
+          console.log("✓ Logged out (user token cleared)");
+          console.log("  Site tokens preserved — use --site-token or --all to remove them");
+        }
       } catch (error) {
         handleCommandError(error);
       }
