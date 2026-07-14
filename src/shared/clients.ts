@@ -19,7 +19,7 @@ export class ClientFactory {
    * - workspaceSlug: --workspace flag > active workspace > MARVIN_WORKSPACE_SLUG env var
    */
   createPublishClient(options: PublishCommandOptions): MarvinClient {
-    const apiUrl = options.apiUrl || env.apiUrl;
+    const apiUrl = options.apiUrl || env.apiUrl || credentialsManager.getApiUrl();
 
     // Validate API URL if provided
     if (apiUrl) {
@@ -89,7 +89,7 @@ export class ClientFactory {
    * Note: Workspace context is managed at the server session level, not via client config
    */
   async createPlatformClient(options: PlatformCommandOptions): Promise<PlatformClient> {
-    const apiUrl = options.apiUrl || env.apiUrl;
+    const apiUrl = options.apiUrl || env.apiUrl || credentialsManager.getApiUrl();
 
     // Validate API URL if provided
     if (apiUrl) {

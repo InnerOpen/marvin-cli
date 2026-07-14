@@ -8,6 +8,7 @@ export interface WorkspaceCredentials {
 }
 
 export interface Credentials {
+  apiUrl?: string;
   userToken?: string;
   activeWorkspace?: string;
   workspaces?: Record<string, WorkspaceCredentials>;
@@ -121,6 +122,22 @@ export class CredentialsManager {
   setActiveWorkspace(workspace: string): void {
     const credentials = this.load();
     credentials.activeWorkspace = workspace;
+    this.save(credentials);
+  }
+
+  /**
+   * Get the saved API URL
+   */
+  getApiUrl(): string | undefined {
+    return this.load().apiUrl;
+  }
+
+  /**
+   * Save the API URL
+   */
+  setApiUrl(apiUrl: string): void {
+    const credentials = this.load();
+    credentials.apiUrl = apiUrl;
     this.save(credentials);
   }
 

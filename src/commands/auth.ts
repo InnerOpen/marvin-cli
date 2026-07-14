@@ -54,9 +54,9 @@ export function registerAuthCommands(parent: Command): void {
       try {
         // Merge local + global opts so --workspace works whether passed before or after login
         const allOpts = this.optsWithGlobals<typeof cmdOpts>();
-        const apiUrl = env.apiUrl;
+        const apiUrl = allOpts.apiUrl || env.apiUrl || credentialsManager.getApiUrl();
         if (!apiUrl) {
-          console.error("Error: MARVIN_API_URL is required");
+          console.error("Error: API URL is required. Pass --api-url <url> or set MARVIN_API_URL");
           process.exitCode = 1;
           return;
         }
@@ -96,6 +96,7 @@ export function registerAuthCommands(parent: Command): void {
             return;
           }
 
+          credentialsManager.setApiUrl(apiUrl);
           credentialsManager.setSiteToken(workspace, allOpts.siteToken);
           if (!credentialsManager.getActiveWorkspace()) {
             credentialsManager.setActiveWorkspace(workspace);
@@ -134,6 +135,7 @@ export function registerAuthCommands(parent: Command): void {
             return;
           }
 
+          credentialsManager.setApiUrl(apiUrl);
           credentialsManager.setUserToken(userToken);
 
           if (allOpts.workspace) {

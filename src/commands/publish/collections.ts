@@ -47,8 +47,15 @@ export function registerCollectionCommands(parent: Command): void {
         const client = clientFactory.createPublishClient(opts);
         const collection = await client.collections.get(slug);
 
-        if (!collection) {
-          console.error(`Collection not found: ${slug}`);
+        if (!collection || Array.isArray(collection)) {
+          const mode = getOutputMode(opts);
+          if (mode === "json") {
+            console.log("[]");
+          } else if (mode === "yaml") {
+            console.log("[]");
+          } else {
+            console.error(`Collection not found: ${slug}`);
+          }
           process.exitCode = 1;
           return;
         }
