@@ -1,3 +1,10 @@
+# [2.6.0-next.15](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.14...v2.6.0-next.15) (2026-07-14)
+
+
+### Features
+
+* Persist apiUrl in credentials, consistent empty output across all modes ([97a27f0](https://github.com/inneropen/marvin-cli/commit/97a27f0fca9b5e00b4ecb9c2eb90c8f9d18b626e))
+
 # [2.6.0-next.14](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.13...v2.6.0-next.14) (2026-07-14)
 
 
