@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
-import { renderList, renderData } from "../../output.js";
+import { renderList, renderJson, renderYaml } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
 import { collectionColumns, entryColumns } from "../../shared/columns.js";
 import { handleCommandError } from "../../shared/error-handler.js";
@@ -60,9 +60,11 @@ export function registerCollectionCommands(parent: Command): void {
           return;
         }
 
-        // Call toJSON() to get plain data object (Collection class has http client that shouldn't be serialized)
         const data = typeof collection.toJSON === 'function' ? collection.toJSON() : collection;
-        renderData(data, getOutputMode(opts));
+        const mode = getOutputMode(opts);
+        if (mode === "json") renderJson(data);
+        else if (mode === "yaml") renderYaml(data);
+        else renderList([data] as MarvinCollection[], collectionColumns, mode);
       } catch (error) {
         handleCommandError(error);
       }
