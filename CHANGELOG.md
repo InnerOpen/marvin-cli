@@ -1,3 +1,10 @@
+# [2.6.0-next.14](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.13...v2.6.0-next.14) (2026-07-14)
+
+
+### Features
+
+* Auth-aware CLI — site-token login, command visibility, credential precedence ([34dce56](https://github.com/inneropen/marvin-cli/commit/34dce565073f05742d5edac2dae6437aa89bbe58))
+
 # [2.6.0-next.13](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.12...v2.6.0-next.13) (2026-07-14)
 
 

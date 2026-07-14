@@ -1,6 +1,6 @@
 {
   "name": "@inneropen/marvin-cli",
-  "version": "2.6.0-next.13",
+  "version": "2.6.0-next.14",
   "description": "Official CLI for Marvin CMS - interact with the Marvin Publishing API",
   "type": "module",
   "bin": {
