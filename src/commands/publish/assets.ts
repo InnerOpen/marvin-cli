@@ -52,7 +52,7 @@ export function registerAssetCommands(parent: Command): void {
         const client = clientFactory.createPublishClient(opts);
         const asset = await client.assets.get(slug);
 
-        renderList([asset] as MarvinAsset[], assetColumns, getOutputMode(opts));
+        renderList(asset ? [asset] as MarvinAsset[] : [], assetColumns, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }

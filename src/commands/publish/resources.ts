@@ -52,7 +52,7 @@ export function registerResourceCommands(parent: Command): void {
         const client = clientFactory.createPublishClient(opts);
         const resource = await client.resources.get(slug);
 
-        renderList([resource] as MarvinResource[], resourceColumns, getOutputMode(opts));
+        renderList(resource ? [resource] as MarvinResource[] : [], resourceColumns, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }
