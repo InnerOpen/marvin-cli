@@ -1,3 +1,10 @@
+# [2.6.0-next.13](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.12...v2.6.0-next.13) (2026-07-14)
+
+
+### Bug Fixes
+
+* Return empty array instead of [null] when slug not found ([96cdb88](https://github.com/inneropen/marvin-cli/commit/96cdb88eb5deccfb71e8875d544a6f5800ed9ece))
+
 # [2.6.0-next.12](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.11...v2.6.0-next.12) (2026-07-12)
 
 
