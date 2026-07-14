@@ -54,7 +54,7 @@ export function registerEntryCommands(parent: Command): void {
         const client = clientFactory.createPublishClient(opts);
         const entry = await client.entries.get(slug);
 
-        renderList(entry ? [entry] as MarvinEntry[] : [], entryColumns, getOutputMode(opts));
+        renderList(entry ? [entry.toJSON()] : [], entryColumns, getOutputMode(opts));
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;

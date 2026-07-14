@@ -82,11 +82,12 @@ export function registerResourceCommands(parent: Command): void {
 
         const client = clientFactory.createPublishClient(opts);
         try {
-          const entries = await client.resources.entries(slug);
-          renderList(entries as MarvinEntry[], entryColumns, getOutputMode(opts));
+          const slugs = await client.resources.entries(slug);
+          const slugColumns = { Slug: (s: string) => s };
+          renderList(slugs, slugColumns, getOutputMode(opts));
         } catch (error) {
           if (error instanceof MarvinNotFoundError) {
-            renderList([], entryColumns, getOutputMode(opts));
+            renderList([], { Slug: (s: string) => s }, getOutputMode(opts));
             process.exitCode = 1;
           } else {
             throw error;
