@@ -22,10 +22,11 @@ export function registerEntryTypeCommands(parent: Command): void {
           ID: "id",
           Name: "name",
           Slug: "slug",
-          Renderer: (et: any) => et.rendering?.renderer || "",
-          Package: (et: any) => et.rendering?.package || "",
-          Publishable: (et: any) => et.capabilities?.publishable !== false ? "yes" : "no",
-          Routable: (et: any) => et.capabilities?.routable !== false ? "yes" : "no",
+          System: "isSystem",
+          Renderer: (et: any) => et.renderingJson?.renderer || "",
+          Package: (et: any) => et.renderingJson?.package || "",
+          Publishable: (et: any) => et.capabilitiesJson ? (et.capabilitiesJson.publishable !== false ? "yes" : "no") : "",
+          Routable: (et: any) => et.capabilitiesJson ? (et.capabilitiesJson.routable !== false ? "yes" : "no") : "",
         }, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
