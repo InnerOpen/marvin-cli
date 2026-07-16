@@ -1,3 +1,10 @@
+# [2.6.0-next.18](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.17...v2.6.0-next.18) (2026-07-16)
+
+
+### Bug Fixes
+
+* machine-mode errors to stdout (json/yaml/csv all pipe cleanly to jq/yq) ([4fdd3b6](https://github.com/inneropen/marvin-cli/commit/4fdd3b6f732bda2a5a731144261b7ce899c4810a))
+
 # [2.6.0-next.17](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.16...v2.6.0-next.17) (2026-07-16)
 
 
