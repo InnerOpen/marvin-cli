@@ -1,3 +1,4 @@
+import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
@@ -27,7 +28,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
           "Joined": (m: any) => m.joinedAt ? new Date(m.joinedAt).toISOString().split('T')[0] : "",
         }, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -44,7 +45,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
 
         renderData(member, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -92,7 +93,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
         console.log(`✓ Added user to workspace with role: ${member.workspaceRole}`);
         renderData(member, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -138,7 +139,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
         console.log(`✓ Updated member role to: ${member.workspaceRole}`);
         renderData(member, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -162,7 +163,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
 
         console.log(`✓ Removed user from workspace`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

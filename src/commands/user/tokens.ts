@@ -5,6 +5,8 @@
 import { Command } from 'commander';
 import { clientFactory } from '../../shared/clients.js';
 import { renderList, renderData } from '../../output.js';
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from '../../shared/types.js';
 
 export function registerTokenCommands(parent: Command): void {

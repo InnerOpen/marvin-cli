@@ -1,5 +1,7 @@
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
 import { readFileSync } from "fs";
@@ -39,9 +41,9 @@ export function registerScheduledTaskCommands(parent: Command): void {
           enabled: 'enabled',
           last_status: 'last_status',
           next_run_at: 'next_run_at',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -56,9 +58,9 @@ export function registerScheduledTaskCommands(parent: Command): void {
         const task = await client.scheduledTasks.get(idOrSlug);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(task, globalOpts.output as any || 'table');
+        renderData(task, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -98,9 +100,9 @@ export function registerScheduledTaskCommands(parent: Command): void {
 
         console.log(`✓ Created scheduled task: ${task.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(task, globalOpts.output as any || 'table');
+        renderData(task, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -141,9 +143,9 @@ export function registerScheduledTaskCommands(parent: Command): void {
 
         console.log(`✓ Updated scheduled task: ${task.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(task, globalOpts.output as any || 'table');
+        renderData(task, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -166,7 +168,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
 
         console.log(`✓ Deleted scheduled task: ${idOrSlug}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -184,7 +186,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
         console.log(`✓ Task execution triggered: ${idOrSlug}`);
         console.log("Check 'history' command for execution results");
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -219,9 +221,9 @@ export function registerScheduledTaskCommands(parent: Command): void {
           duration_ms: 'duration_ms',
           error_message: 'error_message',
           retry_attempt: 'retry_attempt',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -245,7 +247,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
             task_type: 'task_type',
             name: 'name',
             description: 'description',
-          } as any, globalOpts.output as any || 'table');
+          } as any, getOutputMode(globalOpts));
         } else {
           // Simple list
           console.log("Available task types:");
@@ -253,7 +255,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
           console.log("\nUse --detailed for metadata and config schemas");
         }
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -280,9 +282,9 @@ export function registerScheduledTaskCommands(parent: Command): void {
           status: 'status',
           duration_ms: 'duration_ms',
           error_message: 'error_message',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -318,7 +320,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
           console.log("\n⚠️  Some tasks have failed. Run 'list --failed-only' to see them.");
         }
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

@@ -1,3 +1,4 @@
+import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderData } from "../../output.js";
@@ -20,7 +21,7 @@ export function registerSiteCommands(parent: Command): void {
         await client.initialize();
         renderData(client.site, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

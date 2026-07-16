@@ -2,6 +2,8 @@ import { writeFileSync, readFileSync } from "node:fs";
 import { Command } from "commander";
 import { credentialsManager } from "../../config/credentials.js";
 import { clientFactory } from "../../shared/clients.js";
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import type { WorkspaceWithMembership } from "@inneropen/marvin-sdk/platform";
 import { promptSecure, readFromStdin } from "../../shared/prompt.js";
@@ -26,7 +28,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
           console.log("No active workspace set");
         }
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -51,7 +53,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
           console.error(error.message);
           console.log("\nTry: marvin workspace list");
         } else {
-          console.error(error instanceof Error ? error.message : error);
+          handleCommandError(error);
         }
         process.exitCode = 1;
       }
@@ -85,7 +87,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
         });
 
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -136,7 +138,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
         console.log("  Interactive: marvin workspace token");
         console.log("  From stdin:  echo 'token' | marvin workspace token --from-stdin");
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -168,7 +170,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
           process.stdout.write(json + "\n");
         }
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -200,7 +202,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
         credentialsManager.removeSiteToken(workspaceSlug);
         console.log(`✓ Site token removed for workspace: ${workspaceSlug}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -228,7 +230,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
           });
         }
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -246,7 +248,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
         const prefs = await client.workspaces.getPreferences(current.id);
         console.log(JSON.stringify(prefs, null, 2));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -277,7 +279,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
         console.log("✓ Updated workspace preferences");
         console.log(JSON.stringify(prefs, null, 2));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

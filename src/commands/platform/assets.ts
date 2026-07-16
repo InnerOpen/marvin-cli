@@ -1,3 +1,4 @@
+import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
 import { readFileSync, createReadStream, statSync } from "fs";
 import { basename } from "path";
@@ -22,7 +23,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         const assets = await client.assets.list();
         renderList(assets as any[], platformAssetColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -37,7 +38,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         const asset = await client.assets.get(id);
         renderData(asset, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -89,7 +90,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
 
         renderData(asset, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -118,7 +119,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         console.log(`✓ Updated asset: ${asset.id}`);
         renderData(asset, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -140,7 +141,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         await client.assets.delete(id);
         console.log(`✓ Deleted asset: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

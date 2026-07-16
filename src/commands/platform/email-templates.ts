@@ -4,6 +4,8 @@
 
 import { Command } from 'commander';
 import { clientFactory } from '../../shared/clients.js';
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from '../../shared/types.js';
 import { renderList, renderData } from '../../output.js';
 
@@ -27,13 +29,13 @@ export function registerEmailTemplateCommands(parent: Command): void {
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(templates as any, {
-          name: 'name',
-          template_type: 'type',
-          enabled: 'enabled',
-          group_id: 'scope',
-        } as any, globalOpts.output as any || 'table');
+          Name: 'name',
+          Type: 'templateType',
+          Enabled: 'enabled',
+          Scope: (t: any) => t.groupId ? 'workspace' : 'system',
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
         return;
       }
@@ -50,9 +52,9 @@ export function registerEmailTemplateCommands(parent: Command): void {
         const template = await client.emailTemplates.get(workspace.id, templateId);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(template as any, globalOpts.output as any || 'table');
+        renderData(template as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
         return;
       }
@@ -93,10 +95,10 @@ export function registerEmailTemplateCommands(parent: Command): void {
         const template = await client.emailTemplates.create(workspace.id, data);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(template as any, globalOpts.output as any || 'table');
+        renderData(template as any, getOutputMode(globalOpts));
         console.log(`✓ Created email template: ${template.name}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
         return;
       }
@@ -136,10 +138,10 @@ export function registerEmailTemplateCommands(parent: Command): void {
         const template = await client.emailTemplates.update(workspace.id, templateId, data);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(template as any, globalOpts.output as any || 'table');
+        renderData(template as any, getOutputMode(globalOpts));
         console.log(`✓ Updated email template: ${template.name}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
         return;
       }
@@ -165,7 +167,7 @@ export function registerEmailTemplateCommands(parent: Command): void {
         await client.emailTemplates.delete(workspace.id, templateId);
         console.log(`✓ Deleted template: ${templateId}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
         return;
       }
@@ -184,7 +186,7 @@ export function registerEmailTemplateCommands(parent: Command): void {
         console.log(`✓ ${result.message}`);
         console.log(`  Recipient: ${email}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
         return;
       }

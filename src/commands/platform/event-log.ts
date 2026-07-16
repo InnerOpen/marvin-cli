@@ -1,5 +1,7 @@
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
 
@@ -41,14 +43,14 @@ export function registerEventLogCommands(parent: Command): void {
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(events as any, {
           event_id: 'event_id',
-          event_type: 'event_type',
+          Event: 'eventType',
           occurred_at: 'occurred_at',
           user_id: 'user_id',
           entity_type: 'entity_type',
           message_title: 'message_title',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -63,9 +65,9 @@ export function registerEventLogCommands(parent: Command): void {
         const event = await client.eventLog.get(eventId);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(event, globalOpts.output as any || 'table');
+        renderData(event, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -91,13 +93,13 @@ export function registerEventLogCommands(parent: Command): void {
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(events as any, {
           event_id: 'event_id',
-          event_type: 'event_type',
+          Event: 'eventType',
           occurred_at: 'occurred_at',
           user_id: 'user_id',
           message_title: 'message_title',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -127,14 +129,14 @@ export function registerEventLogCommands(parent: Command): void {
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(events as any, {
           event_id: 'event_id',
-          event_type: 'event_type',
+          Event: 'eventType',
           occurred_at: 'occurred_at',
           entity_type: 'entity_type',
           entity_id: 'entity_id',
           message_title: 'message_title',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -154,9 +156,9 @@ export function registerEventLogCommands(parent: Command): void {
           label: 'label',
           category: 'category',
           description: 'description',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

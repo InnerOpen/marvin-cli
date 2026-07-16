@@ -1,5 +1,7 @@
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
 import { formatTokenForOutput, displayTokenWarning } from "../../shared/security.js";
@@ -31,9 +33,9 @@ export function registerAdminUsersCommands(parent: Command): void {
           fullName: 'fullName',
           email: 'email',
           platformRole: 'platformRole',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -48,9 +50,9 @@ export function registerAdminUsersCommands(parent: Command): void {
         const user = await client.adminUsers.get(id);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(user, globalOpts.output as any || 'table');
+        renderData(user, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -68,7 +70,7 @@ export function registerAdminUsersCommands(parent: Command): void {
         console.log(`Password reset token: ${formatTokenForOutput(result.token)}`);
         console.log(`\nUser can reset password at: /reset-password?token=${formatTokenForOutput(result.token)}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -84,7 +86,7 @@ export function registerAdminUsersCommands(parent: Command): void {
 
         console.log(`✓ User ${userId} unlocked successfully`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

@@ -1,5 +1,7 @@
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
 import { readFileSync } from "fs";
@@ -25,9 +27,9 @@ export function registerNotificationCommands(parent: Command): void {
           name: 'name',
           eventType: 'eventType',
           enabled: 'enabled',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -42,9 +44,9 @@ export function registerNotificationCommands(parent: Command): void {
         const notification = await client.notifications.get(id);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(notification, globalOpts.output as any || 'table');
+        renderData(notification, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -74,9 +76,9 @@ export function registerNotificationCommands(parent: Command): void {
 
         console.log(`✓ Created notification: ${notification.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(notification, globalOpts.output as any || 'table');
+        renderData(notification, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -106,9 +108,9 @@ export function registerNotificationCommands(parent: Command): void {
 
         console.log(`✓ Updated notification: ${notification.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(notification, globalOpts.output as any || 'table');
+        renderData(notification, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -131,7 +133,7 @@ export function registerNotificationCommands(parent: Command): void {
 
         console.log(`✓ Deleted notification: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -154,7 +156,7 @@ export function registerNotificationCommands(parent: Command): void {
           process.exitCode = 1;
         }
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

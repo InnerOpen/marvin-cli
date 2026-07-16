@@ -1,3 +1,4 @@
+import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
 import { PlatformClient } from "@inneropen/marvin-sdk/platform";
 import { env } from "../../config/environment.js";
@@ -29,7 +30,7 @@ export function registerHealthCommands(parent: Command): void {
         }
       } catch (error) {
         console.error(`✗ Failed to reach API`);
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

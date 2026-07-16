@@ -1,3 +1,4 @@
+import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList } from "../../output.js";
@@ -33,7 +34,7 @@ export function registerEntryCommands(parent: Command): void {
 
         renderList(entries, entryColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -56,7 +57,7 @@ export function registerEntryCommands(parent: Command): void {
 
         renderList(entry ? [entry.toJSON()] : [], entryColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

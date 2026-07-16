@@ -1,5 +1,7 @@
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderData } from "../../output.js";
 
@@ -19,9 +21,9 @@ export function registerAdminSystemCommands(parent: Command): void {
         const info = await client.adminSystem.getAbout();
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(info, globalOpts.output as any || 'table');
+        renderData(info, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -36,9 +38,9 @@ export function registerAdminSystemCommands(parent: Command): void {
         const stats = await client.adminSystem.getStatistics();
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(stats, globalOpts.output as any || 'table');
+        renderData(stats, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -54,7 +56,7 @@ export function registerAdminSystemCommands(parent: Command): void {
 
         console.log(`System status: ${health.status}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

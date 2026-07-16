@@ -1,3 +1,4 @@
+import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
 import { readFileSync } from "fs";
 import { clientFactory } from "../../shared/clients.js";
@@ -21,7 +22,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         const collections = await client.collections.list();
         renderList(collections as any[], platformCollectionColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -36,7 +37,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         const collection = await client.collections.get(id);
         renderData(collection, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -65,7 +66,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         console.log(`✓ Created collection: ${collection.id}`);
         renderData(collection, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -94,7 +95,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         console.log(`✓ Updated collection: ${collection.id}`);
         renderData(collection, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -116,7 +117,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         await client.collections.delete(id);
         console.log(`✓ Deleted collection: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -141,7 +142,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
 
         renderList(entries as any[], entriesColumns, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -177,7 +178,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         await client.collections.reorderEntries(id, entries);
         console.log(`✓ Reordered ${entries.length} entries in collection ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

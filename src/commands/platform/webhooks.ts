@@ -2,6 +2,8 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
+import { getOutputMode } from "../../shared/types.js";
+import { handleCommandError } from "../../shared/error-handler.js";
 import { readFileSync } from "fs";
 
 export function registerWebhookCommands(parent: Command): void {
@@ -21,14 +23,14 @@ export function registerWebhookCommands(parent: Command): void {
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(items as any, {
-          id: 'id',
-          name: 'name',
-          url: 'url',
-          enabled: 'enabled',
-        } as any, globalOpts.output as any || 'table');
+          ID: 'id',
+          Name: 'name',
+          URL: 'url',
+          Method: 'method',
+          Enabled: 'enabled',
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -42,9 +44,9 @@ export function registerWebhookCommands(parent: Command): void {
         const webhook = await client.webhooks.get(id);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(webhook, globalOpts.output as any || 'table');
+        renderData(webhook, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -74,9 +76,9 @@ export function registerWebhookCommands(parent: Command): void {
 
         console.log(`✓ Created webhook: ${webhook.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(webhook, globalOpts.output as any || 'table');
+        renderData(webhook, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -106,9 +108,9 @@ export function registerWebhookCommands(parent: Command): void {
 
         console.log(`✓ Updated webhook: ${webhook.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(webhook, globalOpts.output as any || 'table');
+        renderData(webhook, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -131,7 +133,7 @@ export function registerWebhookCommands(parent: Command): void {
 
         console.log(`✓ Deleted webhook: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -147,7 +149,7 @@ export function registerWebhookCommands(parent: Command): void {
         console.log("✓ Webhook test scheduled");
         if (result?.message) console.log(result.message);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -164,7 +166,7 @@ export function registerWebhookCommands(parent: Command): void {
         console.log(result.message);
         console.log(`Requeued: ${result.requeued} webhooks`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -181,14 +183,14 @@ export function registerWebhookCommands(parent: Command): void {
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(entries as any, {
-          id: 'id',
+          ID: 'id',
           webhook_id: 'webhook_id',
           event_type: 'event_type',
-          status: 'status',
+          Status: 'status',
           created_at: 'created_at',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -205,13 +207,13 @@ export function registerWebhookCommands(parent: Command): void {
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(entries as any, {
-          id: 'id',
+          ID: 'id',
           event_type: 'event_type',
-          status: 'status',
+          Status: 'status',
           created_at: 'created_at',
-        } as any, globalOpts.output as any || 'table');
+        } as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
