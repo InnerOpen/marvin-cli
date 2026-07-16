@@ -258,6 +258,35 @@ export function registerScheduledTaskCommands(parent: Command): void {
       }
     });
 
+  // Workspace-wide execution log
+  tasks
+    .command("log")
+    .description("Show execution log for all scheduled tasks in the workspace")
+    .option("--limit <number>", "Maximum number of entries to return", "50")
+    .action(async function(this: Command, cmdOpts) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const entries = await client.scheduledTasks.log({ limit: parseInt(cmdOpts.limit, 10) });
+
+        if (entries.length === 0) {
+          console.log("No execution log entries found");
+          return;
+        }
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderList(entries as any, {
+          executed_at: 'executed_at',
+          task_id: 'task_id',
+          status: 'status',
+          duration_ms: 'duration_ms',
+          error_message: 'error_message',
+        } as any, globalOpts.output as any || 'table');
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
   // Stats (quick health check)
   tasks
     .command("stats")

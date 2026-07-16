@@ -2,7 +2,7 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { platformEntryColumns } from "../../shared/columns.js";
+import { platformEntryColumns, platformCollectionColumns } from "../../shared/columns.js";
 import { readJsonInput } from "../../shared/json-input.js";
 import { handleCommandError } from "../../shared/error-handler.js";
 
@@ -104,6 +104,54 @@ export function registerPlatformEntryCommands(parent: Command): void {
 
         await client.entries.delete(id);
         console.log(`✓ Deleted entry: ${id}`);
+      } catch (error) {
+        handleCommandError(error);
+      }
+    });
+
+  // List collections for an entry
+  entries
+    .command("collections <id>")
+    .description("List collections that an entry belongs to")
+    .action(async function(this: Command, id: string) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+
+        const collections = await client.entries.listCollections(id);
+        renderList(collections as any[], platformCollectionColumns, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
+      }
+    });
+
+  // Add entry to collection
+  entries
+    .command("add-to-collection <entry-id> <collection-id>")
+    .description("Add an entry to a collection")
+    .action(async function(this: Command, entryId: string, collectionId: string) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+
+        const result = await client.entries.addToCollection(entryId, collectionId);
+        console.log(`✓ ${result.message || `Added entry ${entryId} to collection ${collectionId}`}`);
+      } catch (error) {
+        handleCommandError(error);
+      }
+    });
+
+  // Remove entry from collection
+  entries
+    .command("remove-from-collection <entry-id> <collection-id>")
+    .description("Remove an entry from a collection")
+    .action(async function(this: Command, entryId: string, collectionId: string) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+
+        await client.entries.removeFromCollection(entryId, collectionId);
+        console.log(`✓ Removed entry ${entryId} from collection ${collectionId}`);
       } catch (error) {
         handleCommandError(error);
       }

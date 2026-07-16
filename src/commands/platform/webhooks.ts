@@ -168,4 +168,51 @@ export function registerWebhookCommands(parent: Command): void {
         process.exitCode = 1;
       }
     });
+
+  // Workspace-wide delivery log
+  webhooks
+    .command("log")
+    .description("Show workspace-wide webhook delivery log")
+    .option("--limit <number>", "Maximum number of entries to return", "50")
+    .action(async function(this: Command, cmdOpts) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const entries = await client.webhooks.log({ limit: parseInt(cmdOpts.limit, 10) });
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderList(entries as any, {
+          id: 'id',
+          webhook_id: 'webhook_id',
+          event_type: 'event_type',
+          status: 'status',
+          created_at: 'created_at',
+        } as any, globalOpts.output as any || 'table');
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Per-webhook delivery log
+  webhooks
+    .command("logs <id>")
+    .description("Show delivery log for a specific webhook")
+    .option("--limit <number>", "Maximum number of entries to return", "50")
+    .action(async function(this: Command, id: string, cmdOpts) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const entries = await client.webhooks.logs(id, { limit: parseInt(cmdOpts.limit, 10) });
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderList(entries as any, {
+          id: 'id',
+          event_type: 'event_type',
+          status: 'status',
+          created_at: 'created_at',
+        } as any, globalOpts.output as any || 'table');
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
 }

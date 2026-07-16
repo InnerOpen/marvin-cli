@@ -13,6 +13,9 @@ import { registerEventLogCommands } from "./event-log.js";
 import { registerEmailTemplateCommands } from "./email-templates.js";
 import { registerScheduledTaskCommands } from "./scheduled-tasks.js";
 import { registerPlatformFormCommands } from "./forms.js";
+import { registerSecretCommands } from "./secrets.js";
+import { registerVariableCommands } from "./variables.js";
+import { registerEmailEventSubscriptionCommands } from "./email-event-subscriptions.js";
 
 /**
  * Create the 'platform' command group
@@ -40,6 +43,9 @@ export function createPlatformCommand(): Command {
   registerEmailTemplateCommands(platform);
   registerScheduledTaskCommands(platform);
   registerPlatformFormCommands(platform);
+  registerSecretCommands(platform);
+  registerVariableCommands(platform);
+  registerEmailEventSubscriptionCommands(platform);
 
   return platform;
 }

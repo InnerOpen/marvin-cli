@@ -1,4 +1,4 @@
-import { writeFileSync } from "node:fs";
+import { writeFileSync, readFileSync } from "node:fs";
 import { Command } from "commander";
 import { credentialsManager } from "../../config/credentials.js";
 import { clientFactory } from "../../shared/clients.js";
@@ -199,6 +199,83 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
         // Remove the token
         credentialsManager.removeSiteToken(workspaceSlug);
         console.log(`✓ Site token removed for workspace: ${workspaceSlug}`);
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Import workspace bundle
+  workspace
+    .command("import")
+    .description("Import a workspace bundle (ZIP file exported via workspace export)")
+    .requiredOption("--file <path>", "Path to the ZIP bundle file to import")
+    .option("--overwrite", "Overwrite existing records matched by slug", false)
+    .action(async (cmdOpts: { file: string; overwrite?: boolean }) => {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+
+        const fileContent = readFileSync(cmdOpts.file);
+        const blob = new Blob([fileContent], { type: "application/zip" });
+
+        console.log(`Importing bundle from: ${cmdOpts.file}`);
+        const result = await client.workspaces.importBundle(blob, { overwrite: cmdOpts.overwrite });
+
+        console.log("✓ Import complete");
+        if (result.imported) {
+          Object.entries(result.imported).forEach(([type, count]) => {
+            console.log(`  ${type}: ${count}`);
+          });
+        }
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Workspace preferences
+  const preferences = workspace
+    .command("preferences")
+    .description("Workspace preferences management");
+
+  preferences
+    .action(async () => {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const current = await client.workspaces.getCurrent();
+        const prefs = await client.workspaces.getPreferences(current.id);
+        console.log(JSON.stringify(prefs, null, 2));
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
+
+  preferences
+    .command("update")
+    .description("Update workspace preferences")
+    .option("--json <json>", "Preferences data as JSON string")
+    .option("--file <path>", "Path to JSON file with preferences data")
+    .action(async (cmdOpts: { json?: string; file?: string }) => {
+      try {
+        let data: any;
+
+        if (cmdOpts.json) {
+          data = JSON.parse(cmdOpts.json);
+        } else if (cmdOpts.file) {
+          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        } else {
+          console.error("Error: Provide preferences data via --json or --file");
+          process.exitCode = 1;
+          return;
+        }
+
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const current = await client.workspaces.getCurrent();
+        const prefs = await client.workspaces.updatePreferences(current.id, data);
+
+        console.log("✓ Updated workspace preferences");
+        console.log(JSON.stringify(prefs, null, 2));
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;

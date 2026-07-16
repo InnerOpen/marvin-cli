@@ -138,4 +138,26 @@ export function registerEventLogCommands(parent: Command): void {
         process.exitCode = 1;
       }
     });
+
+  // Event types (subscribable event type catalogue)
+  eventLog
+    .command("types")
+    .description("List all subscribable event types (for webhooks and email subscriptions)")
+    .action(async function(this: Command) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const types = await client.events.getOptions();
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderList(types as any, {
+          value: 'value',
+          label: 'label',
+          category: 'category',
+          description: 'description',
+        } as any, globalOpts.output as any || 'table');
+      } catch (error) {
+        console.error(error instanceof Error ? error.message : error);
+        process.exitCode = 1;
+      }
+    });
 }
