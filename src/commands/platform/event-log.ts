@@ -42,12 +42,12 @@ export function registerEventLogCommands(parent: Command): void {
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(events as any, {
-          event_id: 'event_id',
+          ID: 'eventId',
           Event: 'eventType',
-          occurred_at: 'occurred_at',
-          user_id: 'user_id',
-          entity_type: 'entity_type',
-          message_title: 'message_title',
+          Occurred: 'occurredAt',
+          User: 'userId',
+          'Entity Type': 'entityType',
+          Title: 'messageTitle',
         } as any, getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
@@ -92,11 +92,11 @@ export function registerEventLogCommands(parent: Command): void {
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(events as any, {
-          event_id: 'event_id',
+          ID: 'eventId',
           Event: 'eventType',
-          occurred_at: 'occurred_at',
-          user_id: 'user_id',
-          message_title: 'message_title',
+          Occurred: 'occurredAt',
+          User: 'userId',
+          Title: 'messageTitle',
         } as any, getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
@@ -128,12 +128,12 @@ export function registerEventLogCommands(parent: Command): void {
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(events as any, {
-          event_id: 'event_id',
+          ID: 'eventId',
           Event: 'eventType',
-          occurred_at: 'occurred_at',
-          entity_type: 'entity_type',
-          entity_id: 'entity_id',
-          message_title: 'message_title',
+          Occurred: 'occurredAt',
+          'Entity Type': 'entityType',
+          'Entity ID': 'entityId',
+          Title: 'messageTitle',
         } as any, getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);

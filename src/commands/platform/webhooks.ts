@@ -184,10 +184,10 @@ export function registerWebhookCommands(parent: Command): void {
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(entries as any, {
           ID: 'id',
-          webhook_id: 'webhook_id',
-          event_type: 'event_type',
+          Webhook: 'webhookId',
           Status: 'status',
-          created_at: 'created_at',
+          HTTP: 'httpStatusCode',
+          Executed: 'executedAt',
         } as any, getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
@@ -208,9 +208,10 @@ export function registerWebhookCommands(parent: Command): void {
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(entries as any, {
           ID: 'id',
-          event_type: 'event_type',
+          Webhook: 'webhookId',
           Status: 'status',
-          created_at: 'created_at',
+          HTTP: 'httpStatusCode',
+          Executed: 'executedAt',
         } as any, getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
