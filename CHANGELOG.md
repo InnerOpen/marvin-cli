@@ -1,3 +1,18 @@
+# [2.6.0-next.17](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.16...v2.6.0-next.17) (2026-07-16)
+
+
+### Bug Fixes
+
+* global structured error output matching --json/--yaml/--csv flags; slug normalization ([9b77358](https://github.com/inneropen/marvin-cli/commit/9b7735844a3b39b2dc8c3a1ba4af61bfb3b8da4e))
+* Properly type column specs and fix collection <slug> entries shape ([75ee703](https://github.com/inneropen/marvin-cli/commit/75ee703ff84df65382e0e32544ce2e0f15b30af8))
+* replace raw fetch in health command with SDK AppModule; fix schema type errors ([57103e9](https://github.com/inneropen/marvin-cli/commit/57103e9ce543dab0b4d66a87603678240edc2ec7))
+
+
+### Features
+
+* fill all CLI gaps — secrets, variables, email-subscriptions, events, webhook logs, workspace import/prefs, entry-type write ops, entry collection ops ([650b265](https://github.com/inneropen/marvin-cli/commit/650b26550d6a67f937c5dc397e5363d45c8211d8))
+* fill CLI gaps — secrets, variables, email-subscriptions, events, webhook logs, workspace import/prefs, entry-type write ops, entry collection membership ([59ec311](https://github.com/inneropen/marvin-cli/commit/59ec3110a89430952ac287dfd25e4ed43c2ffcc2))
+
 # [2.6.0-next.16](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.15...v2.6.0-next.16) (2026-07-14)
 
 
