@@ -5,10 +5,50 @@
 import { MarvinApiError, MarvinAuthError, MarvinConfigError, MarvinValidationError } from "@inneropen/marvin-sdk";
 import chalk from "chalk";
 
+function isJsonMode(): boolean {
+  return process.argv.includes('--json') || process.argv.includes('--output') && process.argv[process.argv.indexOf('--output') + 1] === 'json';
+}
+
+function isMachineMode(): boolean {
+  return process.argv.some(a => ['--json', '--yaml', '--csv'].includes(a)) ||
+    (process.argv.includes('--output') && ['json','yaml','csv'].includes(process.argv[process.argv.indexOf('--output') + 1] ?? ''));
+}
+
 /**
  * Format and display error messages with helpful context
  */
 export function handleCommandError(error: unknown): void {
+  // In machine-readable modes, emit minimal error and exit — no ANSI, no prose
+  if (isMachineMode()) {
+    let message = 'Unknown error';
+    let status: number | undefined;
+    if (error instanceof MarvinApiError) {
+      status = error.statusCode;
+      if (error.responseBody) {
+        try {
+          const body = JSON.parse(error.responseBody);
+          if (Array.isArray(body.detail)) {
+            message = body.detail.map((e: any) => `${(e.loc ?? []).join('.')}: ${e.msg}`).join('; ');
+          } else {
+            message = body.detail ?? error.message;
+          }
+        } catch { message = error.message; }
+      } else {
+        message = error.message;
+      }
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+    if (isJsonMode()) {
+      console.error(JSON.stringify({ error: message, ...(status ? { status } : {}) }));
+    } else if (process.argv.includes('--yaml') || (process.argv.includes('--output') && process.argv[process.argv.indexOf('--output') + 1] === 'yaml')) {
+      console.error(`error: ${JSON.stringify(message)}\n${status ? `status: ${status}` : ''}`);
+    } else {
+      console.error(`error: ${message}`);
+    }
+    process.exitCode = 1;
+    return;
+  }
   if (error instanceof MarvinAuthError) {
     console.error(chalk.red("✗ Authentication Error"));
     console.error(chalk.dim(error.message));
@@ -29,8 +69,14 @@ export function handleCommandError(error: unknown): void {
     if (error.responseBody) {
       try {
         const body = JSON.parse(error.responseBody);
-        if (body.detail) {
-          console.error(chalk.dim(body.detail));
+        if (Array.isArray(body.detail)) {
+          // FastAPI validation errors — each item has loc, msg, type
+          body.detail.forEach((e: any) => {
+            const field = Array.isArray(e.loc) ? e.loc.join(" → ") : String(e.loc ?? "");
+            console.error(chalk.dim(`  ${field}: ${e.msg}`));
+          });
+        } else if (body.detail) {
+          console.error(chalk.dim(String(body.detail)));
         } else {
           console.error(chalk.dim(error.responseBody));
         }

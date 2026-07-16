@@ -75,11 +75,12 @@ export function registerSecretCommands(parent: Command): void {
       try {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
+        const rawSlug = cmdOpts.slug || cmdOpts.name;
         const data: any = {
           name: cmdOpts.name,
+          slug: rawSlug.toUpperCase().replace(/[^A-Z0-9]+/g, '_'),
           value: cmdOpts.value,
         };
-        if (cmdOpts.slug) data.slug = cmdOpts.slug;
         if (cmdOpts.description) data.description = cmdOpts.description;
         const secret = await client.secrets.create(data);
         console.log(`✓ Created secret: ${secret.id}`);
