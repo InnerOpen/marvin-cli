@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { PlatformClient } from "@inneropen/marvin-sdk/platform";
 import { env } from "../../config/environment.js";
 import type { CommonCommandOptions } from "../../shared/types.js";
 
@@ -17,23 +18,14 @@ export function registerHealthCommands(parent: Command): void {
           return;
         }
 
-        // Make a simple health check request
-        const healthUrl = new URL("/api/app/health", apiUrl).toString();
-        const response = await fetch(healthUrl);
+        // Health is a public endpoint — no token required
+        const client = new PlatformClient({ apiUrl });
+        const data = await client.app.health();
 
-        if (response.ok) {
-          const data = await response.json();
-          console.log(`✓ API is healthy`);
-          console.log(`  URL: ${apiUrl}`);
-          console.log(`  Status: ${response.status}`);
-          if (data) {
-            console.log(`  Response:`, data);
-          }
-        } else {
-          console.error(`✗ API health check failed`);
-          console.error(`  URL: ${apiUrl}`);
-          console.error(`  Status: ${response.status}`);
-          process.exitCode = 1;
+        console.log(`✓ API is healthy`);
+        console.log(`  URL: ${apiUrl}`);
+        if (data) {
+          console.log(`  Response:`, data);
         }
       } catch (error) {
         console.error(`✗ Failed to reach API`);

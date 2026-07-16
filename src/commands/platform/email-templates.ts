@@ -78,15 +78,15 @@ export function registerEmailTemplateCommands(parent: Command): void {
         const workspace = await client.workspaces.getCurrent();
 
         const data = {
-          template_type: options.type,
+          templateType: options.type,
           name: options.name,
           subject: options.subject,
           description: options.description,
-          header_text: options.header,
-          message_top: options.messageTop,
-          message_bottom: options.messageBottom,
-          button_text: options.buttonText,
-          custom_html: options.customHtml,
+          headerText: options.header,
+          messageTop: options.messageTop,
+          messageBottom: options.messageBottom,
+          buttonText: options.buttonText,
+          customHtml: options.customHtml,
           enabled: !options.disabled,
         };
 
@@ -125,11 +125,11 @@ export function registerEmailTemplateCommands(parent: Command): void {
         if (options.name) data.name = options.name;
         if (options.subject) data.subject = options.subject;
         if (options.description) data.description = options.description;
-        if (options.header) data.header_text = options.header;
-        if (options.messageTop) data.message_top = options.messageTop;
-        if (options.messageBottom) data.message_bottom = options.messageBottom;
-        if (options.buttonText) data.button_text = options.buttonText;
-        if (options.customHtml) data.custom_html = options.customHtml;
+        if (options.header) data.headerText = options.header;
+        if (options.messageTop) data.messageTop = options.messageTop;
+        if (options.messageBottom) data.messageBottom = options.messageBottom;
+        if (options.buttonText) data.buttonText = options.buttonText;
+        if (options.customHtml) data.customHtml = options.customHtml;
         if (options.enable) data.enabled = true;
         if (options.disable) data.enabled = false;
 

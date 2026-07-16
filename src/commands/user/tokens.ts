@@ -41,7 +41,7 @@ export function registerTokenCommands(parent: Command): void {
       const data = {
         name: options.name,
         description: options.description,
-        expiresAt: options.expires,
+        integrationId: options.name,
       };
 
       const token = await client.user.createApiToken(data);

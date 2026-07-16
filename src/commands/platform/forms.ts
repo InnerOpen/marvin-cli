@@ -152,8 +152,9 @@ export function registerPlatformFormCommands(parent: Command): void {
       try {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
+        const workspace = await client.workspaces.getCurrent();
 
-        const form = await client.forms.getPublishedForm(slug);
+        const form = await client.forms.getPublishedForm(workspace.slug ?? '', slug);
         renderData(form, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -172,8 +173,9 @@ export function registerPlatformFormCommands(parent: Command): void {
 
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
+        const workspace = await client.workspaces.getCurrent();
 
-        const submission = await client.forms.submitForm(slug, data);
+        const submission = await client.forms.submitForm(workspace.slug ?? '', slug, data);
         console.log(`✓ Submitted to form: ${slug}`);
         renderData(submission, getOutputMode(opts));
       } catch (error) {

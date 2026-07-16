@@ -144,17 +144,8 @@ export function registerWebhookCommands(parent: Command): void {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.webhooks.test(id);
-
-        if (result.success) {
-          console.log("✓ Webhook test successful");
-          if (result.statusCode) console.log(`Status code: ${result.statusCode}`);
-          if (result.message) console.log(result.message);
-        } else {
-          console.error("✗ Webhook test failed");
-          if (result.statusCode) console.error(`Status code: ${result.statusCode}`);
-          if (result.message) console.error(result.message);
-          process.exitCode = 1;
-        }
+        console.log("✓ Webhook test scheduled");
+        if (result?.message) console.log(result.message);
       } catch (error) {
         console.error(error instanceof Error ? error.message : error);
         process.exitCode = 1;

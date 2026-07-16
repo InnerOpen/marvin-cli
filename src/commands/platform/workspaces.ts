@@ -43,7 +43,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
         const workspace = await client.workspaces.setActive(workspaceIdentifier);
 
         // Also save slug locally for convenience
-        credentialsManager.setActiveWorkspace(workspace.slug);
+        credentialsManager.setActiveWorkspace(workspace.slug ?? '');
 
         console.log(`✓ Active workspace set to: ${workspace.name} (${workspace.slug})`);
       } catch (error) {
@@ -77,7 +77,7 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
 
         workspaces.forEach((w: WorkspaceWithMembership) => {
           const active = w.isActive ? "✓ ACTIVE" : "";
-          const hasSiteToken = credentialsManager.getSiteToken(w.workspace.slug) ? "🔑" : "";
+          const hasSiteToken = credentialsManager.getSiteToken(w.workspace.slug ?? '') ? "🔑" : "";
           console.log(`${w.workspace.name} (${w.workspace.slug}) ${hasSiteToken}`);
           console.log(`  Role: ${w.role}  ${active}`);
           console.log(`  ID: ${w.workspace.id}`);
