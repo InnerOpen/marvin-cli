@@ -20,9 +20,9 @@ export function registerEmailEventSubscriptionCommands(parent: Command): void {
         const items = await client.emailEventSubscriptions.list();
         renderList(items as any[], {
           ID: "id",
-          "Template ID": "template_id",
-          "Event Type": "event_type",
-          "Recipient Type": "recipient_type",
+          "Template ID": "templateId",
+          "Event Type": "eventType",
+          "Recipient Type": "recipientType",
           Enabled: "enabled",
         } as any, getOutputMode(opts));
       } catch (error) {
@@ -61,8 +61,8 @@ export function registerEmailEventSubscriptionCommands(parent: Command): void {
         const data: any = {
           template_id: cmdOpts.templateId,
           event_type: cmdOpts.eventType,
+          recipient_type: cmdOpts.recipientType || 'admins',
         };
-        if (cmdOpts.recipientType) data.recipient_type = cmdOpts.recipientType;
         if (cmdOpts.recipientEmail) data.recipient_email = cmdOpts.recipientEmail;
         if (cmdOpts.recipientField) data.recipient_field = cmdOpts.recipientField;
         const subscription = await client.emailEventSubscriptions.create(data);
