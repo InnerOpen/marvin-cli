@@ -40,11 +40,12 @@ export function handleCommandError(error: unknown): void {
       message = error.message;
     }
     if (isJsonMode()) {
-      console.error(JSON.stringify({ error: message, ...(status ? { status } : {}) }));
+      // Write to stdout so `| jq .` works — exit code 1 signals failure
+      console.log(JSON.stringify({ error: message, ...(status ? { status } : {}) }));
     } else if (process.argv.includes('--yaml') || (process.argv.includes('--output') && process.argv[process.argv.indexOf('--output') + 1] === 'yaml')) {
-      console.error(`error: ${JSON.stringify(message)}\n${status ? `status: ${status}` : ''}`);
+      console.log(`error: ${JSON.stringify(message)}${status ? `\nstatus: ${status}` : ''}`);
     } else {
-      console.error(`error: ${message}`);
+      console.log(`error: ${message}`);
     }
     process.exitCode = 1;
     return;
