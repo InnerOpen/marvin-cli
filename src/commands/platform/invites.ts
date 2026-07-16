@@ -29,7 +29,11 @@ export function registerInviteCommands(parent: Command): void {
         const tokens = await sdk.invites.list();
 
         if (!tokens || tokens.length === 0) {
-          console.log('No invitation tokens found');
+          if (mode === 'table') {
+            console.log('No invitation tokens found');
+          } else {
+            renderList([] as any[], {}, mode);
+          }
           return;
         }
 
@@ -47,7 +51,9 @@ export function registerInviteCommands(parent: Command): void {
           'Created': (row: any) => row['Created'],
         };
         renderList(rows as any[], columns, mode);
-        console.log(`\nTotal: ${tokens.length} invitation token(s)`);
+        if (mode === 'table') {
+          console.log(`\nTotal: ${tokens.length} invitation token(s)`);
+        }
       } catch (error) {
         console.error('Failed to list invitation tokens:', error);
         process.exitCode = 1;

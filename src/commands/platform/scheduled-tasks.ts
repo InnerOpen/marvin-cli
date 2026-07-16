@@ -270,19 +270,21 @@ export function registerScheduledTaskCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const entries = await client.scheduledTasks.log({ limit: parseInt(cmdOpts.limit, 10) });
 
-        if (entries.length === 0) {
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const mode = getOutputMode(globalOpts);
+
+        if (entries.length === 0 && mode === 'table') {
           console.log("No execution log entries found");
           return;
         }
 
-        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(entries as any, {
           executed_at: 'executed_at',
           task_id: 'task_id',
           status: 'status',
           duration_ms: 'duration_ms',
           error_message: 'error_message',
-        } as any, getOutputMode(globalOpts));
+        } as any, mode);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
