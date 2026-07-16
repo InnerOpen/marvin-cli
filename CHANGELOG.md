@@ -1,3 +1,10 @@
+# [2.6.0-next.20](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.19...v2.6.0-next.20) (2026-07-16)
+
+
+### Bug Fixes
+
+* entry-types list — renderingJson/capabilitiesJson field names, add isSystem, empty when null ([ea2722c](https://github.com/inneropen/marvin-cli/commit/ea2722ca22f5dec4ad537359f310525f259cb41f))
+
 # [2.6.0-next.19](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.18...v2.6.0-next.19) (2026-07-16)
 
 
