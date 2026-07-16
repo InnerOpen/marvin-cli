@@ -1,3 +1,10 @@
+# [2.6.0-next.19](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.18...v2.6.0-next.19) (2026-07-16)
+
+
+### Bug Fixes
+
+* camelCase column specs in email-subscriptions list; default recipient_type to admins ([7b1d3d7](https://github.com/inneropen/marvin-cli/commit/7b1d3d7f6a5badbd51e283e3421e00ef8930706f))
+
 # [2.6.0-next.18](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.17...v2.6.0-next.18) (2026-07-16)
 
 
