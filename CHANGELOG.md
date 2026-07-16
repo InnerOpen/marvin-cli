@@ -1,3 +1,10 @@
+# [2.6.0-next.22](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.21...v2.6.0-next.22) (2026-07-16)
+
+
+### Features
+
+* centralized table-schemas.ts — single source of truth for column specs, typed against SDK schema ([a671164](https://github.com/inneropen/marvin-cli/commit/a671164bea234aa2bd06ec0f118bb7b5e52e60ae))
+
 # [2.6.0-next.21](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.20...v2.6.0-next.21) (2026-07-16)
 
 
