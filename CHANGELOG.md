@@ -1,3 +1,10 @@
+# [2.6.0-next.21](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.20...v2.6.0-next.21) (2026-07-16)
+
+
+### Bug Fixes
+
+* getOutputMode + handleCommandError across all 16 command files; fix camelCase column specs ([61d6838](https://github.com/inneropen/marvin-cli/commit/61d6838c79c9a6f93edc19d1bbd0cb1c410fffa2))
+
 # [2.6.0-next.20](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.19...v2.6.0-next.20) (2026-07-16)
 
 
