@@ -5,6 +5,7 @@ import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.j
 import { readFileSync } from "fs";
 import { handleCommandError } from "../../shared/error-handler.js";
 import { formatTokenForOutput, displayTokenWarning } from "../../shared/security.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerAPIClientCommands(parent: Command): void {
   const apiClients = parent
@@ -19,12 +20,7 @@ export function registerAPIClientCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const apiClients = await client.apiClients.list();
-        renderList(apiClients, {
-          ID: "id",
-          Name: "name",
-          Description: (c: any) => (c.description || "").substring(0, 50),
-          Created: (c: any) => c.createdAt ? new Date(c.createdAt).toISOString().split('T')[0] : "",
-        }, getOutputMode(opts));
+        renderList(apiClients as any[], TABLE_SCHEMAS['api-clients.list'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }

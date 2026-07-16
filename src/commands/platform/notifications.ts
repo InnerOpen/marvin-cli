@@ -5,6 +5,7 @@ import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
 import { readFileSync } from "fs";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerNotificationCommands(parent: Command): void {
   const notifications = new Command("notifications")
@@ -22,12 +23,7 @@ export function registerNotificationCommands(parent: Command): void {
         const items = await client.notifications.list();
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(items as any, {
-          id: 'id',
-          name: 'name',
-          eventType: 'eventType',
-          enabled: 'enabled',
-        } as any, getOutputMode(globalOpts));
+        renderList(items as any[], TABLE_SCHEMAS['notifications.list'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

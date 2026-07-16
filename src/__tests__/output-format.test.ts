@@ -14,11 +14,16 @@
  *
  * Auto-registration: adding a new list/log/logs command automatically gets all three
  * format tests — no manual test additions required.
+ *
+ * Fixture strategy: each discovered command gets a fixture built from its TABLE_SCHEMAS
+ * entry (string field values → `${fieldName}-test`), merged on top of UNIVERSAL_FIXTURE.
+ * Commands without a TABLE_SCHEMAS entry fall back to UNIVERSAL_FIXTURE unchanged.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Command } from 'commander'
 import { createPlatformCommand } from '../commands/platform/index.js'
 import { clientFactory } from '../shared/clients.js'
+import { TABLE_SCHEMAS } from '../shared/table-schemas.js'
 
 // ---------------------------------------------------------------------------
 // Universal fixture — covers every field name that any command column spec
@@ -124,27 +129,46 @@ const UNIVERSAL_FIXTURE: Record<string, unknown> = {
 }
 
 // ---------------------------------------------------------------------------
-// Mock — every platform client method returns [UNIVERSAL_FIXTURE].
-// workspaces.getCurrent is special-cased because email-templates list calls it
-// to get the workspace id before listing templates.
+// Fixture builder — merges UNIVERSAL_FIXTURE with schema-specific field values.
+// For each string field name in a TABLE_SCHEMAS entry, the fixture explicitly
+// sets that field to `${fieldName}-test` so the drift detector has a clear,
+// schema-derived value to verify against.
+// ---------------------------------------------------------------------------
+
+function fixtureFromSchema(schemaKey: string): Record<string, unknown> {
+  const schema = TABLE_SCHEMAS[schemaKey as keyof typeof TABLE_SCHEMAS]
+  if (!schema) return { ...UNIVERSAL_FIXTURE }
+
+  const fixture: Record<string, unknown> = { ...UNIVERSAL_FIXTURE }
+  for (const v of Object.values(schema)) {
+    if (typeof v === 'string') {
+      fixture[v] = `${v}-test`
+    }
+  }
+  return fixture
+}
+
+// ---------------------------------------------------------------------------
+// Mock client factory — returns a proxy where every namespace method resolves
+// with [fixture]. workspaces.getCurrent is special-cased for email-templates.
 // ---------------------------------------------------------------------------
 
 const STUB_WORKSPACE = { id: 'ws-stub', slug: 'stub', name: 'Stub Workspace' }
 
-// Proxy: namespace access returns an inner Proxy whose every method call returns
-// a resolved promise of [UNIVERSAL_FIXTURE]. workspaces is the one exception.
-const mockPlatformClient: any = new Proxy(
-  { workspaces: { getCurrent: () => Promise.resolve(STUB_WORKSPACE) } } as Record<string, unknown>,
-  {
-    get(target: Record<string, unknown>, namespace: string) {
-      if (namespace in target) return target[namespace]
-      return new Proxy(
-        {} as Record<string, unknown>,
-        { get: (_t, _method) => () => Promise.resolve([UNIVERSAL_FIXTURE]) }
-      )
-    },
-  }
-)
+function createMockClient(fixture: Record<string, unknown>): any {
+  return new Proxy(
+    { workspaces: { getCurrent: () => Promise.resolve(STUB_WORKSPACE) } } as Record<string, unknown>,
+    {
+      get(target: Record<string, unknown>, namespace: string) {
+        if (namespace in target) return target[namespace]
+        return new Proxy(
+          {} as Record<string, unknown>,
+          { get: (_t, _method) => () => Promise.resolve([fixture]) }
+        )
+      },
+    }
+  )
+}
 
 vi.mock('../shared/clients.js', () => ({
   clientFactory: {
@@ -210,19 +234,6 @@ describe('output format tests (fully dynamic)', () => {
   const logs: string[] = []
   const tableData: unknown[] = []
 
-  beforeEach(() => {
-    logs.length = 0
-    tableData.length = 0
-    vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
-      logs.push(args.map(String).join(' '))
-    })
-    vi.spyOn(console, 'table').mockImplementation((data: unknown) => {
-      tableData.push(data)
-    })
-    vi.spyOn(console, 'error').mockImplementation(() => {})
-    vi.mocked(clientFactory.createPlatformClient).mockResolvedValue(mockPlatformClient)
-  })
-
   afterEach(() => {
     vi.restoreAllMocks()
     process.exitCode = 0
@@ -230,10 +241,28 @@ describe('output format tests (fully dynamic)', () => {
 
   for (const { path, requiredArgCount } of discoveredCommands) {
     const commandPath = path.join(' ')
+    // Schema key: drop 'platform' prefix, join remaining path with dots
+    // e.g. ['platform', 'secrets', 'list'] → 'secrets.list'
+    const schemaKey = path.slice(1).join('.')
     // Fill required positional args with placeholder values
     const positionalArgs = Array.from({ length: requiredArgCount }, () => 'test-id')
 
     describe(commandPath, () => {
+      beforeEach(() => {
+        logs.length = 0
+        tableData.length = 0
+        vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
+          logs.push(args.map(String).join(' '))
+        })
+        vi.spyOn(console, 'table').mockImplementation((data: unknown) => {
+          tableData.push(data)
+        })
+        vi.spyOn(console, 'error').mockImplementation(() => {})
+
+        const fixture = fixtureFromSchema(schemaKey)
+        vi.mocked(clientFactory.createPlatformClient).mockResolvedValue(createMockClient(fixture))
+      })
+
       it('--json produces parseable JSON array', async () => {
         logs.length = 0
         await buildProgram().parseAsync(['node', 'marvin', ...path, ...positionalArgs, '--json'])

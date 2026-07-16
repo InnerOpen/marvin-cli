@@ -6,7 +6,7 @@ import { Blob } from "buffer";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { platformAssetColumns } from "../../shared/columns.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerPlatformAssetCommands(parent: Command): void {
   const assets = parent
@@ -21,7 +21,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const assets = await client.assets.list();
-        renderList(assets as any[], platformAssetColumns, getOutputMode(opts));
+        renderList(assets as any[], TABLE_SCHEMAS['assets.list'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

@@ -10,6 +10,7 @@ import { renderList, renderData } from '../../output.js';
 import { getOutputMode, type PlatformCommandOptions } from '../../shared/types.js';
 import { formatTokenForOutput, displayTokenWarning } from '../../shared/security.js';
 import { requireValidEmail } from '../../shared/validation.js';
+import { TABLE_SCHEMAS } from '../../shared/table-schemas.js';
 
 export function registerInviteCommands(parent: Command): void {
   const invites = parent
@@ -44,13 +45,7 @@ export function registerInviteCommands(parent: Command): void {
           'Created': (token.createdAt || token.created_at) ? new Date(token.createdAt || token.created_at).toLocaleDateString() : 'Unknown',
         }));
 
-        const columns = {
-          'Token': (row: any) => row['Token'],
-          'Role': (row: any) => row['Role'],
-          'Uses Left': (row: any) => row['Uses Left'],
-          'Created': (row: any) => row['Created'],
-        };
-        renderList(rows as any[], columns, mode);
+        renderList(rows as any[], TABLE_SCHEMAS['invites.list'], mode);
         if (mode === 'table') {
           console.log(`\nTotal: ${tokens.length} invitation token(s)`);
         }

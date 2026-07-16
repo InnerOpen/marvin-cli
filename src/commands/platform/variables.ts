@@ -3,6 +3,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { handleCommandError } from "../../shared/error-handler.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerVariableCommands(parent: Command): void {
   const variables = parent
@@ -18,13 +19,7 @@ export function registerVariableCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const items = await client.variables.list();
-        renderList(items as any[], {
-          ID: "id",
-          Name: "name",
-          Slug: "slug",
-          Value: "value",
-          Description: "description",
-        } as any, getOutputMode(opts));
+        renderList(items as any[], TABLE_SCHEMAS['variables.list'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }

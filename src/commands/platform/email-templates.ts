@@ -8,6 +8,7 @@ import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from '../../shared/types.js';
 import { renderList, renderData } from '../../output.js';
+import { TABLE_SCHEMAS } from '../../shared/table-schemas.js';
 
 export function registerEmailTemplateCommands(parent: Command): void {
   const cmd = new Command('email-templates')
@@ -28,12 +29,7 @@ export function registerEmailTemplateCommands(parent: Command): void {
         const templates = await client.emailTemplates.list(workspace.id);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(templates as any, {
-          Name: 'name',
-          Type: 'templateType',
-          Enabled: 'enabled',
-          Scope: (t: any) => t.groupId ? 'workspace' : 'system',
-        } as any, getOutputMode(globalOpts));
+        renderList(templates as any[], TABLE_SCHEMAS['email-templates.list'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

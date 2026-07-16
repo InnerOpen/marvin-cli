@@ -2,7 +2,7 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { platformEntryColumns, platformCollectionColumns } from "../../shared/columns.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 import { readJsonInput } from "../../shared/json-input.js";
 import { handleCommandError } from "../../shared/error-handler.js";
 
@@ -22,7 +22,7 @@ export function registerPlatformEntryCommands(parent: Command): void {
 
         const entries = await client.entries.list();
 
-        renderList(entries as any[], platformEntryColumns, getOutputMode(opts));
+        renderList(entries as any[], TABLE_SCHEMAS['entries.list'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }
@@ -119,7 +119,7 @@ export function registerPlatformEntryCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const collections = await client.entries.listCollections(id);
-        renderList(collections as any[], platformCollectionColumns, getOutputMode(opts));
+        renderList(collections as any[], TABLE_SCHEMAS['entries.collections'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }

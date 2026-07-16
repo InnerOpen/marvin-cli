@@ -4,6 +4,7 @@ import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerEventLogCommands(parent: Command): void {
   const eventLog = new Command("event-log")
@@ -41,14 +42,7 @@ export function registerEventLogCommands(parent: Command): void {
         const events = await client.eventLog.list(params);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(events as any, {
-          ID: 'eventId',
-          Event: 'eventType',
-          Occurred: 'occurredAt',
-          User: 'userId',
-          'Entity Type': 'entityType',
-          Title: 'messageTitle',
-        } as any, getOutputMode(globalOpts));
+        renderList(events as any[], TABLE_SCHEMAS['event-log.list'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -91,13 +85,7 @@ export function registerEventLogCommands(parent: Command): void {
         const events = await client.eventLog.getEntityHistory(entityId, options);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(events as any, {
-          ID: 'eventId',
-          Event: 'eventType',
-          Occurred: 'occurredAt',
-          User: 'userId',
-          Title: 'messageTitle',
-        } as any, getOutputMode(globalOpts));
+        renderList(events as any[], TABLE_SCHEMAS['event-log.entity'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -127,14 +115,7 @@ export function registerEventLogCommands(parent: Command): void {
         const events = await client.eventLog.getUserActivity(userId, options);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(events as any, {
-          ID: 'eventId',
-          Event: 'eventType',
-          Occurred: 'occurredAt',
-          'Entity Type': 'entityType',
-          'Entity ID': 'entityId',
-          Title: 'messageTitle',
-        } as any, getOutputMode(globalOpts));
+        renderList(events as any[], TABLE_SCHEMAS['event-log.user'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -151,12 +132,7 @@ export function registerEventLogCommands(parent: Command): void {
         const types = await client.events.getOptions();
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(types as any, {
-          value: 'value',
-          label: 'label',
-          category: 'category',
-          description: 'description',
-        } as any, getOutputMode(globalOpts));
+        renderList(types as any[], TABLE_SCHEMAS['event-log.types'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

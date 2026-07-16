@@ -5,6 +5,7 @@ import { renderList, renderData } from "../../output.js";
 import { getOutputMode } from "../../shared/types.js";
 import { handleCommandError } from "../../shared/error-handler.js";
 import { readFileSync } from "fs";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerWebhookCommands(parent: Command): void {
   const webhooks = new Command("webhooks")
@@ -22,13 +23,7 @@ export function registerWebhookCommands(parent: Command): void {
         const items = await client.webhooks.list();
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(items as any, {
-          ID: 'id',
-          Name: 'name',
-          URL: 'url',
-          Method: 'method',
-          Enabled: 'enabled',
-        } as any, getOutputMode(globalOpts));
+        renderList(items as any[], TABLE_SCHEMAS['webhooks.list'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
       }
@@ -182,13 +177,7 @@ export function registerWebhookCommands(parent: Command): void {
         const entries = await client.webhooks.log({ limit: parseInt(cmdOpts.limit, 10) });
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(entries as any, {
-          ID: 'id',
-          Webhook: 'webhookId',
-          Status: 'status',
-          HTTP: 'httpStatusCode',
-          Executed: 'executedAt',
-        } as any, getOutputMode(globalOpts));
+        renderList(entries as any[], TABLE_SCHEMAS['webhooks.log'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -206,13 +195,7 @@ export function registerWebhookCommands(parent: Command): void {
         const entries = await client.webhooks.logs(id, { limit: parseInt(cmdOpts.limit, 10) });
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(entries as any, {
-          ID: 'id',
-          Webhook: 'webhookId',
-          Status: 'status',
-          HTTP: 'httpStatusCode',
-          Executed: 'executedAt',
-        } as any, getOutputMode(globalOpts));
+        renderList(entries as any[], TABLE_SCHEMAS['webhooks.logs'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

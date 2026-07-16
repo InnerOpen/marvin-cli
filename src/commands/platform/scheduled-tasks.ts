@@ -5,6 +5,7 @@ import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
 import { readFileSync } from "fs";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerScheduledTaskCommands(parent: Command): void {
   const tasks = new Command("scheduled-tasks")
@@ -33,15 +34,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
         }
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(items as any, {
-          id: 'id',
-          name: 'name',
-          task_type: 'task_type',
-          schedule_type: 'schedule_type',
-          enabled: 'enabled',
-          last_status: 'last_status',
-          next_run_at: 'next_run_at',
-        } as any, getOutputMode(globalOpts));
+        renderList(items as any[], TABLE_SCHEMAS['scheduled-tasks.list'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -215,13 +208,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
         }
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(history as any, {
-          executed_at: 'executed_at',
-          status: 'status',
-          duration_ms: 'duration_ms',
-          error_message: 'error_message',
-          retry_attempt: 'retry_attempt',
-        } as any, getOutputMode(globalOpts));
+        renderList(history as any[], TABLE_SCHEMAS['scheduled-tasks.history'], getOutputMode(globalOpts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -243,11 +230,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
         if (cmdOpts.detailed) {
           // Detailed view with schemas
           const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-          renderList(types as any, {
-            task_type: 'task_type',
-            name: 'name',
-            description: 'description',
-          } as any, getOutputMode(globalOpts));
+          renderList(types as any[], TABLE_SCHEMAS['scheduled-tasks.types'], getOutputMode(globalOpts));
         } else {
           // Simple list
           console.log("Available task types:");
@@ -278,13 +261,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
           return;
         }
 
-        renderList(entries as any, {
-          executed_at: 'executed_at',
-          task_id: 'task_id',
-          status: 'status',
-          duration_ms: 'duration_ms',
-          error_message: 'error_message',
-        } as any, mode);
+        renderList(entries as any[], TABLE_SCHEMAS['scheduled-tasks.log'], mode);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

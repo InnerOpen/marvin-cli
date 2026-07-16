@@ -4,7 +4,7 @@ import { readFileSync } from "fs";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { platformCollectionColumns } from "../../shared/columns.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 import { readJsonInput } from "../../shared/json-input.js";
 
 export function registerPlatformCollectionCommands(parent: Command): void {
@@ -20,7 +20,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const collections = await client.collections.list();
-        renderList(collections as any[], platformCollectionColumns, getOutputMode(opts));
+        renderList(collections as any[], TABLE_SCHEMAS['collections.list'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -131,16 +131,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
         const entries = await client.collections.getEntries(id);
 
-        // Show entries with order column
-        const entriesColumns = {
-          Order: (e: any) => e.order !== undefined && e.order !== null ? String(e.order) : '-',
-          ID: (e: any) => e.id,
-          Title: (e: any) => e.title,
-          Status: (e: any) => e.status || '-',
-          Published: (e: any) => e.publishedAt || '-',
-        };
-
-        renderList(entries as any[], entriesColumns, getOutputMode(opts));
+        renderList(entries as any[], TABLE_SCHEMAS['collections.entries'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

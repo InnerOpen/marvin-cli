@@ -3,6 +3,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { handleCommandError } from "../../shared/error-handler.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerEmailEventSubscriptionCommands(parent: Command): void {
   const emailSubs = parent
@@ -18,13 +19,7 @@ export function registerEmailEventSubscriptionCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const items = await client.emailEventSubscriptions.list();
-        renderList(items as any[], {
-          ID: "id",
-          "Template ID": "templateId",
-          "Event Type": "eventType",
-          "Recipient Type": "recipientType",
-          Enabled: "enabled",
-        } as any, getOutputMode(opts));
+        renderList(items as any[], TABLE_SCHEMAS['email-subscriptions.list'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }

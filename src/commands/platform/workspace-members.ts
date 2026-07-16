@@ -4,6 +4,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { readFileSync } from "fs";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerWorkspaceMemberCommands(parent: Command): void {
   const members = parent
@@ -20,13 +21,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
         const members = await client.workspaceMembers.list(workspaceId);
 
-        renderList(members, {
-          "User ID": (m: any) => m.userId || "",
-          "Username": (m: any) => m.user?.username || "",
-          "Email": (m: any) => m.user?.email || "",
-          "Role": (m: any) => m.workspaceRole || "",
-          "Joined": (m: any) => m.joinedAt ? new Date(m.joinedAt).toISOString().split('T')[0] : "",
-        }, getOutputMode(opts));
+        renderList(members as any[], TABLE_SCHEMAS['workspace-members.list'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

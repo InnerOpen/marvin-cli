@@ -4,6 +4,7 @@ import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { handleCommandError } from "../../shared/error-handler.js";
 import { readJsonInput } from "../../shared/json-input.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerEntryTypeCommands(parent: Command): void {
   const entryTypes = parent
@@ -18,16 +19,7 @@ export function registerEntryTypeCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const entryTypes = await client.entryTypes.list();
-        renderList(entryTypes, {
-          ID: "id",
-          Name: "name",
-          Slug: "slug",
-          System: "isSystem",
-          Renderer: (et: any) => et.renderingJson?.renderer || "",
-          Package: (et: any) => et.renderingJson?.package || "",
-          Publishable: (et: any) => et.capabilitiesJson ? (et.capabilitiesJson.publishable !== false ? "yes" : "no") : "",
-          Routable: (et: any) => et.capabilitiesJson ? (et.capabilitiesJson.routable !== false ? "yes" : "no") : "",
-        }, getOutputMode(opts));
+        renderList(entryTypes as any[], TABLE_SCHEMAS['entry-types.list'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }
