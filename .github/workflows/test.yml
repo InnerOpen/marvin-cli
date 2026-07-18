@@ -31,9 +31,11 @@ jobs:
       - name: Install dependencies
         run: |
           # The CLI builds against the PUBLISHED SDK (develop tag) in CI, not the
-          # local workspace symlink — so SDK changes must be published first.
-          npm pkg set dependencies.@inneropen/marvin-sdk="develop"
-          npm ci
+          # local workspace symlink. Install the tree, then force the SDK to the
+          # latest develop publish so CI always tracks the tag — `npm ci` would
+          # pin whatever stale version the lockfile happens to hold.
+          npm install
+          npm install --no-save @inneropen/marvin-sdk@develop
 
       - name: Build
         run: npm run build
