@@ -1,3 +1,15 @@
+# [2.6.0-next.23](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.22...v2.6.0-next.23) (2026-07-18)
+
+
+### Bug Fixes
+
+* **release:** parse gitmoji-prefixed commit subjects ([da9ee93](https://github.com/inneropen/marvin-cli/commit/da9ee933bfd2f4a852915e91a53255a75a3e27f4))
+
+
+### Features
+
+* cover all backend endpoints in the CLI ([99d9801](https://github.com/inneropen/marvin-cli/commit/99d98013722ae4306192c0ff93481ce7ef6e6045))
+
 # [2.6.0-next.22](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.21...v2.6.0-next.22) (2026-07-16)
 
 
