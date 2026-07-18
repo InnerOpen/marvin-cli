@@ -4,9 +4,16 @@ on:
   pull_request:
     branches:
       - main
+      - develop
   push:
     branches:
       - main
+      - develop
+
+# Cancel superseded runs on the same ref (e.g. rapid PR pushes).
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -18,16 +25,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: 'npm'
 
       - name: Install dependencies
         run: |
-          # Replace file dependency with published SDK version for CI
+          # The CLI builds against the PUBLISHED SDK (develop tag) in CI, not the
+          # local workspace symlink — so SDK changes must be published first.
           npm pkg set dependencies.@inneropen/marvin-sdk="develop"
           npm ci
 
-      - name: Build package
+      - name: Build
         run: npm run build
+
+      - name: Run tests
+        run: npm test
 
       - name: Check package contents
         run: |

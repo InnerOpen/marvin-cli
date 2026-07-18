@@ -12,6 +12,7 @@
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "coverage:refresh": "node scripts/refresh-backend-operations.mjs",
     "docs:serve": "mkdocs serve",
     "docs:build": "mkdocs build",
     "docs:deploy": "mkdocs gh-deploy --force"

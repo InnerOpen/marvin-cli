@@ -45,6 +45,23 @@ export function registerAdminSystemCommands(parent: Command): void {
       }
     });
 
+  // Startup info
+  system
+    .command("startup-info")
+    .description("Get startup information")
+    .action(async function(this: Command) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const info = await client.adminSystem.getStartupInfo();
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderData(info, getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
   // Health check
   system
     .command("health")

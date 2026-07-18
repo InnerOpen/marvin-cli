@@ -1,4 +1,4 @@
-import { MarvinClient } from "@inneropen/marvin-sdk";
+import { MarvinClient, AuthClient } from "@inneropen/marvin-sdk";
 import { PlatformClient } from "@inneropen/marvin-sdk/platform";
 import { env } from "../config/environment.js";
 import { credentialsManager } from "../config/credentials.js";
@@ -125,6 +125,33 @@ export class ClientFactory {
       apiUrl,
       userToken,
     });
+  }
+
+  /**
+   * Create a public Auth client (registration, password reset)
+   *
+   * Uses NoAuth — no token required. Only needs an API URL.
+   *
+   * Configuration precedence:
+   * - apiUrl: --api-url flag > MARVIN_API_URL env var > saved credentials
+   */
+  createAuthClient(options: PlatformCommandOptions): AuthClient {
+    const apiUrl = options.apiUrl || env.apiUrl || credentialsManager.getApiUrl();
+
+    if (apiUrl) {
+      validateApiUrl(apiUrl);
+    }
+
+    if (!apiUrl) {
+      throw new Error(
+        "Marvin API URL is required.\n" +
+        "Provide via:\n" +
+        "  --api-url flag\n" +
+        "  MARVIN_API_URL environment variable"
+      );
+    }
+
+    return new AuthClient(apiUrl);
   }
 
   /**

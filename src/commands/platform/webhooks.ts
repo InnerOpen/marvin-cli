@@ -149,6 +149,23 @@ export function registerWebhookCommands(parent: Command): void {
       }
     });
 
+  // Types
+  webhooks
+    .command("types")
+    .description("List the available webhook types")
+    .action(async function(this: Command) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const types = await client.webhooks.types();
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderData(types, getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
   // Rerun
   webhooks
     .command("rerun")

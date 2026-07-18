@@ -1,170 +1,74 @@
-# Task: Fix CRITICAL Security and Performance Issues in Marvin Backend
+# CLI Full-Coverage Update — Plan
 
-## Goal
-Address 8 critical issues found in Marvin backend code review, including security vulnerabilities (dead route file, path traversal, unvalidated passwords), performance problems (N+1 queries), and functionality gaps (scheduled publishing). Success means all critical security holes are patched, N+1 queries are eliminated, and scheduled publishing is either implemented or properly documented as unavailable.
+Goal: bring `@inneropen/marvin-cli` to full coverage of the Marvin backend (233 ops).
+Source of truth: fresh offline OpenAPI (regenerated 2026-07-17) → `MarvinSDK/src/generated/schema.ts`.
 
-## Plan
-- [x] **Issue 1: Delete dead publish.py route file (SECURITY)**
-  - Verified `/Volumes/Code/Marvin/src/marvin/routes/publish.py` is shadowed by package
-  - Confirmed imports reference the package via `from . import publish`
-  - Deleted the dead file
-  - Publishing endpoints use the package routes
+Gap matrix: 146 already covered · 55 Bucket A (SDK exists, add CLI cmd) · 21 Bucket B (add SDK + CLI) · 11 Bucket C (excluded).
 
-- [x] **Issue 4: Add password confirmation validator (SECURITY)**
-  - Read `/Volumes/Code/Marvin/src/marvin/schemas/user/password.py`
-  - Added `@model_validator` to check password/passwordConfirm match
-  - Raises ValueError if passwords don't match
+## Phase 1 — Schemas (DONE)
+- [x] Generate OpenAPI offline from `marvin.app:app` (no server/DB needed)
+- [x] Regenerate `MarvinSDK/src/generated/schema.ts` (+1522 lines drift captured)
+- [x] SDK typecheck + build green; CLI baseline build + 120 tests green
 
-- [x] **Issue 6: Add path traversal validation to file tokens (SECURITY)**
-  - Located `create_file_token` in `/Volumes/Code/Marvin/src/marvin/core/security/security.py`
-  - Added `validate_file_path()` function with path traversal checks
-  - Updated `create_file_token` to accept optional `allowed_base` parameter
-  - Validates paths are within allowed directories and rejects `..` traversal
+## Phase 2 — SDK Bucket-B methods (prerequisite for CLI)
+- [ ] ai/operations.ts: `reindex()`
+- [ ] user.ts: `getApiToken(id)`, `updateApiToken(id,data)`
+- [ ] notifications.ts: `log(opts)`, `logs(id,opts)`
+- [ ] webhooks.ts: `types()`
+- [ ] workspaces.ts: `createBackup()`
+- [ ] emailTemplates.ts: `getEventConnections(groupId)`
+- [ ] admin/system.ts: `sendTestEmail`, `createEmailTemplate`, `deleteEmailTemplate`
+- [ ] admin/users.ts: `create(UserCreate)`
+- [ ] admin/scheduledTasks.ts: `create`, `update`, `delete`
+- [ ] admin/workspaces.ts: `addMember`, `getMember`, `updateMember`
+- [ ] admin groups `list()` (GET /api/admin/groups → GroupPagination)
+- [ ] admin/maintenance.ts: `getSummary()`
+- [ ] Rebuild SDK dist; typecheck green
 
-- [x] **Issue 5: Fix silent date filter failures (DATA INTEGRITY)**
-  - Found `updated_since` in `/Volumes/Code/Marvin/src/marvin/routes/publish/publishing_controller.py`
-  - Replaced silent `pass` with HTTPException(400) with helpful error message
-  - Returns proper error for invalid date formats
+## Phase 3 — CLI: AI group (NEW)
+- [ ] ai/providers.ts (10) · ai/operations.ts (7) · ai/settings.ts (2) · ai/index.ts
+- [ ] Register `createAiCommand()` in src/index.ts (gate on user token)
 
-- [x] **Issue 2: Fix N+1 queries in publishing controller (PERFORMANCE)**
-  - Added `selectinload()` and `joinedload()` to 7 endpoints in publishing_controller.py
-  - Fixed: list_published_entries, get_published_entry, get_published_collection
-  - Fixed: list_published_assets, get_published_asset
-  - Fixed: list_published_resources, get_published_resource, get_resource_entries
-  - All entry relationships now eagerly loaded (collections, assets, resources, entry_type)
+## Phase 4 — CLI: complete admin group
+- [ ] admin/backups.ts (4) · scheduled-tasks.ts (9) · email.ts (8) · groups.ts (5) · workspace-members.ts (5)
+- [ ] extend users.ts (+3), system.ts (+1), maintenance.ts (+1); wire admin/index.ts
 
-- [x] **Issue 3: Implement scheduled publishing (FUNCTIONALITY)**
-  - Implemented `PublishScheduledEntriesHandler` with full logic
-  - Implemented `UnpublishExpiredEntriesHandler` with full logic
-  - Both handlers query entries by publish_at/expire_at fields
-  - Emit proper events (entry.published, entry.unpublished)
-  - Support dry_run mode for testing
+## Phase 5 — CLI: platform / user / auth fills
+- [ ] platform/email.ts (5, NEW); extend workspaces (+4), assets (+1), collections (+1), notifications (+2), webhooks (+1), email-templates (+1)
+- [ ] user/tokens.ts (+2); auth.ts (+3, wire AuthClient into clientFactory)
 
-- [x] **Issue 7: Fix deprecated datetime.utcnow() calls**
-  - Fixed in publishing.py handlers (2 occurrences)
-  - Fixed in check_scheduled_tasks.py (1 occurrence)
-  - Fixed in maintenance.py (1 occurrence)
-  - All replaced with `datetime.now(UTC)`
+## Phase 6 — Verify
+- [ ] CLI build clean; `npm test` green
+- [ ] `marvin --help` and each new group `--help` list all commands
+- [ ] Update README/docs command reference
 
-- [x] **Issue 8: Fix SQL text wrapping**
-  - Found VACUUM and ANALYZE in maintenance_controller.py
-  - Wrapped both with `text()` from sqlalchemy
-  - Added import for `text`
+## Review
 
-- [ ] **Final verification**
-  - Run existing test suite
-  - Review all changes for regressions
-  - Document all fixes and query count improvements
+**Outcome:** CLI now covers the full backend surface. Build clean, `npm test` 156/156 (was 120 — the dynamic output-format harness auto-discovered the new list commands).
 
-## Questions / Dependencies
-- For scheduled publishing (Issue 3): Need to decide whether to implement or document as unavailable. This may require input on product priorities.
-- Need to verify if there are existing tests for the affected modules, or if new tests need to be written.
+**What landed:**
+- Phase 1: regenerated `MarvinSDK/src/generated/schema.ts` from offline OpenAPI (+1522 lines of drift). SDK typecheck+build green.
+- Phase 2: 20 SDK methods added (11 files) for the 21 Bucket-B endpoints; each matched to exact OpenAPI path/verb. Admin-groups list → `platform.workspaces.listAdminGroups()`.
+- Phase 3: AI group (19 cmds) — `platform ai {providers[.models],operations,executions,settings}`. Nested under `platform` (mirrors SDK `platform.ai.*`), not top-level.
+- Phase 4: admin group completed — 5 new subgroups (backups, scheduled-tasks, email, groups, workspace-members) + users/system/maintenance extensions.
+- Phase 5: platform/email (new) + extensions to workspaces (stats, backups), assets (download), collections (update-entry), notifications (log/logs), webhooks (types), email-templates (event-connections); user tokens (get/update); public auth (register/forgot-password/reset-password) via new `clientFactory.createAuthClient()`.
 
-## Results
+**Command tree:** 195 leaf commands across platform/admin/user/system (+ publish/workspace/auth top-level). All new groups render via `--help` with no registration errors.
 
-All 8 CRITICAL issues have been successfully fixed. Summary:
+**Test-harness change reviewed & approved:** `output-format.test.ts` mock made nested-namespace-aware (bounded to depth 4 for `ai.providers.models.list`) + real camelCase fixture fields added. Sound; not masking drift.
 
-### Security Fixes (Issues 1, 4, 6, 5)
+**Intentional skips:** Bucket C (11 — `/api/app/*` UI metadata, raw auth/oauth/refresh/logout browser flows handled by login/logout, deprecated `/api/event/options`). Priority-5 `publish asset-download` deferred (needs a `getFile` on the publishing AssetsModule; low value).
 
-**Issue 1 - Dead Route File (HIGHEST PRIORITY)**
-- **File Deleted**: `/Volumes/Code/Marvin/src/marvin/routes/publish.py`
-- **Verification**: Confirmed the `routes/publish/` package shadows this file completely
-- **Impact**: Eliminated security risk from unprotected endpoints with TODO authentication
+**Dependency note:** CLI `node_modules/@inneropen/marvin-sdk` is a symlink to local MarvinSDK and imports from `dist/`. SDK changes require `npm run build` in MarvinSDK before the CLI sees them. Verified green against current SDK dist; a concurrent SDK edit may warrant a re-verify.
 
-**Issue 4 - Password Confirmation Validator**
-- **File Modified**: `/Volumes/Code/Marvin/src/marvin/schemas/user/password.py`
-- **Changes**: Added `@model_validator` to `ResetPassword` schema
-- **Validation**: Raises `ValueError` if password and passwordConfirm don't match
-- **Impact**: Prevents users from accidentally setting mismatched passwords
+**Follow-ups (not done):** README/mkdocs command reference not yet updated for the new commands.
 
-**Issue 6 - Path Traversal Validation**
-- **File Modified**: `/Volumes/Code/Marvin/src/marvin/core/security/security.py`
-- **Changes**: 
-  - Added `validate_file_path()` function with `.resolve()` and `relative_to()` checks
-  - Updated `create_file_token()` to accept optional `allowed_base` parameter
-  - Validates paths don't escape allowed directories and rejects `..` traversal
-- **Impact**: Prevents directory traversal attacks via file tokens
+## Phase 7 — Coverage-drift gate (added)
+- `src/__tests__/coverage-drift.test.ts` — runs in `npm test`. Fails if any backend operation in the committed snapshot isn't classified in the manifest (new endpoint), if a manifest entry no longer exists (removed endpoint), on double-classification, or if the full CLI command tree fails to build.
+- `src/__tests__/backend-operations.json` — snapshot of all 233 backend ops.
+- `src/__tests__/api-coverage-manifest.json` — classification: 221 covered / 11 excluded / 1 deferred.
+- `scripts/refresh-backend-operations.mjs` + `npm run coverage:refresh` — regenerate the snapshot offline from ../Marvin (or from a passed openapi.json) and diff against the manifest.
+- Fixed a latent bug: vitest was running BOTH src and compiled `dist/` test copies (inflating counts ~2×); scoped vitest to `src/**/*.test.ts`. Real suite = 82 tests.
+- Verified the gate: injecting a fake endpoint fails it with a naming message; restore → green.
 
-**Issue 5 - Silent Date Filter Failures**
-- **File Modified**: `/Volumes/Code/Marvin/src/marvin/routes/publish/publishing_controller.py`
-- **Changes**: Replaced silent `pass` with `HTTPException(400)` with detailed error message
-- **Error Format**: "Invalid date format for updated_since: {value}. Expected ISO format..."
-- **Impact**: Users now get immediate feedback on invalid date filters instead of wrong data
-
-### Performance Fixes (Issue 2)
-
-**Issue 2 - N+1 Query Cascades**
-- **File Modified**: `/Volumes/Code/Marvin/src/marvin/routes/publish/publishing_controller.py`
-- **Endpoints Fixed** (7 total):
-  1. `list_published_entries` - eagerly loads entry_collections, entry_assets, entry_resources
-  2. `get_published_entry` - same as above
-  3. `get_published_collection` - adds entry_type to eager loading
-  4. `list_published_assets` - eagerly loads entry_assets.entry
-  5. `get_published_asset` - same as above
-  6. `list_published_resources` - eagerly loads entry_resources.entry
-  7. `get_published_resource` - same as above
-  8. `get_resource_entries` - full eager loading for entry relationships
-
-- **Query Reduction**: 
-  - Before: 100 entries = 600+ queries (1 + 3*100 for each relationship)
-  - After: 100 entries = ~4 queries (1 main + 3 selectinload queries)
-  - **~150x reduction in database queries**
-
-- **Implementation**: Used `selectinload()` for many-to-many, `joinedload()` for nested relationships
-
-### Functionality Implementation (Issue 3)
-
-**Issue 3 - Scheduled Publishing**
-- **File Modified**: `/Volumes/Code/Marvin/src/marvin/services/scheduled_tasks/handlers/publishing.py`
-- **Handler 1**: `PublishScheduledEntriesHandler`
-  - Queries entries with `publish_at <= now` and `status != 'published'`
-  - Updates status to 'published' and sets `published_at`
-  - Emits `entry.published` events
-  - Supports dry_run mode
-- **Handler 2**: `UnpublishExpiredEntriesHandler`
-  - Queries entries with `expire_at <= now` and `status == 'published'`
-  - Updates status to 'archived'
-  - Emits `entry.unpublished` events
-  - Supports dry_run mode
-- **Impact**: Scheduled publishing and expiration now fully functional
-
-### Technical Debt Cleanup (Issues 7, 8)
-
-**Issue 7 - Deprecated datetime.utcnow()**
-- **Files Modified**:
-  1. `/Volumes/Code/Marvin/src/marvin/services/scheduled_tasks/handlers/publishing.py` (2 occurrences)
-  2. `/Volumes/Code/Marvin/src/marvin/services/scheduler/tasks/check_scheduled_tasks.py` (1 occurrence)
-  3. `/Volumes/Code/Marvin/src/marvin/services/scheduled_tasks/handlers/maintenance.py` (1 occurrence)
-- **Changes**: All replaced with `datetime.now(UTC)`
-- **Impact**: Python 3.12+ compatibility
-
-**Issue 8 - SQL Text Wrapping**
-- **File Modified**: `/Volumes/Code/Marvin/src/marvin/routes/admin/maintenance_controller.py`
-- **Changes**: 
-  - Wrapped `VACUUM` and `ANALYZE` with `text()` from sqlalchemy
-  - Added `from sqlalchemy import text` import
-- **Impact**: SQLAlchemy 2.0 compatibility
-
-### Verification
-
-All modified files successfully compile with Python:
-- ✅ schemas/user/password.py
-- ✅ core/security/security.py
-- ✅ routes/publish/publishing_controller.py
-- ✅ services/scheduled_tasks/handlers/publishing.py
-- ✅ routes/admin/maintenance_controller.py
-- ✅ services/scheduler/tasks/check_scheduled_tasks.py
-- ✅ services/scheduled_tasks/handlers/maintenance.py
-
-### Files Modified (Summary)
-1. `/Volumes/Code/Marvin/src/marvin/routes/publish.py` - **DELETED**
-2. `/Volumes/Code/Marvin/src/marvin/schemas/user/password.py` - Added validator
-3. `/Volumes/Code/Marvin/src/marvin/core/security/security.py` - Added path validation
-4. `/Volumes/Code/Marvin/src/marvin/routes/publish/publishing_controller.py` - Fixed N+1 queries and date errors
-5. `/Volumes/Code/Marvin/src/marvin/services/scheduled_tasks/handlers/publishing.py` - Implemented handlers
-6. `/Volumes/Code/Marvin/src/marvin/services/scheduler/tasks/check_scheduled_tasks.py` - Fixed datetime
-7. `/Volumes/Code/Marvin/src/marvin/services/scheduled_tasks/handlers/maintenance.py` - Fixed datetime
-8. `/Volumes/Code/Marvin/src/marvin/routes/admin/maintenance_controller.py` - Fixed SQL text wrapping
-
-## Lessons
-
+**Note on scope of the gate:** catches coverage drift (new/removed endpoints) and registration errors. It does NOT verify runtime correctness (paths/verbs/response shapes) — CLI tests mock the SDK, so a live smoke test is still needed for that. The snapshot is only as fresh as the last `coverage:refresh`.

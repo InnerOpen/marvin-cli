@@ -63,6 +63,9 @@ const UNIVERSAL_FIXTURE: Record<string, unknown> = {
   errorMessage: 'test-error',
   retryAttempt: 1,
 
+  // Notification execution log (NotificationExecutionLogRead — all camelCase)
+  notifierId: 'notifier-id-val',
+
   // Event log (EventLogRead / EventLogSummary — all camelCase)
   eventId: 'event-id-val',
   eventType: 'entry.published',
@@ -93,6 +96,12 @@ const UNIVERSAL_FIXTURE: Record<string, unknown> = {
   templateId: 'template-id-val',
   recipientType: 'admins',
   templateType: 'welcome',
+
+  // AI (providers / operations / executions / models — all camelCase)
+  operationSlug: 'operation-slug-val',
+  providerType: 'openai',
+  isDefault: false,
+  modelId: 'model-id-val',
 
   // Invites (usedby invites list — pre-projects rows before renderList)
   token: 'token-value-here-for-test',
@@ -155,16 +164,38 @@ function fixtureFromSchema(schemaKey: string): Record<string, unknown> {
 
 const STUB_WORKSPACE = { id: 'ws-stub', slug: 'stub', name: 'Stub Workspace' }
 
+// A callable node that also supports a bounded number of further nesting levels.
+// Each property access descends one level; invoking any node (or plain-function
+// leaf at levels === 0) resolves with [fixture]. Bounded (non-infinite) recursion
+// keeps property inspection from looping forever.
+function callableNode(fixture: Record<string, unknown>, levels: number): any {
+  const leaf: any = () => Promise.resolve([fixture])
+  if (levels <= 0) return leaf
+  return new Proxy(leaf, {
+    get: (_t, prop) => (prop === 'then' ? undefined : callableNode(fixture, levels - 1)),
+    apply: () => Promise.resolve([fixture]),
+  })
+}
+
+// Supports one-, two-, and three-level namespaces:
+//   client.entries.list()
+//   client.ai.executions.list()
+//   client.ai.providers.models.list()
+// A namespace access returns a callable node with two further nesting levels.
+function nestedNamespace(fixture: Record<string, unknown>): any {
+  return new Proxy(
+    {} as Record<string, unknown>,
+    { get: (_t, _prop) => callableNode(fixture, 2) }
+  )
+}
+
 function createMockClient(fixture: Record<string, unknown>): any {
   return new Proxy(
     { workspaces: { getCurrent: () => Promise.resolve(STUB_WORKSPACE) } } as Record<string, unknown>,
     {
       get(target: Record<string, unknown>, namespace: string) {
         if (namespace in target) return target[namespace]
-        return new Proxy(
-          {} as Record<string, unknown>,
-          { get: (_t, _method) => () => Promise.resolve([fixture]) }
-        )
+        return nestedNamespace(fixture)
       },
     }
   )

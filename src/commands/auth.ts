@@ -3,6 +3,10 @@ import { credentialsManager } from "../config/credentials.js";
 import { env } from "../config/environment.js";
 import * as readline from "readline";
 import { handleCommandError } from "../shared/error-handler.js";
+import { clientFactory } from "../shared/clients.js";
+import { renderData } from "../output.js";
+import { getOutputMode, type PlatformCommandOptions } from "../shared/types.js";
+import { readJsonInput } from "../shared/json-input.js";
 
 function promptForToken(label: string): Promise<string> {
   return new Promise((resolve) => {
@@ -188,6 +192,66 @@ export function registerAuthCommands(parent: Command): void {
           console.log("✓ Logged out (user token cleared)");
           console.log("  Site tokens preserved — use --site-token or --all to remove them");
         }
+      } catch (error) {
+        handleCommandError(error);
+      }
+    });
+
+  // Register a new user (public — no token required)
+  parent
+    .command("register")
+    .description("Register a new user account")
+    .option("--email <email>", "User email")
+    .option("--password <password>", "User password")
+    .option("--json <json>", "Registration data as JSON string")
+    .option("--file <path>", "Path to JSON file with registration data (use '-' for stdin)")
+    .action(async function (this: Command, cmdOpts) {
+      try {
+        let data: any = {};
+        if (cmdOpts.json || cmdOpts.file) {
+          data = await readJsonInput(cmdOpts);
+        }
+        if (cmdOpts.email) data.email = cmdOpts.email;
+        if (cmdOpts.password) data.password = cmdOpts.password;
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = clientFactory.createAuthClient(opts);
+        const user = await client.register(data);
+
+        console.log(`✓ Registered user: ${user.email}`);
+        renderData(user, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
+      }
+    });
+
+  // Request a password reset email (public — no token required)
+  parent
+    .command("forgot-password <email>")
+    .description("Request a password reset email")
+    .action(async function (this: Command, email: string) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = clientFactory.createAuthClient(opts);
+        await client.forgotPassword({ email });
+        console.log("✓ If that email exists, a reset link was sent");
+      } catch (error) {
+        handleCommandError(error);
+      }
+    });
+
+  // Reset password with token from email (public — no token required)
+  parent
+    .command("reset-password")
+    .description("Reset a password using a token from the reset email")
+    .requiredOption("--token <token>", "Reset token from the email")
+    .requiredOption("--password <newPassword>", "New password")
+    .action(async function (this: Command, cmdOpts) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = clientFactory.createAuthClient(opts);
+        await client.resetPassword({ token: cmdOpts.token, newPassword: cmdOpts.password });
+        console.log("✓ Password reset successfully");
       } catch (error) {
         handleCommandError(error);
       }

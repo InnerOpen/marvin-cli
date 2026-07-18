@@ -7,6 +7,7 @@ import { clientFactory } from '../../shared/clients.js';
 import { renderList, renderData } from '../../output.js';
 import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
+import { readJsonInput } from '../../shared/json-input.js';
 import type { PlatformCommandOptions } from '../../shared/types.js';
 
 export function registerTokenCommands(parent: Command): void {
@@ -49,6 +50,41 @@ export function registerTokenCommands(parent: Command): void {
       const token = await client.user.createApiToken(data);
       console.log('\n⚠️  IMPORTANT: Save this token now - it will not be shown again!\n');
       renderData(token, (parent.optsWithGlobals<PlatformCommandOptions>().output || 'table') as any);
+    });
+
+  tokens
+    .command('get <token-id>')
+    .description('Get a personal API token by ID')
+    .action(async function(this: Command, tokenId: string) {
+      try {
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const token = await client.user.getApiToken(tokenId);
+        renderData(token, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  tokens
+    .command('update <token-id>')
+    .description('Update a personal API token')
+    .option('--json <json>', 'Token data as JSON string')
+    .option('--file <path>', "Path to JSON file with token data (use '-' for stdin)")
+    .action(async function(this: Command, tokenId: string, cmdOpts) {
+      try {
+        const data = await readJsonInput(cmdOpts);
+
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const token = await client.user.updateApiToken(tokenId, data);
+        console.log(`✓ Updated API token: ${tokenId}`);
+        renderData(token, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
     });
 
   tokens

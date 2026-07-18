@@ -11,11 +11,13 @@ import { registerWebhookCommands } from "./webhooks.js";
 import { registerInviteCommands } from "./invites.js";
 import { registerEventLogCommands } from "./event-log.js";
 import { registerEmailTemplateCommands } from "./email-templates.js";
+import { registerPlatformEmailCommands } from "./email.js";
 import { registerScheduledTaskCommands } from "./scheduled-tasks.js";
 import { registerPlatformFormCommands } from "./forms.js";
 import { registerSecretCommands } from "./secrets.js";
 import { registerVariableCommands } from "./variables.js";
 import { registerEmailEventSubscriptionCommands } from "./email-event-subscriptions.js";
+import { createAiCommand } from "../ai/index.js";
 
 /**
  * Create the 'platform' command group
@@ -41,11 +43,15 @@ export function createPlatformCommand(): Command {
   registerInviteCommands(platform);
   registerEventLogCommands(platform);
   registerEmailTemplateCommands(platform);
+  registerPlatformEmailCommands(platform);
   registerScheduledTaskCommands(platform);
   registerPlatformFormCommands(platform);
   registerSecretCommands(platform);
   registerVariableCommands(platform);
   registerEmailEventSubscriptionCommands(platform);
+
+  // AI: providers, models, operations, executions, settings (mirrors SDK platform.ai.*)
+  platform.addCommand(createAiCommand());
 
   return platform;
 }

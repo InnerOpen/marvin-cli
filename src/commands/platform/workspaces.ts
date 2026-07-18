@@ -4,6 +4,7 @@ import { credentialsManager } from "../../config/credentials.js";
 import { clientFactory } from "../../shared/clients.js";
 import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
+import { renderData } from "../../output.js";
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import type { WorkspaceWithMembership } from "@inneropen/marvin-sdk/platform";
 import { promptSecure, readFromStdin } from "../../shared/prompt.js";
@@ -278,6 +279,93 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
 
         console.log("✓ Updated workspace preferences");
         console.log(JSON.stringify(prefs, null, 2));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Platform-level stats for the current workspace
+  workspace
+    .command("stats")
+    .description("Show platform-level stats for the current workspace")
+    .action(async function(this: Command) {
+      try {
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const stats = await client.workspaces.getStats();
+        renderData(stats, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Workspace backups
+  const backups = workspace
+    .command("backups")
+    .description("Workspace backup management");
+
+  backups
+    .command("list")
+    .description("List available workspace backups")
+    .action(async function(this: Command) {
+      try {
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const items = await client.workspaces.listBackups();
+        renderData(items, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  backups
+    .command("download <filename>")
+    .description("Download a workspace backup by filename")
+    .option("-o, --output <file>", "Write backup to file instead of stdout")
+    .action(async function(this: Command, filename: string, cmdOpts: { output?: string }) {
+      try {
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const data = await client.workspaces.downloadBackup(filename);
+
+        if (cmdOpts.output) {
+          let buffer: Buffer;
+          if (Buffer.isBuffer(data)) {
+            buffer = data;
+          } else if (data instanceof ArrayBuffer) {
+            buffer = Buffer.from(new Uint8Array(data));
+          } else if (typeof (data as any)?.arrayBuffer === "function") {
+            // Blob-like
+            buffer = Buffer.from(new Uint8Array(await (data as Blob).arrayBuffer()));
+          } else if (typeof data === "string") {
+            buffer = Buffer.from(data, "utf-8");
+          } else {
+            buffer = Buffer.from(JSON.stringify(data, null, 2), "utf-8");
+          }
+          writeFileSync(cmdOpts.output, buffer);
+          console.log(`✓ Backup written to ${cmdOpts.output}`);
+        } else {
+          renderData(data, getOutputMode(opts));
+        }
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  backups
+    .command("create")
+    .description("Create a new backup of the current workspace")
+    .action(async function(this: Command) {
+      try {
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const result = await client.workspaces.createBackup();
+        console.log("✓ Backup created");
+        renderData(result, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

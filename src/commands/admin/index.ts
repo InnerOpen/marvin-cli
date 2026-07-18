@@ -2,6 +2,11 @@ import { Command } from "commander";
 import { registerAdminUsersCommands } from "./users.js";
 import { registerAdminSystemCommands } from "./system.js";
 import { registerAdminMaintenanceCommands } from "./maintenance.js";
+import { registerAdminBackupCommands } from "./backups.js";
+import { registerAdminScheduledTaskCommands } from "./scheduled-tasks.js";
+import { registerAdminEmailCommands } from "./email.js";
+import { registerAdminGroupCommands } from "./groups.js";
+import { registerAdminWorkspaceMemberCommands } from "./workspace-members.js";
 
 /**
  * Create the 'admin' command group
@@ -18,6 +23,11 @@ export function createAdminCommand(): Command {
   registerAdminUsersCommands(admin);
   registerAdminSystemCommands(admin);
   registerAdminMaintenanceCommands(admin);
+  registerAdminBackupCommands(admin);
+  registerAdminScheduledTaskCommands(admin);
+  registerAdminEmailCommands(admin);
+  registerAdminGroupCommands(admin);
+  registerAdminWorkspaceMemberCommands(admin);
 
   return admin;
 }

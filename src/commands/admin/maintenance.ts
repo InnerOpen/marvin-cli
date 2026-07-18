@@ -11,6 +11,23 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
 
   parent.addCommand(maintenance);
 
+  // Summary
+  maintenance
+    .command("summary")
+    .description("Get the maintenance summary (system overview)")
+    .action(async function(this: Command) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const summary = await client.adminMaintenance.getSummary();
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderData(summary, getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
   // Clean temp
   maintenance
     .command("clean-temp")

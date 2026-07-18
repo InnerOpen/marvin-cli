@@ -173,4 +173,38 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         process.exitCode = 1;
       }
     });
+
+  collections
+    .command("update-entry <id> <entry-id>")
+    .description("Update junction fields (role, metadata) for an entry in a collection")
+    .option("--role <role>", "Role for the entry within the collection")
+    .option("--metadata <json>", "Junction metadata as JSON string")
+    .option("--json <json>", "Full junction payload as JSON string (overrides --role/--metadata)")
+    .action(async function(this: Command, id: string, entryId: string, cmdOpts) {
+      try {
+        let data: any;
+        if (cmdOpts.json) {
+          data = JSON.parse(cmdOpts.json);
+        } else {
+          data = {};
+          if (cmdOpts.role !== undefined) data.role = cmdOpts.role;
+          if (cmdOpts.metadata) data.metadataJson = JSON.parse(cmdOpts.metadata);
+
+          if (Object.keys(data).length === 0) {
+            console.error("Error: Provide --role, --metadata, or --json");
+            process.exitCode = 1;
+            return;
+          }
+        }
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const result = await client.collections.updateEntryJunction(id, entryId, data);
+        console.log(`✓ Updated entry ${entryId} in collection ${id}`);
+        renderData(result, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
 }

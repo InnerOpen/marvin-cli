@@ -169,6 +169,24 @@ export function registerEmailTemplateCommands(parent: Command): void {
       }
     });
 
+  // Event connections
+  cmd
+    .command('event-connections <group-id>')
+    .description('List event connections available for workspace email templates')
+    .action(async function(this: Command, groupId: string) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const connections = await client.emailTemplates.getEventConnections(groupId);
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderData(connections, getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+        return;
+      }
+    });
+
   // Test send
   cmd
     .command('test-send <template-id> <email>')
