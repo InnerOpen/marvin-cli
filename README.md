@@ -1,5 +1,10 @@
 # Marvin CLI
 
+[![npm version](https://img.shields.io/npm/v/@inneropen/marvin-cli)](https://www.npmjs.com/package/@inneropen/marvin-cli)
+[![Test](https://github.com/inneropen/marvin-cli/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/inneropen/marvin-cli/actions/workflows/test.yml)
+[![npm downloads](https://img.shields.io/npm/dm/@inneropen/marvin-cli)](https://www.npmjs.com/package/@inneropen/marvin-cli)
+[![license](https://img.shields.io/npm/l/@inneropen/marvin-cli)](./LICENSE)
+
 Official command-line interface for [Marvin CMS](https://github.com/jmashburn/Marvin) Publishing API.
 
 ## Features
