@@ -3,43 +3,40 @@ import { credentialsManager } from "../config/credentials.js";
 import { env } from "../config/environment.js";
 import * as readline from "readline";
 import { handleCommandError } from "../shared/error-handler.js";
+import { clientFactory } from "../shared/clients.js";
+import { renderData } from "../output.js";
+import { getOutputMode, type PlatformCommandOptions } from "../shared/types.js";
+import { readJsonInput } from "../shared/json-input.js";
 
-/**
- * Prompt for user token input (hides input)
- */
-function promptForToken(): Promise<string> {
+function promptForToken(label: string): Promise<string> {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
 
-    // Disable echo for password-like input
     const stdin = process.stdin as any;
     if (stdin.isTTY) {
       stdin.setRawMode(true);
     }
 
     let token = "";
-    console.log("Enter user token (input hidden):");
+    console.log(`Enter ${label} (input hidden):`);
 
     process.stdin.on("data", (char) => {
       const key = char.toString();
 
       if (key === "\n" || key === "\r" || key === "") {
-        // Enter or Ctrl+D
-        console.log(); // New line after input
+        console.log();
         if (stdin.isTTY) {
           stdin.setRawMode(false);
         }
         rl.close();
         resolve(token);
       } else if (key === "") {
-        // Ctrl+C
         console.log("\nCancelled");
         process.exit(0);
       } else if (key === "" || key === "\b") {
-        // Backspace
         if (token.length > 0) {
           token = token.slice(0, -1);
         }
@@ -51,54 +48,210 @@ function promptForToken(): Promise<string> {
 }
 
 export function registerAuthCommands(parent: Command): void {
-  // Login command
   parent
     .command("login")
     .description("Authenticate with Marvin and save credentials")
-    .option("--user-token <token>", "User token (if not provided, will prompt)")
-    .option("--workspace <slug>", "Set active workspace after login")
-    .action(async function(this: Command, cmdOpts) {
+    .option("--user-token <token>", "User token for platform access (if not provided, will prompt)")
+    .option("--site-token <token>", "Site client token for publish access")
+    .option("--workspace <slug>", "Workspace slug (required when saving a site token)")
+    .action(async function (this: Command, cmdOpts) {
       try {
-        // Get token from: flag > env > prompt
-        let userToken = cmdOpts.userToken || env.userToken;
-
-        if (!userToken) {
-          userToken = await promptForToken();
-        }
-
-        if (!userToken || userToken.trim() === "") {
-          console.error("Error: User token is required");
+        // Merge local + global opts so --workspace works whether passed before or after login
+        const allOpts = this.optsWithGlobals<typeof cmdOpts>();
+        const apiUrl = allOpts.apiUrl || env.apiUrl || credentialsManager.getApiUrl();
+        if (!apiUrl) {
+          console.error("Error: API URL is required. Pass --api-url <url> or set MARVIN_API_URL");
           process.exitCode = 1;
           return;
         }
 
-        // Save credentials
-        credentialsManager.setUserToken(userToken);
+        let savedAny = false;
 
-        // Set active workspace if provided
-        if (cmdOpts.workspace) {
-          credentialsManager.setActiveWorkspace(cmdOpts.workspace);
-          console.log(`✓ Logged in successfully`);
-          console.log(`✓ Active workspace set to: ${cmdOpts.workspace}`);
-        } else {
-          console.log(`✓ Logged in successfully`);
-          console.log(`  Credentials saved to ~/.marvin/credentials.json`);
-          console.log(`  Set active workspace with: marvin workspace use <slug>`);
+        // --- Site token path ---
+        if (allOpts.siteToken) {
+          const workspace =
+            allOpts.workspace ||
+            credentialsManager.getActiveWorkspace() ||
+            env.workspaceSlug;
+
+          if (!workspace) {
+            console.error(
+              "Error: --workspace <slug> is required when saving a site token.\n" +
+              "  marvin login --site-token <token> --workspace <slug>"
+            );
+            process.exitCode = 1;
+            return;
+          }
+
+          console.log("Validating site token...");
+          try {
+            const { MarvinClient } = await import("@inneropen/marvin-sdk");
+            const client = new MarvinClient({
+              apiUrl,
+              siteClientToken: allOpts.siteToken,
+              workspaceSlug: workspace,
+            });
+            await client.collections.list();
+            console.log("✓ Site token is valid");
+          } catch (error) {
+            console.error("✗ Site token validation failed");
+            if (error instanceof Error) console.error(error.message);
+            process.exitCode = 1;
+            return;
+          }
+
+          credentialsManager.setApiUrl(apiUrl);
+          credentialsManager.setSiteToken(workspace, allOpts.siteToken);
+          if (!credentialsManager.getActiveWorkspace()) {
+            credentialsManager.setActiveWorkspace(workspace);
+          }
+          console.log(`✓ Site token saved for workspace: ${workspace}`);
+          savedAny = true;
+        }
+
+        // --- User token path ---
+        const rawUserToken = allOpts.userToken || env.userToken;
+        const shouldLoginUser = rawUserToken || !allOpts.siteToken;
+
+        if (shouldLoginUser) {
+          let userToken = rawUserToken;
+
+          if (!userToken) {
+            userToken = await promptForToken("user token");
+          }
+
+          if (!userToken || userToken.trim() === "") {
+            console.error("Error: User token is required");
+            process.exitCode = 1;
+            return;
+          }
+
+          console.log("Validating user token...");
+          try {
+            const { PlatformClient } = await import("@inneropen/marvin-sdk/platform");
+            const client = new PlatformClient({ apiUrl, userToken });
+            await client.user.getProfile();
+            console.log("✓ User token is valid");
+          } catch (error) {
+            console.error("✗ User token validation failed");
+            if (error instanceof Error) console.error(error.message);
+            process.exitCode = 1;
+            return;
+          }
+
+          credentialsManager.setApiUrl(apiUrl);
+          credentialsManager.setUserToken(userToken);
+
+          if (allOpts.workspace) {
+            credentialsManager.setActiveWorkspace(allOpts.workspace);
+            console.log(`✓ Logged in successfully`);
+            console.log(`✓ Active workspace set to: ${allOpts.workspace}`);
+          } else {
+            console.log(`✓ Logged in successfully`);
+            if (!savedAny) {
+              console.log(`  Credentials saved to ~/.marvin/credentials.json`);
+              console.log(`  Set active workspace with: marvin workspace use <slug>`);
+            }
+          }
+          savedAny = true;
+        }
+
+        if (!savedAny) {
+          console.error("Error: Provide --user-token, --site-token, or both");
+          process.exitCode = 1;
         }
       } catch (error) {
         handleCommandError(error);
       }
     });
 
-  // Logout command
   parent
     .command("logout")
     .description("Clear saved credentials")
-    .action(async () => {
+    .option("--site-token", "Clear only the site token for the active workspace")
+    .option("--all", "Clear all credentials (default: clears user token only)")
+    .action(async function (this: Command, cmdOpts) {
       try {
-        credentialsManager.clear();
-        console.log("✓ Logged out successfully");
-        console.log("  Credentials cleared from ~/.marvin/credentials.json");
+        if (cmdOpts.siteToken) {
+          const workspace =
+            credentialsManager.getActiveWorkspace() || env.workspaceSlug;
+          if (!workspace) {
+            console.error("Error: No active workspace — cannot clear site token");
+            process.exitCode = 1;
+            return;
+          }
+          credentialsManager.removeSiteToken(workspace);
+          console.log(`✓ Site token cleared for workspace: ${workspace}`);
+        } else if (cmdOpts.all) {
+          credentialsManager.clear();
+          console.log("✓ All credentials cleared");
+        } else {
+          const creds = credentialsManager.load();
+          delete creds.userToken;
+          credentialsManager.save(creds);
+          console.log("✓ Logged out (user token cleared)");
+          console.log("  Site tokens preserved — use --site-token or --all to remove them");
+        }
+      } catch (error) {
+        handleCommandError(error);
+      }
+    });
+
+  // Register a new user (public — no token required)
+  parent
+    .command("register")
+    .description("Register a new user account")
+    .option("--email <email>", "User email")
+    .option("--password <password>", "User password")
+    .option("--json <json>", "Registration data as JSON string")
+    .option("--file <path>", "Path to JSON file with registration data (use '-' for stdin)")
+    .action(async function (this: Command, cmdOpts) {
+      try {
+        let data: any = {};
+        if (cmdOpts.json || cmdOpts.file) {
+          data = await readJsonInput(cmdOpts);
+        }
+        if (cmdOpts.email) data.email = cmdOpts.email;
+        if (cmdOpts.password) data.password = cmdOpts.password;
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = clientFactory.createAuthClient(opts);
+        const user = await client.register(data);
+
+        console.log(`✓ Registered user: ${user.email}`);
+        renderData(user, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
+      }
+    });
+
+  // Request a password reset email (public — no token required)
+  parent
+    .command("forgot-password <email>")
+    .description("Request a password reset email")
+    .action(async function (this: Command, email: string) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = clientFactory.createAuthClient(opts);
+        await client.forgotPassword({ email });
+        console.log("✓ If that email exists, a reset link was sent");
+      } catch (error) {
+        handleCommandError(error);
+      }
+    });
+
+  // Reset password with token from email (public — no token required)
+  parent
+    .command("reset-password")
+    .description("Reset a password using a token from the reset email")
+    .requiredOption("--token <token>", "Reset token from the email")
+    .requiredOption("--password <newPassword>", "New password")
+    .action(async function (this: Command, cmdOpts) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = clientFactory.createAuthClient(opts);
+        await client.resetPassword({ token: cmdOpts.token, newPassword: cmdOpts.password });
+        console.log("✓ Password reset successfully");
       } catch (error) {
         handleCommandError(error);
       }

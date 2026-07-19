@@ -30,7 +30,7 @@ function projectedRows<T>(rows: T[], columns: ColumnSpec<T>): Record<string, str
 
 export function renderTable<T>(rows: T[], columns: ColumnSpec<T>): void {
   if (!rows.length) {
-    console.log("No results.");
+    console.log("No results");
     return;
   }
 
@@ -38,7 +38,8 @@ export function renderTable<T>(rows: T[], columns: ColumnSpec<T>): void {
 }
 
 export function renderJson(data: unknown): void {
-  console.log(JSON.stringify(data, null, 2));
+  const serialized = JSON.stringify(data ?? [], null, 2);
+  console.log(serialized);
 }
 
 function yamlScalar(value: unknown): string {
@@ -114,11 +115,12 @@ export function renderObject(data: unknown): void {
   console.dir(data, { depth: 10, colors: true });
 }
 
-export function renderList<T>(rows: T[], columns: ColumnSpec<T>, mode: OutputMode): void {
-  if (mode === "json") return renderJson(rows);
-  if (mode === "yaml") return renderYaml(rows);
-  if (mode === "csv") return renderCsv(rows, columns);
-  return renderTable(rows, columns);
+export function renderList<T>(rows: T[] | null | undefined, columns: ColumnSpec<T>, mode: OutputMode): void {
+  const safe = rows ?? [] as T[];
+  if (mode === "json") return renderJson(safe);
+  if (mode === "yaml") return renderYaml(safe);
+  if (mode === "csv") return renderCsv(safe, columns);
+  return renderTable(safe, columns);
 }
 
 export function renderData(data: unknown, mode: OutputMode): void {

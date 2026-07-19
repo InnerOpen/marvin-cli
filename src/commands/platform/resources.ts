@@ -1,8 +1,9 @@
+import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { platformResourceColumns } from "../../shared/columns.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 import { readJsonInput } from "../../shared/json-input.js";
 
 export function registerPlatformResourceCommands(parent: Command): void {
@@ -18,9 +19,9 @@ export function registerPlatformResourceCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const resources = await client.resources.list();
-        renderList(resources as any[], platformResourceColumns, getOutputMode(opts));
+        renderList(resources as any[], TABLE_SCHEMAS['resources.list'], getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -35,7 +36,7 @@ export function registerPlatformResourceCommands(parent: Command): void {
         const resource = await client.resources.get(id);
         renderData(resource, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -55,7 +56,7 @@ export function registerPlatformResourceCommands(parent: Command): void {
         console.log(`✓ Created resource: ${resource.id}`);
         renderData(resource, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -75,7 +76,7 @@ export function registerPlatformResourceCommands(parent: Command): void {
         console.log(`✓ Updated resource: ${resource.id}`);
         renderData(resource, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -97,7 +98,7 @@ export function registerPlatformResourceCommands(parent: Command): void {
         await client.resources.delete(id);
         console.log(`✓ Deleted resource: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

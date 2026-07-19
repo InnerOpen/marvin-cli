@@ -1,10 +1,10 @@
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
-import { renderList, renderData } from "../../output.js";
+import { renderList, renderJson, renderYaml } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
 import { collectionColumns, entryColumns } from "../../shared/columns.js";
 import { handleCommandError } from "../../shared/error-handler.js";
-import type { MarvinCollection, MarvinEntry } from "@inneropen/marvin-sdk/types";
+import type { MarvinEntry } from "@inneropen/marvin-sdk/types";
 
 export function registerCollectionCommands(parent: Command): void {
   // List collections
@@ -47,9 +47,34 @@ export function registerCollectionCommands(parent: Command): void {
         const client = clientFactory.createPublishClient(opts);
         const collection = await client.collections.get(slug);
 
-        // Call toJSON() to get plain data object (Collection class has http client that shouldn't be serialized)
-        const data = typeof collection.toJSON === 'function' ? collection.toJSON() : collection;
-        renderData(data, getOutputMode(opts));
+        if (!collection || Array.isArray(collection)) {
+          const mode = getOutputMode(opts);
+          if (mode === "json") {
+            console.log("[]");
+          } else if (mode === "yaml") {
+            console.log("[]");
+          } else {
+            console.error(`Collection not found: ${slug}`);
+          }
+          process.exitCode = 1;
+          return;
+        }
+
+        const raw = collection.toJSON();
+        const data = {
+          slug: raw.slug,
+          name: raw.name,
+          description: raw.description,
+          metadataJson: raw.metadataJson,
+          isSmart: raw.isSmart,
+          smartRules: raw.smartRules,
+          entryCount: raw.entryCount,
+          entries: collection.entries,
+        };
+        const mode = getOutputMode(opts);
+        if (mode === "json") renderJson(data);
+        else if (mode === "yaml") renderYaml(data);
+        else renderList([data], collectionColumns, mode);
       } catch (error) {
         handleCommandError(error);
       }
@@ -77,7 +102,7 @@ export function registerCollectionCommands(parent: Command): void {
           ...entryColumns,
         };
 
-        renderList(entries as MarvinEntry[], collectionEntryColumns, getOutputMode(opts));
+        renderList(entries, collectionEntryColumns, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }

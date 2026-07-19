@@ -5,16 +5,57 @@
 import { MarvinApiError, MarvinAuthError, MarvinConfigError, MarvinValidationError } from "@inneropen/marvin-sdk";
 import chalk from "chalk";
 
+function isJsonMode(): boolean {
+  return process.argv.includes('--json') || process.argv.includes('--output') && process.argv[process.argv.indexOf('--output') + 1] === 'json';
+}
+
+function isMachineMode(): boolean {
+  return process.argv.some(a => ['--json', '--yaml', '--csv'].includes(a)) ||
+    (process.argv.includes('--output') && ['json','yaml','csv'].includes(process.argv[process.argv.indexOf('--output') + 1] ?? ''));
+}
+
 /**
  * Format and display error messages with helpful context
  */
 export function handleCommandError(error: unknown): void {
+  // In machine-readable modes, emit minimal error and exit — no ANSI, no prose
+  if (isMachineMode()) {
+    let message = 'Unknown error';
+    let status: number | undefined;
+    if (error instanceof MarvinApiError) {
+      status = error.statusCode;
+      if (error.responseBody) {
+        try {
+          const body = JSON.parse(error.responseBody);
+          if (Array.isArray(body.detail)) {
+            message = body.detail.map((e: any) => `${(e.loc ?? []).join('.')}: ${e.msg}`).join('; ');
+          } else {
+            message = body.detail ?? error.message;
+          }
+        } catch { message = error.message; }
+      } else {
+        message = error.message;
+      }
+    } else if (error instanceof Error) {
+      message = error.message;
+    }
+    if (isJsonMode()) {
+      // Write to stdout so `| jq .` works — exit code 1 signals failure
+      console.log(JSON.stringify({ error: message, ...(status ? { status } : {}) }));
+    } else if (process.argv.includes('--yaml') || (process.argv.includes('--output') && process.argv[process.argv.indexOf('--output') + 1] === 'yaml')) {
+      console.log(`error: ${JSON.stringify(message)}${status ? `\nstatus: ${status}` : ''}`);
+    } else {
+      console.log(`error: ${message}`);
+    }
+    process.exitCode = 1;
+    return;
+  }
   if (error instanceof MarvinAuthError) {
     console.error(chalk.red("✗ Authentication Error"));
     console.error(chalk.dim(error.message));
     console.error();
     console.error(chalk.yellow("Suggestions:"));
-    console.error(chalk.dim("  • Check that you're logged in: marvin platform login"));
+    console.error(chalk.dim("  • Check that you're logged in: marvin login"));
     console.error(chalk.dim("  • Verify your token hasn't expired"));
     console.error(chalk.dim("  • Ensure you have permission to access this workspace"));
     process.exitCode = 1;
@@ -29,8 +70,14 @@ export function handleCommandError(error: unknown): void {
     if (error.responseBody) {
       try {
         const body = JSON.parse(error.responseBody);
-        if (body.detail) {
-          console.error(chalk.dim(body.detail));
+        if (Array.isArray(body.detail)) {
+          // FastAPI validation errors — each item has loc, msg, type
+          body.detail.forEach((e: any) => {
+            const field = Array.isArray(e.loc) ? e.loc.join(" → ") : String(e.loc ?? "");
+            console.error(chalk.dim(`  ${field}: ${e.msg}`));
+          });
+        } else if (body.detail) {
+          console.error(chalk.dim(String(body.detail)));
         } else {
           console.error(chalk.dim(error.responseBody));
         }
@@ -46,7 +93,7 @@ export function handleCommandError(error: unknown): void {
     // Provide helpful suggestions based on status code
     if (error.statusCode === 401) {
       console.error(chalk.yellow("Suggestions:"));
-      console.error(chalk.dim("  • Run 'marvin platform login' to authenticate"));
+      console.error(chalk.dim("  • Run 'marvin login' to authenticate"));
       console.error(chalk.dim("  • Check that your credentials haven't expired"));
     } else if (error.statusCode === 403) {
       console.error(chalk.yellow("Suggestions:"));
@@ -79,8 +126,8 @@ export function handleCommandError(error: unknown): void {
     console.error(chalk.dim(error.message));
     console.error();
     console.error(chalk.yellow("Suggestions:"));
-    console.error(chalk.dim("  • Run 'marvin config list' to see current configuration"));
     console.error(chalk.dim("  • Check your environment variables"));
+    console.error(chalk.dim("  • Verify MARVIN_API_URL and workspace settings"));
     process.exitCode = 1;
     return;
   }
@@ -131,6 +178,7 @@ export function validateOptions(options: Record<string, any>, required: string[]
     missing.forEach(key => {
       console.error(chalk.dim(`  --${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`));
     });
-    process.exit(1);
+    process.exitCode = 1;
+    throw new Error(`Missing required options: ${missing.join(', ')}`);
   }
 }

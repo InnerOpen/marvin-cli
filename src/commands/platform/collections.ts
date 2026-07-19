@@ -1,9 +1,10 @@
+import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
 import { readFileSync } from "fs";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { platformCollectionColumns } from "../../shared/columns.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 import { readJsonInput } from "../../shared/json-input.js";
 
 export function registerPlatformCollectionCommands(parent: Command): void {
@@ -19,9 +20,9 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const collections = await client.collections.list();
-        renderList(collections as any[], platformCollectionColumns, getOutputMode(opts));
+        renderList(collections as any[], TABLE_SCHEMAS['collections.list'], getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -36,7 +37,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         const collection = await client.collections.get(id);
         renderData(collection, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -65,7 +66,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         console.log(`✓ Created collection: ${collection.id}`);
         renderData(collection, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -94,7 +95,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         console.log(`✓ Updated collection: ${collection.id}`);
         renderData(collection, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -116,7 +117,7 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         await client.collections.delete(id);
         console.log(`✓ Deleted collection: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -130,18 +131,9 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
         const entries = await client.collections.getEntries(id);
 
-        // Show entries with order column
-        const entriesColumns = {
-          Order: (e: any) => e.order !== undefined && e.order !== null ? String(e.order) : '-',
-          ID: (e: any) => e.id,
-          Title: (e: any) => e.title,
-          Status: (e: any) => e.status || '-',
-          Published: (e: any) => e.publishedAt || '-',
-        };
-
-        renderList(entries as any[], entriesColumns, getOutputMode(opts));
+        renderList(entries as any[], TABLE_SCHEMAS['collections.entries'], getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -177,7 +169,41 @@ export function registerPlatformCollectionCommands(parent: Command): void {
         await client.collections.reorderEntries(id, entries);
         console.log(`✓ Reordered ${entries.length} entries in collection ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  collections
+    .command("update-entry <id> <entry-id>")
+    .description("Update junction fields (role, metadata) for an entry in a collection")
+    .option("--role <role>", "Role for the entry within the collection")
+    .option("--metadata <json>", "Junction metadata as JSON string")
+    .option("--json <json>", "Full junction payload as JSON string (overrides --role/--metadata)")
+    .action(async function(this: Command, id: string, entryId: string, cmdOpts) {
+      try {
+        let data: any;
+        if (cmdOpts.json) {
+          data = JSON.parse(cmdOpts.json);
+        } else {
+          data = {};
+          if (cmdOpts.role !== undefined) data.role = cmdOpts.role;
+          if (cmdOpts.metadata) data.metadataJson = JSON.parse(cmdOpts.metadata);
+
+          if (Object.keys(data).length === 0) {
+            console.error("Error: Provide --role, --metadata, or --json");
+            process.exitCode = 1;
+            return;
+          }
+        }
+
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const result = await client.collections.updateEntryJunction(id, entryId, data);
+        console.log(`✓ Updated entry ${entryId} in collection ${id}`);
+        renderData(result, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

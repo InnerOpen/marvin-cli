@@ -1,5 +1,7 @@
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderData } from "../../output.js";
 
@@ -8,6 +10,23 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
     .description("System maintenance operations");
 
   parent.addCommand(maintenance);
+
+  // Summary
+  maintenance
+    .command("summary")
+    .description("Get the maintenance summary (system overview)")
+    .action(async function(this: Command) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const summary = await client.adminMaintenance.getSummary();
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderData(summary, getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
 
   // Clean temp
   maintenance
@@ -19,7 +38,7 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
         const result = await client.adminMaintenance.cleanTemp();
         console.log(result.message);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -40,7 +59,7 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
         const tokens = await client.adminMaintenance.cleanupTokens();
         console.log(`✓ ${tokens.message} (${tokens.deleted} deleted)`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -55,7 +74,7 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
         const result = await client.adminMaintenance.clearCache();
         console.log(result.message);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -70,7 +89,7 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
         const result = await client.adminMaintenance.optimizeDatabase();
         console.log(result.message);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -85,9 +104,9 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
         const stats = await client.adminMaintenance.getStats();
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(stats, globalOpts.output as any || 'table');
+        renderData(stats, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -102,9 +121,9 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
         const storage = await client.adminMaintenance.getStorage();
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(storage, globalOpts.output as any || 'table');
+        renderData(storage, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

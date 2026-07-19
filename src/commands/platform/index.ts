@@ -11,8 +11,13 @@ import { registerWebhookCommands } from "./webhooks.js";
 import { registerInviteCommands } from "./invites.js";
 import { registerEventLogCommands } from "./event-log.js";
 import { registerEmailTemplateCommands } from "./email-templates.js";
+import { registerPlatformEmailCommands } from "./email.js";
 import { registerScheduledTaskCommands } from "./scheduled-tasks.js";
 import { registerPlatformFormCommands } from "./forms.js";
+import { registerSecretCommands } from "./secrets.js";
+import { registerVariableCommands } from "./variables.js";
+import { registerEmailEventSubscriptionCommands } from "./email-event-subscriptions.js";
+import { createAiCommand } from "../ai/index.js";
 
 /**
  * Create the 'platform' command group
@@ -20,8 +25,10 @@ import { registerPlatformFormCommands } from "./forms.js";
  */
 export function createPlatformCommand(): Command {
   const platform = new Command("platform")
-    .description("Platform API commands (CRUD operations, requires user token)")
-    .option("--user-token <token>", "User authentication token, overrides MARVIN_USER_TOKEN");
+    .description("Platform API commands (CRUD operations, requires user token)");
+
+  // Note: --user-token flag is intentionally not provided for security reasons
+  // (would expose token in shell history). Use MARVIN_USER_TOKEN env var or 'marvin login' instead.
 
   // Register subcommands
   registerWorkspaceMemberCommands(platform);
@@ -36,8 +43,15 @@ export function createPlatformCommand(): Command {
   registerInviteCommands(platform);
   registerEventLogCommands(platform);
   registerEmailTemplateCommands(platform);
+  registerPlatformEmailCommands(platform);
   registerScheduledTaskCommands(platform);
   registerPlatformFormCommands(platform);
+  registerSecretCommands(platform);
+  registerVariableCommands(platform);
+  registerEmailEventSubscriptionCommands(platform);
+
+  // AI: providers, models, operations, executions, settings (mirrors SDK platform.ai.*)
+  platform.addCommand(createAiCommand());
 
   return platform;
 }

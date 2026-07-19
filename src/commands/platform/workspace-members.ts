@@ -1,8 +1,10 @@
+import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { readFileSync } from "fs";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerWorkspaceMemberCommands(parent: Command): void {
   const members = parent
@@ -19,15 +21,9 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
         const members = await client.workspaceMembers.list(workspaceId);
 
-        renderList(members, {
-          "User ID": (m: any) => m.userId || "",
-          "Username": (m: any) => m.user?.username || "",
-          "Email": (m: any) => m.user?.email || "",
-          "Role": (m: any) => m.workspaceRole || "",
-          "Joined": (m: any) => m.joinedAt ? new Date(m.joinedAt).toISOString().split('T')[0] : "",
-        }, getOutputMode(opts));
+        renderList(members as any[], TABLE_SCHEMAS['workspace-members.list'], getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -44,7 +40,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
 
         renderData(member, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -92,7 +88,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
         console.log(`✓ Added user to workspace with role: ${member.workspaceRole}`);
         renderData(member, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -138,7 +134,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
         console.log(`✓ Updated member role to: ${member.workspaceRole}`);
         renderData(member, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -162,7 +158,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
 
         console.log(`✓ Removed user from workspace`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

@@ -1,8 +1,11 @@
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
 import { readFileSync } from "fs";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerNotificationCommands(parent: Command): void {
   const notifications = new Command("notifications")
@@ -20,14 +23,9 @@ export function registerNotificationCommands(parent: Command): void {
         const items = await client.notifications.list();
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(items as any, {
-          id: 'id',
-          name: 'name',
-          eventType: 'eventType',
-          enabled: 'enabled',
-        } as any, globalOpts.output as any || 'table');
+        renderList(items as any[], TABLE_SCHEMAS['notifications.list'], getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -42,9 +40,9 @@ export function registerNotificationCommands(parent: Command): void {
         const notification = await client.notifications.get(id);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(notification, globalOpts.output as any || 'table');
+        renderData(notification, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -74,9 +72,9 @@ export function registerNotificationCommands(parent: Command): void {
 
         console.log(`✓ Created notification: ${notification.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(notification, globalOpts.output as any || 'table');
+        renderData(notification, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -106,9 +104,9 @@ export function registerNotificationCommands(parent: Command): void {
 
         console.log(`✓ Updated notification: ${notification.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(notification, globalOpts.output as any || 'table');
+        renderData(notification, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -131,7 +129,7 @@ export function registerNotificationCommands(parent: Command): void {
 
         console.log(`✓ Deleted notification: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -154,7 +152,52 @@ export function registerNotificationCommands(parent: Command): void {
           process.exitCode = 1;
         }
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  const logColumns = {
+    id: 'id',
+    notifierId: 'notifierId',
+    eventType: 'eventType',
+    status: 'status',
+    executedAt: 'executedAt',
+    error: 'errorMessage',
+  } as any;
+
+  // Workspace-wide notification execution log
+  notifications
+    .command("log")
+    .description("Show workspace-wide notification execution log")
+    .option("--limit <number>", "Maximum number of entries to return", "50")
+    .action(async function(this: Command, cmdOpts) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const entries = await client.notifications.log({ limit: parseInt(cmdOpts.limit, 10) });
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderList(entries as any[], logColumns, getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Per-notification execution logs
+  notifications
+    .command("logs <id>")
+    .description("Show execution logs for a specific notification")
+    .option("--limit <number>", "Maximum number of entries to return", "50")
+    .action(async function(this: Command, id: string, cmdOpts) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const entries = await client.notifications.logs(id, { limit: parseInt(cmdOpts.limit, 10) });
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderList(entries as any[], logColumns, getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

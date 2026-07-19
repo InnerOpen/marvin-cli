@@ -4,25 +4,7 @@ import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { readJsonInput } from "../../shared/json-input.js";
 import { handleCommandError } from "../../shared/error-handler.js";
-import type { ColumnSpec } from "../../output.js";
-
-// Column definitions for forms list
-const platformFormColumns: ColumnSpec<any> = {
-  ID: (form) => form.id || "",
-  Slug: (form) => form.slug || "",
-  Name: (form) => form.name || "",
-  Status: (form) => form.status || "",
-  Submissions: (form) => form.submissionsCount?.toString() || "0",
-  Created: (form) => form.createdAt ? new Date(form.createdAt).toLocaleDateString() : "",
-};
-
-// Column definitions for form submissions list
-const formSubmissionColumns: ColumnSpec<any> = {
-  ID: (sub) => sub.id || "",
-  Status: (sub) => sub.status || "",
-  "Submitted At": (sub) => sub.submittedAt ? new Date(sub.submittedAt).toLocaleString() : "",
-  IP: (sub) => sub.ipAddress || "",
-};
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerPlatformFormCommands(parent: Command): void {
   const forms = parent
@@ -40,7 +22,7 @@ export function registerPlatformFormCommands(parent: Command): void {
 
         const forms = await client.forms.list();
 
-        renderList(forms as any[], platformFormColumns, getOutputMode(opts));
+        renderList(forms as any[], TABLE_SCHEMAS['forms.list'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }
@@ -138,7 +120,7 @@ export function registerPlatformFormCommands(parent: Command): void {
 
         const submissions = await client.forms.getSubmissions(formId);
 
-        renderList(submissions as any[], formSubmissionColumns, getOutputMode(opts));
+        renderList(submissions as any[], TABLE_SCHEMAS['forms.submissions'], getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }
@@ -152,8 +134,9 @@ export function registerPlatformFormCommands(parent: Command): void {
       try {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
+        const workspace = await client.workspaces.getCurrent();
 
-        const form = await client.forms.getPublishedForm(slug);
+        const form = await client.forms.getPublishedForm(workspace.slug ?? '', slug);
         renderData(form, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -172,8 +155,9 @@ export function registerPlatformFormCommands(parent: Command): void {
 
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
+        const workspace = await client.workspaces.getCurrent();
 
-        const submission = await client.forms.submitForm(slug, data);
+        const submission = await client.forms.submitForm(workspace.slug ?? '', slug, data);
         console.log(`✓ Submitted to form: ${slug}`);
         renderData(submission, getOutputMode(opts));
       } catch (error) {

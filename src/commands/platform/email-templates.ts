@@ -4,8 +4,11 @@
 
 import { Command } from 'commander';
 import { clientFactory } from '../../shared/clients.js';
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from '../../shared/types.js';
 import { renderList, renderData } from '../../output.js';
+import { TABLE_SCHEMAS } from '../../shared/table-schemas.js';
 
 export function registerEmailTemplateCommands(parent: Command): void {
   const cmd = new Command('email-templates')
@@ -26,15 +29,11 @@ export function registerEmailTemplateCommands(parent: Command): void {
         const templates = await client.emailTemplates.list(workspace.id);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(templates as any, {
-          name: 'name',
-          template_type: 'type',
-          enabled: 'enabled',
-          group_id: 'scope',
-        } as any, globalOpts.output as any || 'table');
+        renderList(templates as any[], TABLE_SCHEMAS['email-templates.list'], getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        handleCommandError(error);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -49,10 +48,11 @@ export function registerEmailTemplateCommands(parent: Command): void {
         const template = await client.emailTemplates.get(workspace.id, templateId);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(template as any, globalOpts.output as any || 'table');
+        renderData(template as any, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        handleCommandError(error);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -76,26 +76,27 @@ export function registerEmailTemplateCommands(parent: Command): void {
         const workspace = await client.workspaces.getCurrent();
 
         const data = {
-          template_type: options.type,
+          templateType: options.type,
           name: options.name,
           subject: options.subject,
           description: options.description,
-          header_text: options.header,
-          message_top: options.messageTop,
-          message_bottom: options.messageBottom,
-          button_text: options.buttonText,
-          custom_html: options.customHtml,
+          headerText: options.header,
+          messageTop: options.messageTop,
+          messageBottom: options.messageBottom,
+          buttonText: options.buttonText,
+          customHtml: options.customHtml,
           enabled: !options.disabled,
         };
 
         const template = await client.emailTemplates.create(workspace.id, data);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(template as any, globalOpts.output as any || 'table');
+        renderData(template as any, getOutputMode(globalOpts));
         console.log(`✓ Created email template: ${template.name}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        handleCommandError(error);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -122,22 +123,23 @@ export function registerEmailTemplateCommands(parent: Command): void {
         if (options.name) data.name = options.name;
         if (options.subject) data.subject = options.subject;
         if (options.description) data.description = options.description;
-        if (options.header) data.header_text = options.header;
-        if (options.messageTop) data.message_top = options.messageTop;
-        if (options.messageBottom) data.message_bottom = options.messageBottom;
-        if (options.buttonText) data.button_text = options.buttonText;
-        if (options.customHtml) data.custom_html = options.customHtml;
+        if (options.header) data.headerText = options.header;
+        if (options.messageTop) data.messageTop = options.messageTop;
+        if (options.messageBottom) data.messageBottom = options.messageBottom;
+        if (options.buttonText) data.buttonText = options.buttonText;
+        if (options.customHtml) data.customHtml = options.customHtml;
         if (options.enable) data.enabled = true;
         if (options.disable) data.enabled = false;
 
         const template = await client.emailTemplates.update(workspace.id, templateId, data);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(template as any, globalOpts.output as any || 'table');
+        renderData(template as any, getOutputMode(globalOpts));
         console.log(`✓ Updated email template: ${template.name}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        handleCommandError(error);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -154,14 +156,34 @@ export function registerEmailTemplateCommands(parent: Command): void {
 
         if (!options.yes) {
           console.log('Delete template? Use --yes to confirm');
-          process.exit(1);
+          process.exitCode = 1;
+        return;
         }
 
         await client.emailTemplates.delete(workspace.id, templateId);
         console.log(`✓ Deleted template: ${templateId}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        handleCommandError(error);
+        process.exitCode = 1;
+        return;
+      }
+    });
+
+  // Event connections
+  cmd
+    .command('event-connections <group-id>')
+    .description('List event connections available for workspace email templates')
+    .action(async function(this: Command, groupId: string) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const connections = await client.emailTemplates.getEventConnections(groupId);
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderData(connections, getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -178,8 +200,9 @@ export function registerEmailTemplateCommands(parent: Command): void {
         console.log(`✓ ${result.message}`);
         console.log(`  Recipient: ${email}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exit(1);
+        handleCommandError(error);
+        process.exitCode = 1;
+        return;
       }
     });
 }

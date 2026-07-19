@@ -1,15 +1,20 @@
+import { writeFileSync, readFileSync } from "node:fs";
 import { Command } from "commander";
 import { credentialsManager } from "../../config/credentials.js";
 import { clientFactory } from "../../shared/clients.js";
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
+import { renderData } from "../../output.js";
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import type { WorkspaceWithMembership } from "@inneropen/marvin-sdk/platform";
+import { promptSecure, readFromStdin } from "../../shared/prompt.js";
 
-export function registerWorkspaceCommands(parent: Command): void {
+export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boolean }): void {
   // Workspace group
   const workspace = new Command("workspace")
     .description("Workspace management commands");
 
-  parent.addCommand(workspace);
+  parent.addCommand(workspace, { hidden: opts?.hidden });
 
   // Show current active workspace
   workspace
@@ -24,7 +29,7 @@ export function registerWorkspaceCommands(parent: Command): void {
           console.log("No active workspace set");
         }
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -41,7 +46,7 @@ export function registerWorkspaceCommands(parent: Command): void {
         const workspace = await client.workspaces.setActive(workspaceIdentifier);
 
         // Also save slug locally for convenience
-        credentialsManager.setActiveWorkspace(workspace.slug);
+        credentialsManager.setActiveWorkspace(workspace.slug ?? '');
 
         console.log(`✓ Active workspace set to: ${workspace.name} (${workspace.slug})`);
       } catch (error) {
@@ -49,7 +54,7 @@ export function registerWorkspaceCommands(parent: Command): void {
           console.error(error.message);
           console.log("\nTry: marvin workspace list");
         } else {
-          console.error(error instanceof Error ? error.message : error);
+          handleCommandError(error);
         }
         process.exitCode = 1;
       }
@@ -75,7 +80,7 @@ export function registerWorkspaceCommands(parent: Command): void {
 
         workspaces.forEach((w: WorkspaceWithMembership) => {
           const active = w.isActive ? "✓ ACTIVE" : "";
-          const hasSiteToken = credentialsManager.getSiteToken(w.workspace.slug) ? "🔑" : "";
+          const hasSiteToken = credentialsManager.getSiteToken(w.workspace.slug ?? '') ? "🔑" : "";
           console.log(`${w.workspace.name} (${w.workspace.slug}) ${hasSiteToken}`);
           console.log(`  Role: ${w.role}  ${active}`);
           console.log(`  ID: ${w.workspace.id}`);
@@ -83,17 +88,18 @@ export function registerWorkspaceCommands(parent: Command): void {
         });
 
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
 
   // Set site token for workspace
   workspace
-    .command("token <site-token>")
+    .command("token")
     .description("Store site token for current workspace (for Publishing API)")
     .option("--for <slug>", "Workspace slug (defaults to active workspace)")
-    .action(async (siteToken: string, cmdOpts: { for?: string }) => {
+    .option("--from-stdin", "Read token from stdin (pipe input)")
+    .action(async (cmdOpts: { for?: string; fromStdin?: boolean }) => {
       try {
         // Resolve workspace (use --for option or active workspace)
         const workspaceSlug = cmdOpts.for || credentialsManager.getActiveWorkspace();
@@ -102,7 +108,22 @@ export function registerWorkspaceCommands(parent: Command): void {
           console.error("No active workspace set.");
           console.log("Either:");
           console.log("  1. Set active workspace: marvin workspace use <slug>");
-          console.log("  2. Specify workspace: marvin workspace token <token> --for <slug>");
+          console.log("  2. Specify workspace: marvin workspace token --for <slug>");
+          process.exitCode = 1;
+          return;
+        }
+
+        let siteToken: string;
+
+        // Read token from stdin or prompt
+        if (cmdOpts.fromStdin) {
+          siteToken = await readFromStdin();
+        } else {
+          siteToken = await promptSecure("Enter site token (input hidden):");
+        }
+
+        if (!siteToken) {
+          console.error("Error: Site token is required");
           process.exitCode = 1;
           return;
         }
@@ -114,8 +135,43 @@ export function registerWorkspaceCommands(parent: Command): void {
         console.log("\nYou can now use Publishing API commands without --site-token flag:");
         console.log("  marvin publish entries");
         console.log("  marvin publish collections");
+        console.log("\nUsage examples:");
+        console.log("  Interactive: marvin workspace token");
+        console.log("  From stdin:  echo 'token' | marvin workspace token --from-stdin");
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Export workspace data
+  workspace
+    .command("export")
+    .description("Export workspace data as JSON (collections, entry types, entries, site config)")
+    .option("-o, --output <file>", "Write to file instead of stdout")
+    .option("--include-system-types", "Include system entry types in export", false)
+    .option("--no-pretty", "Output compact JSON instead of pretty-printed")
+    .action(async (cmdOpts: { output?: string; includeSystemTypes?: boolean; pretty?: boolean }) => {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+
+        const data = await client.workspaces.export({
+          includeSystemTypes: cmdOpts.includeSystemTypes,
+          pretty: cmdOpts.pretty,
+        });
+
+        const json = cmdOpts.pretty !== false
+          ? JSON.stringify(data, null, 2)
+          : JSON.stringify(data);
+
+        if (cmdOpts.output) {
+          writeFileSync(cmdOpts.output, json + "\n", "utf-8");
+          console.error(`✓ Workspace exported to ${cmdOpts.output}`);
+        } else {
+          process.stdout.write(json + "\n");
+        }
+      } catch (error) {
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -147,7 +203,171 @@ export function registerWorkspaceCommands(parent: Command): void {
         credentialsManager.removeSiteToken(workspaceSlug);
         console.log(`✓ Site token removed for workspace: ${workspaceSlug}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Import workspace bundle
+  workspace
+    .command("import")
+    .description("Import a workspace bundle (ZIP file exported via workspace export)")
+    .requiredOption("--file <path>", "Path to the ZIP bundle file to import")
+    .option("--overwrite", "Overwrite existing records matched by slug", false)
+    .action(async (cmdOpts: { file: string; overwrite?: boolean }) => {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+
+        const fileContent = readFileSync(cmdOpts.file);
+        const blob = new Blob([fileContent], { type: "application/zip" });
+
+        console.log(`Importing bundle from: ${cmdOpts.file}`);
+        const result = await client.workspaces.importBundle(blob, { overwrite: cmdOpts.overwrite });
+
+        console.log("✓ Import complete");
+        if (result.imported) {
+          Object.entries(result.imported).forEach(([type, count]) => {
+            console.log(`  ${type}: ${count}`);
+          });
+        }
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Workspace preferences
+  const preferences = workspace
+    .command("preferences")
+    .description("Workspace preferences management");
+
+  preferences
+    .action(async () => {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const current = await client.workspaces.getCurrent();
+        const prefs = await client.workspaces.getPreferences(current.id);
+        console.log(JSON.stringify(prefs, null, 2));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  preferences
+    .command("update")
+    .description("Update workspace preferences")
+    .option("--json <json>", "Preferences data as JSON string")
+    .option("--file <path>", "Path to JSON file with preferences data")
+    .action(async (cmdOpts: { json?: string; file?: string }) => {
+      try {
+        let data: any;
+
+        if (cmdOpts.json) {
+          data = JSON.parse(cmdOpts.json);
+        } else if (cmdOpts.file) {
+          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        } else {
+          console.error("Error: Provide preferences data via --json or --file");
+          process.exitCode = 1;
+          return;
+        }
+
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const current = await client.workspaces.getCurrent();
+        const prefs = await client.workspaces.updatePreferences(current.id, data);
+
+        console.log("✓ Updated workspace preferences");
+        console.log(JSON.stringify(prefs, null, 2));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Platform-level stats for the current workspace
+  workspace
+    .command("stats")
+    .description("Show platform-level stats for the current workspace")
+    .action(async function(this: Command) {
+      try {
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const stats = await client.workspaces.getStats();
+        renderData(stats, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Workspace backups
+  const backups = workspace
+    .command("backups")
+    .description("Workspace backup management");
+
+  backups
+    .command("list")
+    .description("List available workspace backups")
+    .action(async function(this: Command) {
+      try {
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const items = await client.workspaces.listBackups();
+        renderData(items, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  backups
+    .command("download <filename>")
+    .description("Download a workspace backup by filename")
+    .option("-o, --output <file>", "Write backup to file instead of stdout")
+    .action(async function(this: Command, filename: string, cmdOpts: { output?: string }) {
+      try {
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const data = await client.workspaces.downloadBackup(filename);
+
+        if (cmdOpts.output) {
+          let buffer: Buffer;
+          if (Buffer.isBuffer(data)) {
+            buffer = data;
+          } else if (data instanceof ArrayBuffer) {
+            buffer = Buffer.from(new Uint8Array(data));
+          } else if (typeof (data as any)?.arrayBuffer === "function") {
+            // Blob-like
+            buffer = Buffer.from(new Uint8Array(await (data as Blob).arrayBuffer()));
+          } else if (typeof data === "string") {
+            buffer = Buffer.from(data, "utf-8");
+          } else {
+            buffer = Buffer.from(JSON.stringify(data, null, 2), "utf-8");
+          }
+          writeFileSync(cmdOpts.output, buffer);
+          console.log(`✓ Backup written to ${cmdOpts.output}`);
+        } else {
+          renderData(data, getOutputMode(opts));
+        }
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  backups
+    .command("create")
+    .description("Create a new backup of the current workspace")
+    .action(async function(this: Command) {
+      try {
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const result = await client.workspaces.createBackup();
+        console.log("✓ Backup created");
+        renderData(result, getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

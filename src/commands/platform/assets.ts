@@ -1,11 +1,12 @@
+import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
-import { readFileSync, createReadStream, statSync } from "fs";
+import { readFileSync, writeFileSync, createReadStream, statSync } from "fs";
 import { basename } from "path";
 import { Blob } from "buffer";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { platformAssetColumns } from "../../shared/columns.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerPlatformAssetCommands(parent: Command): void {
   const assets = parent
@@ -20,9 +21,9 @@ export function registerPlatformAssetCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const assets = await client.assets.list();
-        renderList(assets as any[], platformAssetColumns, getOutputMode(opts));
+        renderList(assets as any[], TABLE_SCHEMAS['assets.list'], getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -37,7 +38,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         const asset = await client.assets.get(id);
         renderData(asset, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -89,7 +90,42 @@ export function registerPlatformAssetCommands(parent: Command): void {
 
         renderData(asset, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  assets
+    .command("download <id>")
+    .description("Download the raw file for an asset")
+    .option("-o, --output <file>", "Write file to path instead of stdout")
+    .action(async function(this: Command, id: string, cmdOpts: { output?: string }) {
+      try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const data = await client.assets.getFile(id);
+
+        if (cmdOpts.output) {
+          let buffer: Buffer;
+          if (Buffer.isBuffer(data)) {
+            buffer = data;
+          } else if (data instanceof ArrayBuffer) {
+            buffer = Buffer.from(new Uint8Array(data));
+          } else if (typeof (data as any)?.arrayBuffer === "function") {
+            // Blob-like
+            buffer = Buffer.from(new Uint8Array(await (data as Blob).arrayBuffer()));
+          } else if (typeof data === "string") {
+            buffer = Buffer.from(data, "utf-8");
+          } else {
+            buffer = Buffer.from(JSON.stringify(data, null, 2), "utf-8");
+          }
+          writeFileSync(cmdOpts.output, buffer);
+          console.log(`✓ Wrote asset file to ${cmdOpts.output}`);
+        } else {
+          renderData(data, getOutputMode(opts));
+        }
+      } catch (error) {
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -118,7 +154,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         console.log(`✓ Updated asset: ${asset.id}`);
         renderData(asset, getOutputMode(opts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -140,7 +176,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         await client.assets.delete(id);
         console.log(`✓ Deleted asset: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

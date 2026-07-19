@@ -8,28 +8,51 @@
  * - echo '{"key":"value"}' | command
  * - command <<'EOF' ... EOF
  */
-export async function readJsonInput(cmdOpts: any): Promise<any> {
+export async function readJsonInput(cmdOpts: any, options?: { validateObject?: boolean }): Promise<any> {
+  const { validateObject = true } = options || {};
+
+  let data: any;
+
   if (cmdOpts.json) {
-    return JSON.parse(cmdOpts.json);
+    data = JSON.parse(cmdOpts.json);
   } else if (cmdOpts.file) {
     if (cmdOpts.file === "-") {
       // Explicit stdin via --file -
-      return await readStdin();
+      const input = await readStdin();
+      data = JSON.parse(input);
     } else {
-      // Read from file
+      // Validate and read from file
+      const { validateFilePath } = await import("./validation.js");
+      const validPath = validateFilePath(cmdOpts.file, {
+        mustExist: true,
+        mustBeFile: true,
+        warnSensitive: true,
+      });
+
       const { readFileSync } = await import("fs");
-      return JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+      data = JSON.parse(readFileSync(validPath, "utf-8"));
     }
   } else {
     // Check if stdin has data (pipe or heredoc)
     if (!process.stdin.isTTY) {
       const input = await readStdin();
       if (input.trim()) {
-        return JSON.parse(input);
+        data = JSON.parse(input);
+      } else {
+        throw new Error("Provide data via --json, --file, or stdin");
       }
+    } else {
+      throw new Error("Provide data via --json, --file, or stdin");
     }
-    throw new Error("Provide data via --json, --file, or stdin");
   }
+
+  // Validate that data is an object (not array or primitive)
+  if (validateObject) {
+    const { validateJsonObject } = await import("./validation.js");
+    validateJsonObject(data, "input");
+  }
+
+  return data;
 }
 
 async function readStdin(): Promise<string> {

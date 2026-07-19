@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { MarvinNotFoundError } from "@inneropen/marvin-sdk";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
@@ -50,9 +51,17 @@ export function registerAssetCommands(parent: Command): void {
         }
 
         const client = clientFactory.createPublishClient(opts);
-        const asset = await client.assets.get(slug);
-
-        renderList([asset] as MarvinAsset[], assetColumns, getOutputMode(opts));
+        try {
+          const asset = await client.assets.get(slug);
+          renderList(asset ? [asset] as MarvinAsset[] : [], assetColumns, getOutputMode(opts));
+        } catch (error) {
+          if (error instanceof MarvinNotFoundError) {
+            renderList([], assetColumns, getOutputMode(opts));
+            process.exitCode = 1;
+          } else {
+            throw error;
+          }
+        }
       } catch (error) {
         handleCommandError(error);
       }

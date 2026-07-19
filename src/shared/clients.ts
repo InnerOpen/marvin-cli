@@ -1,8 +1,9 @@
-import { MarvinClient } from "@inneropen/marvin-sdk";
+import { MarvinClient, AuthClient } from "@inneropen/marvin-sdk";
 import { PlatformClient } from "@inneropen/marvin-sdk/platform";
 import { env } from "../config/environment.js";
 import { credentialsManager } from "../config/credentials.js";
 import { workspaceResolver } from "../config/workspace.js";
+import { validateApiUrl } from "./validation.js";
 import type { PublishCommandOptions, PlatformCommandOptions } from "./types.js";
 
 /**
@@ -18,17 +19,26 @@ export class ClientFactory {
    * - workspaceSlug: --workspace flag > active workspace > MARVIN_WORKSPACE_SLUG env var
    */
   createPublishClient(options: PublishCommandOptions): MarvinClient {
-    const apiUrl = options.apiUrl || env.apiUrl;
+    const apiUrl = options.apiUrl || env.apiUrl || credentialsManager.getApiUrl();
+
+    // Validate API URL if provided
+    if (apiUrl) {
+      validateApiUrl(apiUrl);
+    }
 
     // Resolve workspace first (needed to look up stored token)
     const workspaceSlug = options.workspace || credentialsManager.getActiveWorkspace() || env.workspaceSlug;
 
-    // Resolve site token with stored token support
-    let siteClientToken = options.token || env.siteClientToken;
-
-    // If no token from flag/env, check stored token for the workspace
+    // Resolve site token — CLI flag > stored credentials > env var
+    // Stored credentials beat env vars so that 'marvin login --site-token' takes effect
+    // even when MARVIN_SITE_CLIENT_TOKEN is set in a project .env file.
+    // Env var is the fallback for CI/automation where no credentials file exists.
+    let siteClientToken = options.token;
     if (!siteClientToken && workspaceSlug) {
       siteClientToken = credentialsManager.getSiteToken(workspaceSlug);
+    }
+    if (!siteClientToken) {
+      siteClientToken = env.siteClientToken;
     }
 
     if (!apiUrl) {
@@ -47,7 +57,7 @@ export class ClientFactory {
         "  --token or --site-token flag\n" +
         "  MARVIN_SITE_CLIENT_TOKEN environment variable\n" +
         (workspaceSlug
-          ? `  Run 'marvin workspace token <site-token>' to save for workspace '${workspaceSlug}'`
+          ? `  Run 'marvin workspace token' to save for workspace '${workspaceSlug}'`
           : "  Set active workspace first with 'marvin workspace use <slug>'")
       );
     }
@@ -74,13 +84,21 @@ export class ClientFactory {
    *
    * Configuration precedence:
    * - apiUrl: --api-url flag > MARVIN_API_URL env var
-   * - userToken: --user-token flag > MARVIN_USER_TOKEN env var > saved credentials
+   * - userToken: MARVIN_USER_TOKEN env var > saved credentials (no CLI flag for security)
    *
    * Note: Workspace context is managed at the server session level, not via client config
    */
   async createPlatformClient(options: PlatformCommandOptions): Promise<PlatformClient> {
-    const apiUrl = options.apiUrl || env.apiUrl;
-    const userToken = options.userToken || env.userToken || credentialsManager.getUserToken();
+    const apiUrl = options.apiUrl || env.apiUrl || credentialsManager.getApiUrl();
+
+    // Validate API URL if provided
+    if (apiUrl) {
+      validateApiUrl(apiUrl);
+    }
+
+    // Note: --user-token flag is NOT supported for security reasons (shell history exposure)
+    // Only support env var and saved credentials
+    const userToken = env.userToken || credentialsManager.getUserToken();
 
     if (!apiUrl) {
       throw new Error(
@@ -95,9 +113,11 @@ export class ClientFactory {
       throw new Error(
         "User token is required for Platform API.\n" +
         "Provide via:\n" +
-        "  --user-token flag\n" +
         "  MARVIN_USER_TOKEN environment variable\n" +
-        "  Run 'marvin platform login' to save credentials"
+        "  Run 'marvin login' to save credentials\n" +
+        "\n" +
+        "Note: --user-token flag is not supported for security reasons.\n" +
+        "Use environment variable or save credentials via 'marvin login'."
       );
     }
 
@@ -105,6 +125,33 @@ export class ClientFactory {
       apiUrl,
       userToken,
     });
+  }
+
+  /**
+   * Create a public Auth client (registration, password reset)
+   *
+   * Uses NoAuth — no token required. Only needs an API URL.
+   *
+   * Configuration precedence:
+   * - apiUrl: --api-url flag > MARVIN_API_URL env var > saved credentials
+   */
+  createAuthClient(options: PlatformCommandOptions): AuthClient {
+    const apiUrl = options.apiUrl || env.apiUrl || credentialsManager.getApiUrl();
+
+    if (apiUrl) {
+      validateApiUrl(apiUrl);
+    }
+
+    if (!apiUrl) {
+      throw new Error(
+        "Marvin API URL is required.\n" +
+        "Provide via:\n" +
+        "  --api-url flag\n" +
+        "  MARVIN_API_URL environment variable"
+      );
+    }
+
+    return new AuthClient(apiUrl);
   }
 
   /**

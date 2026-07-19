@@ -1,7 +1,6 @@
-import { readFileSync, writeFileSync, mkdirSync, chmodSync, existsSync, unlinkSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, chmodSync, existsSync, unlinkSync, renameSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
-import { tmpdir } from "os";
 import { randomBytes } from "crypto";
 
 export interface WorkspaceCredentials {
@@ -9,6 +8,7 @@ export interface WorkspaceCredentials {
 }
 
 export interface Credentials {
+  apiUrl?: string;
   userToken?: string;
   activeWorkspace?: string;
   workspaces?: Record<string, WorkspaceCredentials>;
@@ -47,30 +47,35 @@ export class CredentialsManager {
    * Sets file permissions to 0600 for security
    */
   save(credentials: Credentials): void {
-    // Ensure the directory exists
+    // Ensure the directory exists with secure permissions
     if (!existsSync(this.credentialsDir)) {
-      mkdirSync(this.credentialsDir, { recursive: true });
+      mkdirSync(this.credentialsDir, { recursive: true, mode: 0o700 });
     }
 
-    // Atomic write: write to temp file, then rename
-    const tempPath = join(tmpdir(), `marvin-credentials-${randomBytes(8).toString("hex")}.json`);
+    // Atomic write: write to temp file in same directory, then rename
+    // Note: temp file MUST be in same directory for atomic rename to work on all filesystems
+    const tempPath = join(this.credentialsDir, `.credentials-${randomBytes(8).toString("hex")}.tmp`);
 
     try {
+      // Write to temp file with secure permissions
       writeFileSync(tempPath, JSON.stringify(credentials, null, 2), { mode: 0o600 });
 
-      // Rename is atomic on POSIX systems
-      writeFileSync(this.credentialsPath, readFileSync(tempPath, "utf-8"), { mode: 0o600 });
+      // Atomic rename (only works within same filesystem)
+      // This is truly atomic on POSIX systems - either completes fully or not at all
+      renameSync(tempPath, this.credentialsPath);
 
-      // Clean up temp file
+      // Ensure proper permissions on the final file (renameSync preserves permissions)
+      chmodSync(this.credentialsPath, 0o600);
+    } catch (error) {
+      // Clean up temp file on error
       try {
-        unlinkSync(tempPath);
+        if (existsSync(tempPath)) {
+          unlinkSync(tempPath);
+        }
       } catch {
         // Ignore cleanup errors
       }
 
-      // Ensure proper permissions on the final file
-      chmodSync(this.credentialsPath, 0o600);
-    } catch (error) {
       throw new Error(`Failed to save credentials: ${error instanceof Error ? error.message : error}`);
     }
   }
@@ -117,6 +122,22 @@ export class CredentialsManager {
   setActiveWorkspace(workspace: string): void {
     const credentials = this.load();
     credentials.activeWorkspace = workspace;
+    this.save(credentials);
+  }
+
+  /**
+   * Get the saved API URL
+   */
+  getApiUrl(): string | undefined {
+    return this.load().apiUrl;
+  }
+
+  /**
+   * Save the API URL
+   */
+  setApiUrl(apiUrl: string): void {
+    const credentials = this.load();
+    credentials.apiUrl = apiUrl;
     this.save(credentials);
   }
 

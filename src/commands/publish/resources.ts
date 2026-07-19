@@ -1,4 +1,5 @@
 import { Command } from "commander";
+import { MarvinNotFoundError } from "@inneropen/marvin-sdk";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
@@ -50,9 +51,17 @@ export function registerResourceCommands(parent: Command): void {
         }
 
         const client = clientFactory.createPublishClient(opts);
-        const resource = await client.resources.get(slug);
-
-        renderList([resource] as MarvinResource[], resourceColumns, getOutputMode(opts));
+        try {
+          const resource = await client.resources.get(slug);
+          renderList(resource ? [resource] as MarvinResource[] : [], resourceColumns, getOutputMode(opts));
+        } catch (error) {
+          if (error instanceof MarvinNotFoundError) {
+            renderList([], resourceColumns, getOutputMode(opts));
+            process.exitCode = 1;
+          } else {
+            throw error;
+          }
+        }
       } catch (error) {
         handleCommandError(error);
       }
@@ -72,9 +81,18 @@ export function registerResourceCommands(parent: Command): void {
         }
 
         const client = clientFactory.createPublishClient(opts);
-        const entries = await client.resources.entries(slug);
-
-        renderList(entries as MarvinEntry[], entryColumns, getOutputMode(opts));
+        try {
+          const slugs = await client.resources.entries(slug);
+          const slugColumns = { Slug: (s: string) => s };
+          renderList(slugs, slugColumns, getOutputMode(opts));
+        } catch (error) {
+          if (error instanceof MarvinNotFoundError) {
+            renderList([], { Slug: (s: string) => s }, getOutputMode(opts));
+            process.exitCode = 1;
+          } else {
+            throw error;
+          }
+        }
       } catch (error) {
         handleCommandError(error);
       }

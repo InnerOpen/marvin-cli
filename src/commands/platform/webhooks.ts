@@ -2,7 +2,10 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
+import { getOutputMode } from "../../shared/types.js";
+import { handleCommandError } from "../../shared/error-handler.js";
 import { readFileSync } from "fs";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerWebhookCommands(parent: Command): void {
   const webhooks = new Command("webhooks")
@@ -20,15 +23,9 @@ export function registerWebhookCommands(parent: Command): void {
         const items = await client.webhooks.list();
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(items as any, {
-          id: 'id',
-          name: 'name',
-          url: 'url',
-          enabled: 'enabled',
-        } as any, globalOpts.output as any || 'table');
+        renderList(items as any[], TABLE_SCHEMAS['webhooks.list'], getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
-        process.exitCode = 1;
+        handleCommandError(error);
       }
     });
 
@@ -42,9 +39,9 @@ export function registerWebhookCommands(parent: Command): void {
         const webhook = await client.webhooks.get(id);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(webhook, globalOpts.output as any || 'table');
+        renderData(webhook, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -74,9 +71,9 @@ export function registerWebhookCommands(parent: Command): void {
 
         console.log(`✓ Created webhook: ${webhook.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(webhook, globalOpts.output as any || 'table');
+        renderData(webhook, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -106,9 +103,9 @@ export function registerWebhookCommands(parent: Command): void {
 
         console.log(`✓ Updated webhook: ${webhook.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(webhook, globalOpts.output as any || 'table');
+        renderData(webhook, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -131,7 +128,7 @@ export function registerWebhookCommands(parent: Command): void {
 
         console.log(`✓ Deleted webhook: ${id}`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -144,19 +141,27 @@ export function registerWebhookCommands(parent: Command): void {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.webhooks.test(id);
-
-        if (result.success) {
-          console.log("✓ Webhook test successful");
-          if (result.statusCode) console.log(`Status code: ${result.statusCode}`);
-          if (result.message) console.log(result.message);
-        } else {
-          console.error("✗ Webhook test failed");
-          if (result.statusCode) console.error(`Status code: ${result.statusCode}`);
-          if (result.message) console.error(result.message);
-          process.exitCode = 1;
-        }
+        console.log("✓ Webhook test scheduled");
+        if (result?.message) console.log(result.message);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Types
+  webhooks
+    .command("types")
+    .description("List the available webhook types")
+    .action(async function(this: Command) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const types = await client.webhooks.types();
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderData(types, getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -173,7 +178,43 @@ export function registerWebhookCommands(parent: Command): void {
         console.log(result.message);
         console.log(`Requeued: ${result.requeued} webhooks`);
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Workspace-wide delivery log
+  webhooks
+    .command("log")
+    .description("Show workspace-wide webhook delivery log")
+    .option("--limit <number>", "Maximum number of entries to return", "50")
+    .action(async function(this: Command, cmdOpts) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const entries = await client.webhooks.log({ limit: parseInt(cmdOpts.limit, 10) });
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderList(entries as any[], TABLE_SCHEMAS['webhooks.log'], getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Per-webhook delivery log
+  webhooks
+    .command("logs <id>")
+    .description("Show delivery log for a specific webhook")
+    .option("--limit <number>", "Maximum number of entries to return", "50")
+    .action(async function(this: Command, id: string, cmdOpts) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const entries = await client.webhooks.logs(id, { limit: parseInt(cmdOpts.limit, 10) });
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderList(entries as any[], TABLE_SCHEMAS['webhooks.logs'], getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

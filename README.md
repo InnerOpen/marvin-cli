@@ -1,5 +1,10 @@
 # Marvin CLI
 
+[![npm version](https://img.shields.io/npm/v/@inneropen/marvin-cli)](https://www.npmjs.com/package/@inneropen/marvin-cli)
+[![Test](https://github.com/inneropen/marvin-cli/actions/workflows/test.yml/badge.svg?branch=develop)](https://github.com/inneropen/marvin-cli/actions/workflows/test.yml)
+[![npm downloads](https://img.shields.io/npm/dm/@inneropen/marvin-cli)](https://www.npmjs.com/package/@inneropen/marvin-cli)
+[![license](https://img.shields.io/npm/l/@inneropen/marvin-cli)](./LICENSE)
+
 Official command-line interface for [Marvin CMS](https://github.com/jmashburn/Marvin) Publishing API.
 
 ## Features
@@ -7,9 +12,22 @@ Official command-line interface for [Marvin CMS](https://github.com/jmashburn/Ma
 - 📊 **Table output by default** - Human-readable tables in your terminal
 - 🔄 **Multiple output formats** - Table, JSON, YAML, CSV
 - 🔍 **Filter and query** - Filter by entry type, collection, asset type
+- 🎨 **Renderer inspection** - View entry type renderers and capabilities
 - 🚀 **Fast** - Direct HTTP calls to publishing API
 - 🔐 **Site client tokens** - Uses publishing API (not admin API)
 - 👥 **Workspace roles** - Create invitation tokens with specific roles (VIEWER, AUTHOR, EDITOR, ADMIN, OWNER)
+- 🔒 **Enterprise-grade security** - Secure credential handling, no shell history exposure, token masking in CI/CD
+
+## Security Notice
+
+**Version 2.6.0+ includes critical security improvements:**
+
+- Credentials are never exposed in shell history
+- Tokens are automatically masked in CI/CD environments
+- Input validation prevents common security vulnerabilities
+- Atomic credential file writes prevent corruption
+
+**If upgrading from an older version**, please see the [Migration Guide](MIGRATION.md) for breaking changes.
 
 ## Prerequisites
 
@@ -19,56 +37,80 @@ Official command-line interface for [Marvin CMS](https://github.com/jmashburn/Ma
 
 ## Installation
 
-### 1. Install dependencies
+### From npm (Recommended)
 
 ```bash
-cd apps/cli/marvin-cli
+npm install -g @inneropen/marvin-cli
+```
+
+### From source
+
+```bash
+git clone https://github.com/inneropen/marvin-cli.git
+cd marvin-cli
 npm install
-```
-
-### 2. Configure environment
-
-Copy the example environment file:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` with your Marvin configuration:
-
-```env
-MARVIN_API_URL=http://localhost:8000
-MARVIN_SITE_CLIENT_TOKEN=marvin_sk_your_token_here
-MARVIN_WORKSPACE_SLUG=your-workspace-slug
-```
-
-**Where to get these values:**
-
-- **MARVIN_API_URL**: Your Marvin instance URL (e.g., `http://localhost:8000` for local dev)
-- **MARVIN_SITE_CLIENT_TOKEN**: Create in Marvin UI → Settings → Publishing → Site Clients
-- **MARVIN_WORKSPACE_SLUG**: Your workspace slug (e.g., `mash-burn`)
-
-### 3. Build the CLI
-
-```bash
 npm run build
-```
-
-### 4. Link globally (optional)
-
-To use `marvin` from anywhere:
-
-```bash
 npm link
 ```
 
-Or run directly without linking:
+## Authentication
+
+The Marvin CLI supports two authentication methods:
+
+### 1. Login (Recommended)
+
+Store your credentials securely:
 
 ```bash
-npm start -- entries  # Run without linking
+marvin login
 ```
 
-After linking, you can run `marvin` from any directory.
+You'll be prompted for your user token (input is hidden for security). The token is validated before being saved to `~/.marvin/credentials.json`.
+
+**Benefits:**
+- Token is never visible in shell history
+- Automatic token validation
+- Works across all commands
+- Secure file permissions (0600)
+
+### 2. Environment Variables
+
+For CI/CD and automation:
+
+```bash
+# User authentication (Platform API)
+export MARVIN_USER_TOKEN="user_..."
+
+# Site client authentication (Publishing API)
+export MARVIN_SITE_TOKEN="site_client_..."
+
+# Workspace configuration
+export MARVIN_WORKSPACE_SLUG="your-workspace"
+export MARVIN_API_URL="https://marvin.example.com"
+```
+
+**Security best practices:**
+- Never commit tokens to version control
+- Use your CI/CD's secret management (GitHub Secrets, GitLab CI Variables)
+- Rotate tokens regularly
+- Use workspace-specific tokens with minimal permissions
+
+### Setting Workspace Token
+
+To configure a site client token for a specific workspace:
+
+```bash
+# Interactive (recommended)
+marvin workspace token
+
+# From stdin (for scripts)
+echo "$SITE_TOKEN" | marvin workspace token --from-stdin
+
+# For specific workspace
+marvin workspace token --for my-workspace
+```
+
+**Note:** Tokens are automatically masked in non-TTY environments (CI/CD logs) to prevent exposure.
 
 ## Usage
 
@@ -322,6 +364,38 @@ marvin assets --type image   # Only images
 marvin assets --type video   # Only videos
 ```
 
+### Publish Renderers
+
+```bash
+marvin publish renderers [options]
+```
+
+List entry types with their renderer declarations and capabilities. By default, only shows entry types marked as rendered (`isRendered: true`).
+
+**Options:**
+- `--all` - Include all entry types, not just rendered ones
+
+**Examples:**
+```bash
+marvin publish renderers              # Rendered entry types only
+marvin publish renderers --all        # All entry types
+marvin publish renderers --json       # JSON output
+```
+
+Output:
+```
+┌──────────────────┬─────────────────┬───────────┬──────────────────────────────────┬─────────────┬──────────┐
+│ Name             │ Slug            │ Renderer  │ Package                          │ Publishable │ Routable │
+├──────────────────┼─────────────────┼───────────┼──────────────────────────────────┼─────────────┼──────────┤
+│ Page             │ page            │ page      │ @inneropen/marvin-renderers-core │ true        │ true     │
+│ Article          │ article         │ article   │ @inneropen/marvin-renderers-core │ true        │ true     │
+│ FAQ              │ faq             │ faq       │ @inneropen/marvin-renderers-core │ true        │ true     │
+│ Navigation Item  │ navigation-item │ navigation│ @inneropen/marvin-renderers-core │ true        │ false    │
+└──────────────────┴─────────────────┴───────────┴──────────────────────────────────┴─────────────┴──────────┘
+```
+
+See [Renderers Command Documentation](docs/commands/renderers.md) for details.
+
 ## Scripting Examples
 
 ### Export all entries to JSON
@@ -358,30 +432,91 @@ fi
 marvin assets --type image --json | jq -r '.[].name'
 ```
 
+## Security Features
+
+### Credential Protection
+
+**No Shell History Exposure:**
+- Passwords and tokens are entered via secure prompts (hidden input)
+- No credential flags on command line
+- No exposure in `ps aux` or process listings
+
+**Token Masking:**
+- Tokens automatically masked in CI/CD environments
+- Full tokens shown only in interactive terminals (TTY)
+- Format: `site****xyz` (first/last 4 characters)
+
+**Atomic Credential Writes:**
+- Credentials file protected by atomic rename operations
+- No corruption on crash or interrupt (Ctrl+C)
+- Secure permissions: directory 0700, file 0600
+
+### Input Validation
+
+**Path Validation:**
+- Files validated before reading
+- Warnings for sensitive paths (SSH keys, credentials, etc.)
+- Protection against reading from `/etc/`, `~/.ssh/`, `~/.aws/`
+
+**URL Validation:**
+- API URLs validated for protocol (http/https only)
+- Warnings for HTTP on non-localhost
+- Warnings for private IP ranges (SSRF prevention)
+
+**Data Validation:**
+- JSON objects validated before API calls
+- Email addresses validated (RFC 5322)
+- Positive integers validated with explicit radix
+
+### Error Handling
+
+- Graceful shutdown (no data loss)
+- No `process.exit(1)` mid-operation
+- Cleanup handlers execute properly
+- Clear error messages with suggestions
+
 ## Troubleshooting
 
 ### "MARVIN_API_URL is required"
 
-Make sure your `.env` file exists and contains all required variables:
+Make sure you've configured authentication:
 
 ```bash
-cat .env  # Check file exists
-```
+# Option 1: Login
+marvin login
 
-If missing, copy from the example:
-
-```bash
-cp .env.example .env
+# Option 2: Environment variables
+export MARVIN_API_URL=https://marvin.example.com
 ```
 
 ### "401 Unauthorized"
 
-Your site client token is invalid or expired. Generate a new one:
+Your token is invalid or expired:
 
-1. Log into Marvin
-2. Go to Settings → Publishing → Site Clients
-3. Create a new client
-4. Copy the token to your `.env` file
+```bash
+# Re-authenticate
+marvin login
+
+# Or generate new token in Marvin UI:
+# Settings → Publishing → Site Clients
+```
+
+**Note:** The login command validates tokens before saving (v2.6.0+), so you'll know immediately if a token is invalid.
+
+### "User token is required for Platform API"
+
+You need to authenticate for Platform API commands:
+
+```bash
+# Option 1: Save credentials
+marvin login
+
+# Option 2: Environment variable
+export MARVIN_USER_TOKEN="user_..."
+marvin platform entries list
+```
+
+**Note:** The `--user-token` flag has been removed for security reasons (v2.6.0+). Use environment variables or saved credentials instead.
 
 ### "404 Not Found"
 
@@ -393,19 +528,19 @@ Check that:
 
 ### "Command not found: marvin"
 
-You need to link the CLI globally:
+Install globally:
+
+```bash
+npm install -g @inneropen/marvin-cli
+```
+
+Or if using from source:
 
 ```bash
 npm link
 ```
 
-Or run directly:
-
-```bash
-npm start -- entries
-```
-
-### Build errors
+### Build Errors
 
 Make sure you're using Node.js 18+:
 
@@ -419,6 +554,40 @@ Reinstall dependencies:
 rm -rf node_modules package-lock.json
 npm install
 npm run build
+```
+
+### Security Warnings
+
+**"Warning: Reading from sensitive path"**
+
+You're reading from a potentially sensitive file (e.g., SSH key, credentials). This is usually unintentional.
+
+```bash
+# If intentional, proceed
+# If not, check your --file path
+marvin platform entries create --file ~/correct/path.json
+```
+
+**"Warning: Using HTTP (not HTTPS)"**
+
+You're connecting to a non-localhost server over HTTP:
+
+```bash
+# Use HTTPS for production
+marvin --api-url https://marvin.example.com entries list
+
+# HTTP is OK for localhost
+marvin --api-url http://localhost:8000 entries list
+```
+
+**"Warning: API URL points to private IP range"**
+
+You're connecting to a private IP address. This is usually intentional for internal services, but could indicate SSRF risk:
+
+```bash
+# If this is your internal Marvin server, this is OK
+# If unexpected, verify the URL
+marvin --api-url https://marvin.internal.company.com entries list
 ```
 
 ## Development
@@ -463,11 +632,17 @@ The CLI is a thin wrapper around the Marvin Publishing API. It does NOT:
 
 It ONLY makes HTTP calls to the Publishing API endpoints using site client tokens.
 
-## Related
+## Related Documentation
 
-- [Marvin SDK](../../../packages/marvin-sdk/README.md) - TypeScript SDK for Astro/Next.js sites
-- [Publishing API Docs](../../../docs/api/publishing.md) - API endpoint reference
+- [Migration Guide](MIGRATION.md) - Upgrading from older versions
+- [Security Best Practices](SECURITY.md) - Security features and recommendations
+- [Marvin SDK](https://github.com/inneropen/marvin-sdk) - TypeScript SDK for Astro/Next.js sites
+- [Marvin CMS](https://github.com/jmashburn/Marvin) - Main CMS repository
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](docs/contributing.md) for details.
 
 ## License
 
-See main Marvin repository license.
+MIT License - See main Marvin repository for details.

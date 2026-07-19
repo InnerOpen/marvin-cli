@@ -1,7 +1,10 @@
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
+import { getOutputMode } from '../../shared/types.js';
+import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerEventLogCommands(parent: Command): void {
   const eventLog = new Command("event-log")
@@ -39,16 +42,9 @@ export function registerEventLogCommands(parent: Command): void {
         const events = await client.eventLog.list(params);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(events as any, {
-          event_id: 'event_id',
-          event_type: 'event_type',
-          occurred_at: 'occurred_at',
-          user_id: 'user_id',
-          entity_type: 'entity_type',
-          message_title: 'message_title',
-        } as any, globalOpts.output as any || 'table');
+        renderList(events as any[], TABLE_SCHEMAS['event-log.list'], getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -63,9 +59,9 @@ export function registerEventLogCommands(parent: Command): void {
         const event = await client.eventLog.get(eventId);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderData(event, globalOpts.output as any || 'table');
+        renderData(event, getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -89,15 +85,9 @@ export function registerEventLogCommands(parent: Command): void {
         const events = await client.eventLog.getEntityHistory(entityId, options);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(events as any, {
-          event_id: 'event_id',
-          event_type: 'event_type',
-          occurred_at: 'occurred_at',
-          user_id: 'user_id',
-          message_title: 'message_title',
-        } as any, globalOpts.output as any || 'table');
+        renderList(events as any[], TABLE_SCHEMAS['event-log.entity'], getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });
@@ -125,16 +115,26 @@ export function registerEventLogCommands(parent: Command): void {
         const events = await client.eventLog.getUserActivity(userId, options);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(events as any, {
-          event_id: 'event_id',
-          event_type: 'event_type',
-          occurred_at: 'occurred_at',
-          entity_type: 'entity_type',
-          entity_id: 'entity_id',
-          message_title: 'message_title',
-        } as any, globalOpts.output as any || 'table');
+        renderList(events as any[], TABLE_SCHEMAS['event-log.user'], getOutputMode(globalOpts));
       } catch (error) {
-        console.error(error instanceof Error ? error.message : error);
+        handleCommandError(error);
+        process.exitCode = 1;
+      }
+    });
+
+  // Event types (subscribable event type catalogue)
+  eventLog
+    .command("types")
+    .description("List all subscribable event types (for webhooks and email subscriptions)")
+    .action(async function(this: Command) {
+      try {
+        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const types = await client.events.getOptions();
+
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        renderList(types as any[], TABLE_SCHEMAS['event-log.types'], getOutputMode(globalOpts));
+      } catch (error) {
+        handleCommandError(error);
         process.exitCode = 1;
       }
     });

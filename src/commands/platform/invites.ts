@@ -8,6 +8,9 @@ import { Command } from 'commander';
 import { clientFactory } from '../../shared/clients.js';
 import { renderList, renderData } from '../../output.js';
 import { getOutputMode, type PlatformCommandOptions } from '../../shared/types.js';
+import { formatTokenForOutput, displayTokenWarning } from '../../shared/security.js';
+import { requireValidEmail } from '../../shared/validation.js';
+import { TABLE_SCHEMAS } from '../../shared/table-schemas.js';
 
 export function registerInviteCommands(parent: Command): void {
   const invites = parent
@@ -27,7 +30,11 @@ export function registerInviteCommands(parent: Command): void {
         const tokens = await sdk.invites.list();
 
         if (!tokens || tokens.length === 0) {
-          console.log('No invitation tokens found');
+          if (mode === 'table') {
+            console.log('No invitation tokens found');
+          } else {
+            renderList([] as any[], {}, mode);
+          }
           return;
         }
 
@@ -38,17 +45,14 @@ export function registerInviteCommands(parent: Command): void {
           'Created': (token.createdAt || token.created_at) ? new Date(token.createdAt || token.created_at).toLocaleDateString() : 'Unknown',
         }));
 
-        const columns = {
-          'Token': (row: any) => row['Token'],
-          'Role': (row: any) => row['Role'],
-          'Uses Left': (row: any) => row['Uses Left'],
-          'Created': (row: any) => row['Created'],
-        };
-        renderList(rows as any[], columns, mode);
-        console.log(`\nTotal: ${tokens.length} invitation token(s)`);
+        renderList(rows as any[], TABLE_SCHEMAS['invites.list'], mode);
+        if (mode === 'table') {
+          console.log(`\nTotal: ${tokens.length} invitation token(s)`);
+        }
       } catch (error) {
         console.error('Failed to list invitation tokens:', error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -73,8 +77,10 @@ export function registerInviteCommands(parent: Command): void {
 
         const inviteUrl = sdk.invites.getInvitationUrl(token.token!);
 
-        // If email provided, send it
+        // If email provided, validate and send it
         if (options.email) {
+          requireValidEmail(options.email);
+
           const result = await sdk.invites.sendEmail({
             email: options.email,
             token: token.token!,
@@ -82,7 +88,7 @@ export function registerInviteCommands(parent: Command): void {
 
           if (mode === 'json') {
             console.log(JSON.stringify({
-              token: token.token,
+              token: formatTokenForOutput(token.token!),
               inviteUrl,
               email: options.email,
               emailSent: result.success,
@@ -95,31 +101,34 @@ export function registerInviteCommands(parent: Command): void {
               console.log(`⚠ Email failed: ${result.error}`);
               console.log('\nYou can still share the link manually:');
             }
+            displayTokenWarning();
             console.log(`\nInvitation URL:`);
             console.log(inviteUrl);
-            console.log(`Token: ${token.token}`);
+            console.log(`Token: ${formatTokenForOutput(token.token!)}`);
           }
         } else {
           // No email, just show the link
           if (mode === 'json') {
             console.log(JSON.stringify({
-              token: token.token,
+              token: formatTokenForOutput(token.token!),
               inviteUrl,
               usesLeft: token.usesLeft,
               workspaceRole: token.workspaceRole,
             }, null, 2));
           } else {
+            displayTokenWarning();
             console.log('✓ Invitation created');
             console.log(`\nInvitation URL:`);
             console.log(inviteUrl);
-            console.log(`\nToken: ${token.token}`);
+            console.log(`\nToken: ${formatTokenForOutput(token.token!)}`);
             console.log(`Workspace Role: ${token.workspaceRole || 'EDITOR'}`);
             console.log(`Uses remaining: ${token.usesLeft}`);
           }
         }
       } catch (error) {
         console.error('Failed to create invitation:', error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -138,7 +147,8 @@ export function registerInviteCommands(parent: Command): void {
         console.log(inviteUrl);
       } catch (error) {
         console.error('Failed to generate link:', error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 
@@ -173,7 +183,8 @@ export function registerInviteCommands(parent: Command): void {
         console.log('✓ Invitation revoked');
       } catch (error) {
         console.error('Failed to revoke invitation:', error);
-        process.exit(1);
+        process.exitCode = 1;
+        return;
       }
     });
 }

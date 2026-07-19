@@ -29,15 +29,19 @@ jobs:
         with:
           node-version: '22.14'
           registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
 
       - name: Install dependencies
         run: |
-          # Replace file dependency with published SDK version for CI
-          npm pkg set dependencies.@inneropen/marvin-sdk="develop"
-          npm ci
+          # Track the latest published SDK develop tag (not the stale lockfile pin).
+          npm install
+          npm install --no-save @inneropen/marvin-sdk@develop
 
       - name: Build
         run: npm run build
+
+      - name: Run tests
+        run: npm test
 
       - name: Release
         env:
