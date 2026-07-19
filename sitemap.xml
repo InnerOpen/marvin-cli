@@ -2,154 +2,154 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://github.com/inneropen/marvin-cli/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/contributing/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/admin-maintenance/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/admin-system/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/admin-users/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/api-clients/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/assets/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/auth/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/collections/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/email-templates/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/entries/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/entry-types/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/event-log/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/forms/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/notifications/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/output-formats/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/overview/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/renderers/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/resources/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/scheduled-tasks/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/site/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/webhooks/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/commands/workspaces/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/examples/automation/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/examples/common-tasks/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/examples/export-import/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/examples/reporting/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/getting-started/configuration/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/getting-started/installation/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/getting-started/quickstart/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/guides/ci-cd/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/guides/filtering/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/guides/pipelines/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/guides/scripting/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/reference/api-mapping/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/reference/authentication/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/reference/environment-variables/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
     <url>
          <loc>https://github.com/inneropen/marvin-cli/reference/error-handling/</loc>
-         <lastmod>2026-07-16</lastmod>
+         <lastmod>2026-07-19</lastmod>
     </url>
 </urlset>
