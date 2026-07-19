@@ -1,3 +1,38 @@
+# [2.7.0](https://github.com/inneropen/marvin-cli/compare/v2.6.1...v2.7.0) (2026-07-19)
+
+
+### Bug Fixes
+
+* Add null check for collection.get() return value ([d362859](https://github.com/inneropen/marvin-cli/commit/d36285996b315c7d4e18433b99cf5025853cfab7))
+* camelCase column specs in email-subscriptions list; default recipient_type to admins ([7b1d3d7](https://github.com/inneropen/marvin-cli/commit/7b1d3d7f6a5badbd51e283e3421e00ef8930706f))
+* entry-types list — renderingJson/capabilitiesJson field names, add isSystem, empty when null ([ea2722c](https://github.com/inneropen/marvin-cli/commit/ea2722ca22f5dec4ad537359f310525f259cb41f))
+* getOutputMode + handleCommandError across all 16 command files; fix camelCase column specs ([61d6838](https://github.com/inneropen/marvin-cli/commit/61d6838c79c9a6f93edc19d1bbd0cb1c410fffa2))
+* global structured error output matching --json/--yaml/--csv flags; slug normalization ([9b77358](https://github.com/inneropen/marvin-cli/commit/9b7735844a3b39b2dc8c3a1ba4af61bfb3b8da4e))
+* machine-mode errors to stdout (json/yaml/csv all pipe cleanly to jq/yq) ([4fdd3b6](https://github.com/inneropen/marvin-cli/commit/4fdd3b6f732bda2a5a731144261b7ce899c4810a))
+* Properly type column specs and fix collection <slug> entries shape ([75ee703](https://github.com/inneropen/marvin-cli/commit/75ee703ff84df65382e0e32544ce2e0f15b30af8))
+* **quality:** Pin SDK version and add token validation (LOW priority) ([cbd1579](https://github.com/inneropen/marvin-cli/commit/cbd157941119c4fbed3ad604d4a51a41fa804fc9)), closes [#11](https://github.com/inneropen/marvin-cli/issues/11) [#12](https://github.com/inneropen/marvin-cli/issues/12) [#4](https://github.com/inneropen/marvin-cli/issues/4) [#13](https://github.com/inneropen/marvin-cli/issues/13)
+* **release:** parse gitmoji-prefixed commit subjects ([da9ee93](https://github.com/inneropen/marvin-cli/commit/da9ee933bfd2f4a852915e91a53255a75a3e27f4))
+* Render single items as table rows, not raw JSON objects ([8bf2e8b](https://github.com/inneropen/marvin-cli/commit/8bf2e8bf80c7f2ac41bb0cd414266338bceab894))
+* replace raw fetch in health command with SDK AppModule; fix schema type errors ([57103e9](https://github.com/inneropen/marvin-cli/commit/57103e9ce543dab0b4d66a87603678240edc2ec7))
+* Return empty array instead of [null] when slug not found ([96cdb88](https://github.com/inneropen/marvin-cli/commit/96cdb88eb5deccfb71e8875d544a6f5800ed9ece))
+* **security:** Add input validation and fix error handling (MEDIUM priority) ([f1cc4d6](https://github.com/inneropen/marvin-cli/commit/f1cc4d6c5c44e19047d95743ca11c80a2c3b863d))
+* **security:** Eliminate critical credential exposure vulnerabilities ([a96a86a](https://github.com/inneropen/marvin-cli/commit/a96a86a4c7f4238828a14b6cbe05160daf5e0543)), closes [HI#priority](https://github.com/HI/issues/priority)
+* Update marvin-sdk dependency to next.20 with renderers rename ([fe591f6](https://github.com/inneropen/marvin-cli/commit/fe591f687e79665f6ae4728bef8d09ea9e4d8ceb))
+* Use PUBLISHING_TOKEN parameter name ([1596319](https://github.com/inneropen/marvin-cli/commit/15963195450f0f2658d169abc55b44b10dc16db5))
+
+
+### Features
+
+* Add publish entry-types command and update platform entry-types ([a11126b](https://github.com/inneropen/marvin-cli/commit/a11126be875fcd1d38286c8494112cc4f43c170d))
+* Add workspace export command ([b6bce79](https://github.com/inneropen/marvin-cli/commit/b6bce79b592e36f556984b53d409b589604a74f8))
+* Auth-aware CLI — site-token login, command visibility, credential precedence ([34dce56](https://github.com/inneropen/marvin-cli/commit/34dce565073f05742d5edac2dae6437aa89bbe58))
+* centralized table-schemas.ts — single source of truth for column specs, typed against SDK schema ([a671164](https://github.com/inneropen/marvin-cli/commit/a671164bea234aa2bd06ec0f118bb7b5e52e60ae))
+* cover all backend endpoints in the CLI ([99d9801](https://github.com/inneropen/marvin-cli/commit/99d98013722ae4306192c0ff93481ce7ef6e6045))
+* fill all CLI gaps — secrets, variables, email-subscriptions, events, webhook logs, workspace import/prefs, entry-type write ops, entry collection ops ([650b265](https://github.com/inneropen/marvin-cli/commit/650b26550d6a67f937c5dc397e5363d45c8211d8))
+* fill CLI gaps — secrets, variables, email-subscriptions, events, webhook logs, workspace import/prefs, entry-type write ops, entry collection membership ([59ec311](https://github.com/inneropen/marvin-cli/commit/59ec3110a89430952ac287dfd25e4ed43c2ffcc2))
+* Persist apiUrl in credentials, consistent empty output across all modes ([97a27f0](https://github.com/inneropen/marvin-cli/commit/97a27f0fca9b5e00b4ecb9c2eb90c8f9d18b626e))
+* Rename publish entry-types → publish renderers, add --all flag ([fdb6ba8](https://github.com/inneropen/marvin-cli/commit/fdb6ba8e040a4981cd12e9b6eadec2e7cf7594b1))
+
 # [2.6.0-next.23](https://github.com/inneropen/marvin-cli/compare/v2.6.0-next.22...v2.6.0-next.23) (2026-07-18)
 
 
