@@ -15,10 +15,11 @@
  * any newly added endpoint will fail the drift gate until it is classified in
  * src/__tests__/api-coverage-manifest.json.
  */
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, unlinkSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { tmpdir } from 'node:os'
 
 const HTTP_METHODS = new Set(['get', 'post', 'put', 'patch', 'delete', 'head', 'options'])
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -40,14 +41,21 @@ function loadOpenApi() {
     process.exit(1)
   }
   console.log(`Generating OpenAPI offline from ${marvinDir} (uv run)...`)
-  const py = 'import json,sys;from marvin.app import app;sys.stdout.write(json.dumps(app.openapi()))'
-  const out = execFileSync('uv', ['run', 'python', '-c', py], {
-    cwd: marvinDir,
-    encoding: 'utf-8',
-    maxBuffer: 64 * 1024 * 1024,
-    stdio: ['ignore', 'pipe', 'inherit'],
-  })
-  return JSON.parse(out)
+  // Write to a temp file rather than capturing stdout: importing the backend emits
+  // startup log lines on stdout, which would corrupt the JSON stream.
+  const tmpFile = join(tmpdir(), `marvin-openapi-${process.pid}.json`)
+  const py =
+    'import json;from marvin.app import app;' +
+    `open(${JSON.stringify(tmpFile)},"w").write(json.dumps(app.openapi()))`
+  try {
+    execFileSync('uv', ['run', 'python', '-c', py], {
+      cwd: marvinDir,
+      stdio: ['ignore', 'inherit', 'inherit'],
+    })
+    return JSON.parse(readFileSync(tmpFile, 'utf-8'))
+  } finally {
+    if (existsSync(tmpFile)) unlinkSync(tmpFile)
+  }
 }
 
 function extractOperations(openapi) {

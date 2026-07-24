@@ -4,7 +4,6 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
 import { entryColumns } from "../../shared/columns.js";
-import type { MarvinEntry } from "@inneropen/marvin-sdk/types";
 
 export function registerEntryCommands(parent: Command): void {
   // List entries

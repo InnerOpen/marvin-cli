@@ -1,6 +1,6 @@
 import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
-import { readFileSync, writeFileSync, createReadStream, statSync } from "fs";
+import { readFileSync, writeFileSync, statSync } from "fs";
 import { basename } from "path";
 import { Blob } from "buffer";
 import { clientFactory } from "../../shared/clients.js";

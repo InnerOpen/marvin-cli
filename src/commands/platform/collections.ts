@@ -5,7 +5,6 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
-import { readJsonInput } from "../../shared/json-input.js";
 
 export function registerPlatformCollectionCommands(parent: Command): void {
   const collections = parent

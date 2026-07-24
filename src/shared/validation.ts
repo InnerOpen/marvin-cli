@@ -2,7 +2,7 @@
  * Input validation utilities
  */
 
-import { resolve, normalize } from "path";
+import { resolve, normalize, isAbsolute } from "path";
 import { existsSync, statSync } from "fs";
 
 /**
@@ -99,6 +99,13 @@ export function validateFilePath(
   // Normalize and resolve the path
   const normalizedPath = normalize(filePath);
   const absolutePath = resolve(filePath);
+
+  // Reject absolute paths when the caller disallows them (e.g. to keep reads
+  // confined to the working directory). Checked against the raw input and the
+  // normalized form so `/etc/x` and `foo/../../etc/x`-style inputs are both caught.
+  if (!allowAbsolute && (isAbsolute(filePath) || isAbsolute(normalizedPath))) {
+    throw new Error(`Absolute paths are not allowed: ${filePath}`);
+  }
 
   // Check if file exists
   if (mustExist && !existsSync(absolutePath)) {

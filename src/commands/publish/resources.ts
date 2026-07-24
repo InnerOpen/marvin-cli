@@ -3,9 +3,8 @@ import { MarvinNotFoundError } from "@inneropen/marvin-sdk";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
-import { resourceColumns, entryColumns } from "../../shared/columns.js";
+import { resourceColumns } from "../../shared/columns.js";
 import { handleCommandError } from "../../shared/error-handler.js";
-import type { MarvinResource, MarvinEntry } from "@inneropen/marvin-sdk/types";
 
 export function registerResourceCommands(parent: Command): void {
   // List resources
@@ -53,7 +52,9 @@ export function registerResourceCommands(parent: Command): void {
         const client = clientFactory.createPublishClient(opts);
         try {
           const resource = await client.resources.get(slug);
-          renderList(resource ? [resource] as MarvinResource[] : [], resourceColumns, getOutputMode(opts));
+          // resources.get() returns a rich Resource wrapper; toJSON() yields the plain
+          // MarvinResource the table columns expect (list() already returns plain objects).
+          renderList(resource ? [resource.toJSON()] : [], resourceColumns, getOutputMode(opts));
         } catch (error) {
           if (error instanceof MarvinNotFoundError) {
             renderList([], resourceColumns, getOutputMode(opts));

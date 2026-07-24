@@ -147,10 +147,15 @@ marvin-sdk/
 
 marvin-cli/
 ├── scripts/
-│   ├── generate-from-openapi.mjs  # POC generator
-│   └── openapi-config.json         # Generator config
-└── OPENAPI_SETUP_COMPLETE.md       # This file
+│   └── refresh-backend-operations.mjs  # Generates backend-operations.json
+│                                       # (npm run generate:operations)
+└── OPENAPI_SETUP_COMPLETE.md           # This file
 ```
+
+> **Note:** the CLI does not generate its own types — it consumes the SDK's
+> (`@inneropen/marvin-sdk/types`), which is the single source of truth. The CLI's
+> only OpenAPI-derived artifact is `src/__tests__/backend-operations.json`,
+> regenerated offline via `npm run generate:operations`.
 
 ## Next Steps
 

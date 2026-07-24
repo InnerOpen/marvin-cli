@@ -6,7 +6,7 @@
 
 import { Command } from 'commander';
 import { clientFactory } from '../../shared/clients.js';
-import { renderList, renderData } from '../../output.js';
+import { renderList } from '../../output.js';
 import { getOutputMode, type PlatformCommandOptions } from '../../shared/types.js';
 import { formatTokenForOutput, displayTokenWarning } from '../../shared/security.js';
 import { requireValidEmail } from '../../shared/validation.js';

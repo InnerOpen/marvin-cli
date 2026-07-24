@@ -1,9 +1,5 @@
 import type {
-  MarvinAsset,
-  MarvinCollection,
-  MarvinResource,
   PublishedEntryType,
-  PublishedCollectionSummary,
 } from "@inneropen/marvin-sdk/types";
 import type { ColumnSpec } from "../output.js";
 

@@ -332,7 +332,7 @@ describe('output format tests (fully dynamic)', () => {
         const rows = tableData[0] as Record<string, unknown>[]
         if (!Array.isArray(rows) || rows.length === 0) return
 
-        const emptyColumns = Object.entries(rows[0])
+        const emptyColumns = Object.entries(rows[0]!)
           .filter(([, v]) => v === undefined || v === null || v === '')
           .map(([k]) => k)
 

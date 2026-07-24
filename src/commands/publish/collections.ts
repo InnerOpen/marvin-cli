@@ -4,7 +4,6 @@ import { renderList, renderJson, renderYaml } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
 import { collectionColumns, entryColumns } from "../../shared/columns.js";
 import { handleCommandError } from "../../shared/error-handler.js";
-import type { MarvinEntry } from "@inneropen/marvin-sdk/types";
 
 export function registerCollectionCommands(parent: Command): void {
   // List collections
