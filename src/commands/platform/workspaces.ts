@@ -20,14 +20,20 @@ export function registerWorkspaceCommands(parent: Command, opts?: { hidden?: boo
   workspace
     .command("current")
     .description("Show current active workspace (from local credentials)")
-    .action(async () => {
+    .action(async function (this: Command) {
       try {
+        const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const localSlug = credentialsManager.getActiveWorkspace();
-        if (localSlug) {
-          console.log(`Active workspace: ${localSlug}`);
-        } else {
-          console.log("No active workspace set");
+        const mode = getOutputMode(opts);
+
+        if (mode !== "table") {
+          // Machine-readable callers still need a slug field when nothing is set, so emit null
+          // rather than dropping the key — `.slug` stays addressable either way.
+          renderData({ slug: localSlug ?? null }, mode);
+          return;
         }
+
+        console.log(localSlug ? `Active workspace: ${localSlug}` : "No active workspace set");
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
