@@ -562,5 +562,5 @@ fi
 
 - [Configuration Guide](../getting-started/configuration.md)
 - [Environment Variables](environment-variables.md)
-- [Troubleshooting](troubleshooting.md) (if exists)
+- [Troubleshooting](../guides/scripting.md) (if exists)
 - [Authentication Reference](authentication.md)

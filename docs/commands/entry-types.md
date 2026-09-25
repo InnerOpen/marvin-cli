@@ -471,7 +471,7 @@ This is unusual and may indicate a configuration issue. Entry types are typicall
 
 - [`marvin workspace use`](workspaces.md) - Set active workspace
 - [`marvin entries list`](entries.md) - List entries (can filter by entry type)
-- [`marvin publish entries`](../publish/entries.md) - Publish API entries
+- [`marvin publish entries`](entries.md) - Publish API entries
 
 ## Notes
 

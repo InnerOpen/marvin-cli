@@ -566,8 +566,8 @@ marvin workspace token <new-token>
 ## Related Commands
 
 - [`marvin workspace token`](workspaces.md) - Store token for CLI usage
-- [`marvin publish entries`](../publish/entries.md) - Use Publishing API
-- [`marvin publish collections`](../publish/collections.md) - Use Publishing API
+- [`marvin publish entries`](entries.md) - Use Publishing API
+- [`marvin publish collections`](collections.md) - Use Publishing API
 
 ## API Reference
 

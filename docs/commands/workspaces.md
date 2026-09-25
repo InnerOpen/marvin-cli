@@ -427,8 +427,8 @@ Error: Not authenticated. Please run: marvin login
 ## Related Commands
 
 - [`marvin login`](auth.md) - Authenticate with Marvin
-- [`marvin publish entries`](../publish/entries.md) - Publishing API (requires site token)
-- [`marvin publish collections`](../publish/collections.md) - Publishing API
+- [`marvin publish entries`](entries.md) - Publishing API (requires site token)
+- [`marvin publish collections`](collections.md) - Publishing API
 - [`marvin platform forms`](forms.md) - Platform API (uses workspace context)
 
 ## API Reference

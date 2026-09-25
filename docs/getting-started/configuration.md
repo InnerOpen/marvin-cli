@@ -3,7 +3,7 @@
 This guide covers configuring the Marvin CLI with credentials, environment variables, and settings.
 
 !!! info "Security Notice - v2.6.0+"
-    Version 2.6.0 introduces enhanced security features including secure credential storage, token masking in CI/CD, and input validation. See [SECURITY.md](../../SECURITY.md) for details.
+    Version 2.6.0 introduces enhanced security features including secure credential storage, token masking in CI/CD, and input validation. See [SECURITY.md](https://github.com/InnerOpen/marvin-cli/blob/develop/SECURITY.md) for details.
 
 ## Configuration Methods
 
@@ -39,7 +39,7 @@ MARVIN_USER_TOKEN=user_your_token_here
     - Password flags on `marvin user change-password` - Use interactive prompts
     - Token argument on `marvin workspace token` - Use `--from-stdin` or interactive prompt
     
-    See [MIGRATION.md](../../MIGRATION.md) for upgrade instructions.
+    See [MIGRATION.md](https://github.com/InnerOpen/marvin-cli/blob/develop/MIGRATION.md) for upgrade instructions.
 
 ### Optional Variables
 
@@ -438,7 +438,7 @@ export MARVIN_WORKSPACE_SLUG=correct-slug
     - ✅ Input validation (paths, URLs, emails, JSON)
     - ✅ Graceful error handling
     
-    See [SECURITY.md](../../SECURITY.md) for complete security documentation.
+    See [SECURITY.md](https://github.com/InnerOpen/marvin-cli/blob/develop/SECURITY.md) for complete security documentation.
 
 ### Essential Security Practices
 

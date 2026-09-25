@@ -1,7 +1,7 @@
 site_name: Marvin CLI Documentation
 site_description: Official command-line interface for Marvin CMS
 site_author: Marvin Project
-site_url: https://github.com/inneropen/marvin-cli
+site_url: https://inneropen.github.io/marvin-cli/
 
 repo_name: inneropen/marvin-cli
 repo_url: https://github.com/inneropen/marvin-cli
@@ -42,8 +42,6 @@ theme:
     repo: fontawesome/brands/github
 
 extra:
-  version:
-    provider: mike
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/inneropen/marvin-cli
