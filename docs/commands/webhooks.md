@@ -590,7 +590,6 @@ function verifySignature(payload, signature, secret) {
 ## Related Commands
 
 - [`marvin event-log list`](event-log.md) - View webhook delivery events
-- [`marvin notifications list`](notifications.md) - Email notifications
 - [`marvin workspace use`](workspaces.md) - Set active workspace
 
 ## API Reference

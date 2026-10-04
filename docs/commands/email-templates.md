@@ -454,7 +454,6 @@ marvin email-templates delete <template-id> --yes
 ## Related Commands
 
 - [`marvin workspace use`](workspaces.md) - Set active workspace
-- [`marvin notifications list`](notifications.md) - Notification rules that trigger emails
 - [`marvin event-log list`](event-log.md) - View sent email events
 
 ## API Reference

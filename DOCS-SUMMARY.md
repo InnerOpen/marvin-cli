@@ -39,7 +39,6 @@ Complete MkDocs documentation structure created for the marvin-cli project.
 - forms.md - Form management
 - api-clients.md - API client tokens
 - event-log.md - Event logs and audit trail
-- notifications.md - Notification rules
 - scheduled-tasks.md - Scheduled tasks
 
 **Admin API (3 files):**

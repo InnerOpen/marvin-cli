@@ -92,7 +92,6 @@ nav:
           - Forms: commands/forms.md
           - API Clients: commands/api-clients.md
           - Event Log: commands/event-log.md
-          - Notifications: commands/notifications.md
           - Scheduled Tasks: commands/scheduled-tasks.md
       - Admin API:
           - Users: commands/admin-users.md

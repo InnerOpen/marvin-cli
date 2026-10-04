@@ -73,7 +73,6 @@ marvin platform [command]
 | `forms` | Manage forms |
 | `api-clients` | Manage API clients |
 | `event-log` | View event log |
-| `notifications` | Manage notifications |
 | `scheduled-tasks` | Manage scheduled tasks |
 | `workspace-members` | Manage workspace members |
 | `invites` | Manage workspace invites |
@@ -292,7 +291,6 @@ marvin platform entry create --help
 - [Forms](forms.md)
 - [API Clients](api-clients.md)
 - [Event Log](event-log.md)
-- [Notifications](notifications.md)
 - [Scheduled Tasks](scheduled-tasks.md)
 
 ### Admin API

@@ -6,7 +6,6 @@ import { registerPlatformResourceCommands } from "./resources.js";
 import { registerPlatformAssetCommands } from "./assets.js";
 import { registerEntryTypeCommands } from "./entry-types.js";
 import { registerAPIClientCommands } from "./api-clients.js";
-import { registerNotificationCommands } from "./notifications.js";
 import { registerWebhookCommands } from "./webhooks.js";
 import { registerInviteCommands } from "./invites.js";
 import { registerEventLogCommands } from "./event-log.js";
@@ -38,7 +37,6 @@ export function createPlatformCommand(): Command {
   registerPlatformAssetCommands(platform);
   registerEntryTypeCommands(platform);
   registerAPIClientCommands(platform);
-  registerNotificationCommands(platform);
   registerWebhookCommands(platform);
   registerInviteCommands(platform);
   registerEventLogCommands(platform);

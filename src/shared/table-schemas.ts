@@ -13,7 +13,6 @@ import type {
   PlatformAPIClient,
   PlatformForm,
   PlatformFormSubmission,
-  Notification,
   PlatformWorkspaceMember,
   EmailTemplateSummary,
   TaskTypeInfo,
@@ -220,14 +219,6 @@ export const TABLE_SCHEMAS = {
     Enabled: 'enabled',
     Scope: (t: EmailTemplateSummary) => (t.groupId ? 'workspace' : 'system'),
   } satisfies ColumnSpec<EmailTemplateSummary>,
-
-  // ---- Notifications ----
-  // NOTE: GroupEventNotifierRead has no 'eventType' field; only id/name/enabled/options.
-  'notifications.list': {
-    ID: 'id',
-    Name: 'name',
-    Enabled: 'enabled',
-  } satisfies ColSpec<Notification>,
 
   // ---- Scheduled Tasks (legacy snake_case API shape; SDK type uses camelCase) ----
   // Using Record<string, unknown> as fallback — no satisfies field-check here since

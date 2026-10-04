@@ -63,9 +63,6 @@ const UNIVERSAL_FIXTURE: Record<string, unknown> = {
   errorMessage: 'test-error',
   retryAttempt: 1,
 
-  // Notification execution log (NotificationExecutionLogRead — all camelCase)
-  notifierId: 'notifier-id-val',
-
   // Event log (EventLogRead / EventLogSummary — all camelCase)
   eventId: 'event-id-val',
   eventType: 'entry.published',
