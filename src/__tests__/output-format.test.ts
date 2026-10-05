@@ -130,6 +130,9 @@ const UNIVERSAL_FIXTURE: Record<string, unknown> = {
   renderingJson: { renderer: 'react', package: '@marvin/renderer' },
   capabilitiesJson: { publishable: true, routable: true },
 
+  // Workflows (automations): the list's Trigger/Steps columns read the definition
+  definition: { trigger: { type: 'event', event: 'entry_published' }, actions: [{ kind: 'operation' }] },
+
   // Event type options (event-log types — not a list/log/logs command, not discovered)
   label: 'label-val',
   category: 'category-val',

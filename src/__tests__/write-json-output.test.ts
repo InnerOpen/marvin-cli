@@ -132,7 +132,8 @@ interface WriteCommand {
 function placeholderFor(argName: string): string {
   if (/email/i.test(argName)) return 'someone@example.com'
   if (/role/i.test(argName)) return 'EDITOR'
-  return 'id-1'
+  // a UUID, so commands that also accept a slug don't go looking it up
+  return '00000000-0000-4000-8000-000000000001'
 }
 
 function collectWriteCommands(cmd: Command, path: string[] = []): WriteCommand[] {

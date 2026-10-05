@@ -17,6 +17,9 @@ import type {
   EmailTemplateSummary,
   TaskTypeInfo,
   EventOption,
+  Automation,
+  AutomationExecution,
+  AutomationPlanStep,
 } from '@inneropen/marvin-sdk/platform'
 import type { ColumnSpec } from '../output.js'
 import {
@@ -302,6 +305,45 @@ export const TABLE_SCHEMAS = {
     Created: (c: PlatformAPIClient) =>
       c.createdAt ? new Date(c.createdAt).toISOString().split('T')[0] : '',
   } satisfies ColumnSpec<PlatformAPIClient>,
+
+  // ---- Workflows (the SDK's automations) ----
+  'workflows.list': {
+    ID: 'id',
+    Slug: 'slug',
+    Name: 'name',
+    Enabled: 'enabled',
+    Trigger: (w: Automation) => {
+      const t = w.definition?.trigger
+      if (!t?.type) return ''
+      const detail = t.event ?? t.schedule_type ?? t.webhook ?? t.automation
+      return detail ? `${t.type}: ${detail}` : t.type
+    },
+    Steps: (w: Automation) => w.definition?.actions?.length ?? 0,
+  } satisfies ColumnSpec<Automation>,
+
+  'workflows.executions': {
+    ID: 'id',
+    Status: (r: AutomationExecution & { handled?: boolean }) => (r.handled ? `${r.status} (handled)` : r.status),
+    Trigger: 'triggerType',
+    Started: (r: AutomationExecution) => r.startedAt ?? '',
+    Duration: (r: AutomationExecution) =>
+      r.durationMs == null ? '' : r.durationMs < 1000 ? `${r.durationMs}ms` : `${(r.durationMs / 1000).toFixed(1)}s`,
+    Targets: (r: AutomationExecution) => `${r.targetsRun}/${r.targetsMatched}${r.capped ? '+' : ''}`,
+    Steps: (r: AutomationExecution) => `${r.stepsOk}/${r.stepsTotal}`,
+    Error: (r: AutomationExecution) => r.error ?? '',
+  } satisfies ColumnSpec<AutomationExecution>,
+
+  'workflows.plan': {
+    Target: (s: AutomationPlanStep) => {
+      const t = s.target as { type?: string; id?: string } | null | undefined
+      return t ? `${t.type ?? ''} ${t.id ?? ''}`.trim() : `#${s.target_index}`
+    },
+    Step: 'action_index',
+    Kind: 'kind',
+    Label: (s: AutomationPlanStep) => s.label ?? '',
+    Status: 'status',
+    Error: (s: AutomationPlanStep) => s.error ?? '',
+  } satisfies ColumnSpec<AutomationPlanStep>,
 } satisfies Record<string, ColumnSpec<any>>
 
 export type SchemaKey = keyof typeof TABLE_SCHEMAS

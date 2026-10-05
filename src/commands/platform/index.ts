@@ -16,6 +16,7 @@ import { registerPlatformFormCommands } from "./forms.js";
 import { registerSecretCommands } from "./secrets.js";
 import { registerVariableCommands } from "./variables.js";
 import { registerEmailEventSubscriptionCommands } from "./email-event-subscriptions.js";
+import { registerWorkflowCommands } from "./workflows.js";
 import { createAiCommand } from "../ai/index.js";
 
 /**
@@ -47,6 +48,7 @@ export function createPlatformCommand(): Command {
   registerSecretCommands(platform);
   registerVariableCommands(platform);
   registerEmailEventSubscriptionCommands(platform);
+  registerWorkflowCommands(platform);
 
   // AI: providers, models, operations, executions, settings (mirrors SDK platform.ai.*)
   platform.addCommand(createAiCommand());
