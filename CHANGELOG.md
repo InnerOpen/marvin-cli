@@ -1,3 +1,42 @@
+# [3.0.0](https://github.com/InnerOpen/marvin-cli/compare/v2.7.0...v3.0.0) (2026-10-05)
+
+
+### Bug Fixes
+
+* **types,scripts:** clear type debt, tighten tsconfig, wire a generate concept ([410d1a9](https://github.com/InnerOpen/marvin-cli/commit/410d1a96e60a9a1bcc56e85eed77d356c9eceaf3))
+* **workspace:** honour the output format in `workspace current` ([f7c9f83](https://github.com/InnerOpen/marvin-cli/commit/f7c9f836a9431486b2279bfbbe02809db9cfd8e5))
+
+
+### chore
+
+* prepare 3.0.0 ([0015881](https://github.com/InnerOpen/marvin-cli/commit/0015881a0aa3e242ef86a29b2efaa91c6e2b19e4))
+
+
+### Features
+
+* **errors:** explain a 403 as the workspace role the command needs ([4c519cd](https://github.com/InnerOpen/marvin-cli/commit/4c519cd131544d623a4c13c5566b1eb2fd407e50))
+* **platform:** remove `platform notifications`; refresh backend operations from Marvin rc.189 ([11699b4](https://github.com/InnerOpen/marvin-cli/commit/11699b40b83d254973e6343224776ab8c35f2791))
+
+
+### BREAKING CHANGES
+
+* 3.0.0 requires @inneropen/marvin-sdk ^4.0.0 and Marvin
+rc.189 or later. The SDK 4 line follows the backend's removal of the built-in
+notifier, which is why `platform notifications` is gone, and newer backends
+gate settings and content commands on workspace roles (ADMIN for settings,
+entry types and forms; EDITOR for collections, resources and asset edits).
+See MIGRATION.md.
+* **errors:** a 403 is no longer reported as an authentication error. With
+--json the error object changes from {"error": "Authentication failed:
+Forbidden"} to {"error": "This needs the ADMIN role in workspace 'acme'.",
+"status": 403, "requiredRole": "ADMIN", "workspace": "acme"}. Scripts should
+check status 403 rather than the message text. The exit code is still 1.
+
+Claude-Session: https://claude.ai/code/session_01UeEKnVMa6qqT12qPc6pzeD
+* **platform:** the `marvin platform notifications` commands (list, get, create,
+update, delete, test, log, logs) are removed. The server routes they called no
+longer exist; configure notifications through the Apprise integration.
+
 # [2.7.0](https://github.com/inneropen/marvin-cli/compare/v2.6.1...v2.7.0) (2026-07-19)
 
 
