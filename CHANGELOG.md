@@ -1,3 +1,12 @@
+# [3.1.0](https://github.com/InnerOpen/marvin-cli/compare/v3.0.0...v3.1.0) (2026-10-05)
+
+
+### Features
+
+* marvin platform integrations and site rebuild ([4b5f2a9](https://github.com/InnerOpen/marvin-cli/commit/4b5f2a98d1023d55688b4e981fae56c3d43af948))
+* marvin platform workflows ([483f13b](https://github.com/InnerOpen/marvin-cli/commit/483f13b989e3b6fd10ea3596d24d5a7237e8065c))
+* script-safe output, --data/--out-file, paged lists and stdin secrets ([c980365](https://github.com/InnerOpen/marvin-cli/commit/c9803653a160c9db2da05f333ed08fc4f46e25d9))
+
 # [3.0.0](https://github.com/InnerOpen/marvin-cli/compare/v2.7.0...v3.0.0) (2026-10-05)
 
 
