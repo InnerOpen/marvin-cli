@@ -1683,6 +1683,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../site-rebuild/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Site Rebuild
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3340,7 +3424,7 @@
 </span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span>--message-bottom<span class="w"> </span><span class="s2">"If you have questions, contact us anytime."</span><span class="w"> </span><span class="se">\</span>
 </span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">  </span>--button-text<span class="w"> </span><span class="s2">"Get Started"</span>
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>✓ Created email template: Welcome Email
 </span></code></pre></div>
 <p>Create with custom HTML:</p>
@@ -3364,17 +3448,19 @@
 <p>Delete a template (requires confirmation):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>marvin<span class="w"> </span>email-templates<span class="w"> </span>delete<span class="w"> </span><span class="m">01234567</span>-89ab-cdef-0123-456789abcdef<span class="w"> </span>--yes
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>✓ Deleted template: 01234567-89ab-cdef-0123-456789abcdef
 </span></code></pre></div>
+<p>With <code>--json</code>, stdout gets <code>{"deleted": "01234567-89ab-cdef-0123-456789abcdef"}</code>.</p>
 <h3 id="test-send_1">Test Send<a class="headerlink" href="#test-send_1" title="Permanent link">&para;</a></h3>
 <p>Send a test email:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>marvin<span class="w"> </span>email-templates<span class="w"> </span>test-send<span class="w"> </span><span class="m">01234567</span>-89ab-cdef-0123-456789abcdef<span class="w"> </span>user@example.com
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>✓ Test email sent successfully
 </span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>  Recipient: user@example.com
 </span></code></pre></div>
+<p>With <code>--json</code>, stdout gets <code>{"ok": true, ...}</code> with the server's response.</p>
 <h3 id="json-output">JSON Output<a class="headerlink" href="#json-output" title="Permanent link">&para;</a></h3>
 <p>List templates as JSON:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>marvin<span class="w"> </span>email-templates<span class="w"> </span>list<span class="w"> </span>--json

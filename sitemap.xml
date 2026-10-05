@@ -57,6 +57,10 @@
          <lastmod>2026-10-05</lastmod>
     </url>
     <url>
+         <loc>https://inneropen.github.io/marvin-cli/commands/integrations/</loc>
+         <lastmod>2026-10-05</lastmod>
+    </url>
+    <url>
          <loc>https://inneropen.github.io/marvin-cli/commands/output-formats/</loc>
          <lastmod>2026-10-05</lastmod>
     </url>
@@ -77,11 +81,19 @@
          <lastmod>2026-10-05</lastmod>
     </url>
     <url>
+         <loc>https://inneropen.github.io/marvin-cli/commands/site-rebuild/</loc>
+         <lastmod>2026-10-05</lastmod>
+    </url>
+    <url>
          <loc>https://inneropen.github.io/marvin-cli/commands/site/</loc>
          <lastmod>2026-10-05</lastmod>
     </url>
     <url>
          <loc>https://inneropen.github.io/marvin-cli/commands/webhooks/</loc>
+         <lastmod>2026-10-05</lastmod>
+    </url>
+    <url>
+         <loc>https://inneropen.github.io/marvin-cli/commands/workflows/</loc>
          <lastmod>2026-10-05</lastmod>
     </url>
     <url>

@@ -1788,6 +1788,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../site-rebuild/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Site Rebuild
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3273,12 +3357,12 @@
 </span></code></pre></div>
 <h3 id="create-api-client">Create API Client<a class="headerlink" href="#create-api-client" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span>&lt;name&gt;
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>create<span class="w"> </span>--json<span class="w"> </span>&lt;json&gt;
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>create<span class="w"> </span>--data<span class="w"> </span>&lt;json<span class="p">|</span>@file<span class="p">|</span>-&gt;
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>create<span class="w"> </span>--file<span class="w"> </span>&lt;path&gt;
 </span></code></pre></div>
 <h3 id="update-api-client">Update API Client<a class="headerlink" href="#update-api-client" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>update<span class="w"> </span>&lt;id&gt;<span class="w"> </span>--name<span class="w"> </span>&lt;name&gt;
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>update<span class="w"> </span>&lt;id&gt;<span class="w"> </span>--json<span class="w"> </span>&lt;json&gt;
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>update<span class="w"> </span>&lt;id&gt;<span class="w"> </span>--data<span class="w"> </span>&lt;json<span class="p">|</span>@file<span class="p">|</span>-&gt;
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>update<span class="w"> </span>&lt;id&gt;<span class="w"> </span>--file<span class="w"> </span>&lt;path&gt;
 </span></code></pre></div>
 <h3 id="delete-api-client">Delete API Client<a class="headerlink" href="#delete-api-client" title="Permanent link">&para;</a></h3>
@@ -3372,12 +3456,12 @@
 <td>Client description</td>
 </tr>
 <tr>
-<td><code>--json &lt;json&gt;</code></td>
-<td>Client data as JSON string</td>
+<td><code>--data &lt;payload&gt;</code></td>
+<td>Client data: inline JSON, <code>@path</code> to read a file, or <code>-</code> for stdin</td>
 </tr>
 <tr>
 <td><code>--file &lt;path&gt;</code></td>
-<td>Path to JSON file</td>
+<td>Path to a JSON file (same as <code>--data @path</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -3404,12 +3488,12 @@
 <td>Client description</td>
 </tr>
 <tr>
-<td><code>--json &lt;json&gt;</code></td>
-<td>Client data as JSON string</td>
+<td><code>--data &lt;payload&gt;</code></td>
+<td>Client data: inline JSON, <code>@path</code> to read a file, or <code>-</code> for stdin</td>
 </tr>
 <tr>
 <td><code>--file &lt;path&gt;</code></td>
-<td>Path to JSON file</td>
+<td>Path to a JSON file (same as <code>--data @path</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -3504,13 +3588,13 @@
 <p>Create with name and description:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span><span class="s2">"Production Site"</span><span class="w"> </span>--description<span class="w"> </span><span class="s2">"Token for production website"</span>
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>✓ Created API client: 01234567-89ab-cdef-0123-456789abcdef
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>⚠️  Save this token securely - it won't be shown again!
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>   Token: marvin_sk_abc123def456ghi789jkl012mno345pqr
 </span></code></pre></div>
 <p>Create from JSON:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>create<span class="w"> </span>--json<span class="w"> </span><span class="s1">'{</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>create<span class="w"> </span>--data<span class="w"> </span><span class="s1">'{</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="s1">  "name": "Staging Environment",</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="s1">  "description": "Token for staging site"</span>
 </span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="s1">}'</span>
@@ -3531,21 +3615,22 @@
 </span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span>--name<span class="w"> </span><span class="s2">"Production (Updated)"</span><span class="w"> </span><span class="se">\</span>
 </span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span>--description<span class="w"> </span><span class="s2">"Main production site"</span>
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>✓ Updated API client: 01234567-89ab-cdef-0123-4567
 </span></code></pre></div>
 <h3 id="delete-api-client_1">Delete API Client<a class="headerlink" href="#delete-api-client_1" title="Permanent link">&para;</a></h3>
 <p>Delete a client (requires confirmation):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>delete<span class="w"> </span><span class="m">01234567</span>-89ab-cdef-0123-4567<span class="w"> </span>--yes
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>✓ Deleted API client: 01234567-89ab-cdef-0123-4567
 </span></code></pre></div>
+<p>With <code>--json</code>, stdout gets <code>{"deleted": "01234567-89ab-cdef-0123-4567"}</code>.</p>
 <h3 id="rotate-token_1">Rotate Token<a class="headerlink" href="#rotate-token_1" title="Permanent link">&para;</a></h3>
 <p>Generate a new token (invalidates the old one):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>marvin<span class="w"> </span>api-clients<span class="w"> </span>rotate-token<span class="w"> </span><span class="m">01234567</span>-89ab-cdef-0123-456789abcdef
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>✓ Rotated token for API client: 01234567-89ab-cdef-0123-456789abcdef
 </span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>⚠️  Save this token securely - it won't be shown again!
 </span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>   New Token: marvin_sk_xyz987wvu654tsr321qpo098nml765kji

@@ -12,13 +12,13 @@
         <meta name="author" content="Marvin Project">
       
       
-        <link rel="canonical" href="https://inneropen.github.io/marvin-cli/getting-started/installation/">
+        <link rel="canonical" href="https://inneropen.github.io/marvin-cli/commands/site-rebuild/">
       
       
-        <link rel="prev" href="../..">
+        <link rel="prev" href="../integrations/">
       
       
-        <link rel="next" href="../quickstart/">
+        <link rel="next" href="../admin-users/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Installation - Marvin CLI Documentation</title>
+        <title>Site Rebuild - Marvin CLI Documentation</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#installation" class="md-skip">
+        <a href="#site-rebuild" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Installation
+              Site Rebuild
             
           </span>
         </div>
@@ -244,13 +244,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../getting-started/installation/" class="md-tabs__link">
           
   
   
@@ -266,11 +264,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../commands/overview/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../overview/" class="md-tabs__link">
           
   
   
@@ -437,31 +437,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
             
   
   
@@ -479,7 +476,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -494,37 +491,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Installation
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -540,214 +510,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Prerequisites
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#installation-methods" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Installation Methods
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Installation Methods">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#global-installation-recommended" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Global Installation (Recommended)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#local-development-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Local Development Installation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#running-without-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Running Without Installation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#verify-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Verify Installation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#upgrading" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Upgrading
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#uninstalling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Uninstalling
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#troubleshooting-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Troubleshooting Installation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting Installation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#permission-errors-macoslinux" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Permission Errors (macOS/Linux)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#node-version-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Node Version Errors
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#command-not-found" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Command Not Found
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#build-errors-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Build Errors (Development)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#system-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        System Requirements
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -760,7 +522,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../quickstart/" class="md-nav__link">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -788,7 +550,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../../getting-started/configuration/" class="md-nav__link">
         
   
   
@@ -820,28 +582,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -859,7 +624,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -877,7 +642,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/overview/" class="md-nav__link">
+      <a href="../overview/" class="md-nav__link">
         
   
   
@@ -911,10 +676,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -923,7 +691,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
         
           
-          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="">
             
   
   
@@ -959,7 +727,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/site/" class="md-nav__link">
+      <a href="../site/" class="md-nav__link">
         
   
   
@@ -987,7 +755,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/entries/" class="md-nav__link">
+      <a href="../entries/" class="md-nav__link">
         
   
   
@@ -1015,7 +783,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/collections/" class="md-nav__link">
+      <a href="../collections/" class="md-nav__link">
         
   
   
@@ -1043,7 +811,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/resources/" class="md-nav__link">
+      <a href="../resources/" class="md-nav__link">
         
   
   
@@ -1071,7 +839,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/assets/" class="md-nav__link">
+      <a href="../assets/" class="md-nav__link">
         
   
   
@@ -1104,28 +872,31 @@
                 
   
   
+    
   
   
+  
     
     
     
     
       
       
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
         
           
+          
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
         
           
-          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="">
             
   
   
@@ -1143,7 +914,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1161,7 +932,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/workspaces/" class="md-nav__link">
+      <a href="../workspaces/" class="md-nav__link">
         
   
   
@@ -1189,7 +960,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/entry-types/" class="md-nav__link">
+      <a href="../entry-types/" class="md-nav__link">
         
   
   
@@ -1217,7 +988,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/email-templates/" class="md-nav__link">
+      <a href="../email-templates/" class="md-nav__link">
         
   
   
@@ -1245,7 +1016,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/webhooks/" class="md-nav__link">
+      <a href="../webhooks/" class="md-nav__link">
         
   
   
@@ -1273,7 +1044,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/forms/" class="md-nav__link">
+      <a href="../forms/" class="md-nav__link">
         
   
   
@@ -1301,7 +1072,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/api-clients/" class="md-nav__link">
+      <a href="../api-clients/" class="md-nav__link">
         
   
   
@@ -1329,7 +1100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/event-log/" class="md-nav__link">
+      <a href="../event-log/" class="md-nav__link">
         
   
   
@@ -1357,7 +1128,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/scheduled-tasks/" class="md-nav__link">
+      <a href="../scheduled-tasks/" class="md-nav__link">
         
   
   
@@ -1385,7 +1156,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/workflows/" class="md-nav__link">
+      <a href="../workflows/" class="md-nav__link">
         
   
   
@@ -1413,7 +1184,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/integrations/" class="md-nav__link">
+      <a href="../integrations/" class="md-nav__link">
         
   
   
@@ -1438,10 +1209,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../commands/site-rebuild/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Site Rebuild
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1457,6 +1255,92 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-a-rebuild-is-sent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How a rebuild is sent
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#request-a-rebuild" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request a rebuild
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rebuild-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rebuild status
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scripting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scripting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1483,10 +1367,13 @@
       
       
         
+          
+          
+        
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
@@ -1495,7 +1382,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_4" >
         
           
-          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_4" id="__nav_3_4_label" tabindex="">
             
   
   
@@ -1531,7 +1418,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/admin-users/" class="md-nav__link">
+      <a href="../admin-users/" class="md-nav__link">
         
   
   
@@ -1559,7 +1446,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/admin-system/" class="md-nav__link">
+      <a href="../admin-system/" class="md-nav__link">
         
   
   
@@ -1587,7 +1474,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/admin-maintenance/" class="md-nav__link">
+      <a href="../admin-maintenance/" class="md-nav__link">
         
   
   
@@ -1623,7 +1510,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/auth/" class="md-nav__link">
+      <a href="../auth/" class="md-nav__link">
         
   
   
@@ -1651,7 +1538,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/output-formats/" class="md-nav__link">
+      <a href="../output-formats/" class="md-nav__link">
         
   
   
@@ -2252,10 +2139,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
+  <a href="#commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Prerequisites
+        Commands
       
     </span>
   </a>
@@ -2263,60 +2150,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#installation-methods" class="md-nav__link">
+  <a href="#how-a-rebuild-is-sent" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Installation Methods
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Installation Methods">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#global-installation-recommended" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Global Installation (Recommended)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#local-development-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Local Development Installation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#running-without-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Running Without Installation
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#verify-installation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Verify Installation
+        How a rebuild is sent
       
     </span>
   </a>
@@ -2324,10 +2161,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#upgrading" class="md-nav__link">
+  <a href="#request-a-rebuild" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Upgrading
+        Request a rebuild
       
     </span>
   </a>
@@ -2335,10 +2172,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#uninstalling" class="md-nav__link">
+  <a href="#rebuild-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Uninstalling
+        Rebuild status
       
     </span>
   </a>
@@ -2346,71 +2183,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#troubleshooting-installation" class="md-nav__link">
+  <a href="#scripting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Troubleshooting Installation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Troubleshooting Installation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#permission-errors-macoslinux" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Permission Errors (macOS/Linux)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#node-version-errors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Node Version Errors
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#command-not-found" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Command Not Found
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#build-errors-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Build Errors (Development)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
+        Scripting
       
     </span>
   </a>
@@ -2418,21 +2194,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#system-requirements" class="md-nav__link">
+  <a href="#api-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        System Requirements
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#related" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Related
+        API Reference
       
     </span>
   </a>
@@ -2482,10 +2247,28 @@
     
     
       <li class="md-path__item">
-        <a href="./" class="md-path__link">
+        <a href="../overview/" class="md-path__link">
           
   <span class="md-ellipsis">
-    Getting Started
+    Commands
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../workspaces/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Platform API
   </span>
 
         </a>
@@ -2507,184 +2290,100 @@
   
 
 
-<h1 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h1>
-<p>This guide covers installing the Marvin CLI on your system.</p>
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
-<p>Before installing, ensure you have:</p>
-<ul>
-<li><strong>Node.js 18 or higher</strong> - Check with <code>node --version</code></li>
-<li><strong>npm or yarn</strong> - Package manager (comes with Node.js)</li>
-<li><strong>A running Marvin instance</strong> - Local or remote</li>
-<li><strong>Credentials</strong> - Site client token or user credentials (see <a href="../configuration/">Configuration</a>)</li>
-</ul>
-<h2 id="installation-methods">Installation Methods<a class="headerlink" href="#installation-methods" title="Permanent link">&para;</a></h2>
-<h3 id="global-installation-recommended">Global Installation (Recommended)<a class="headerlink" href="#global-installation-recommended" title="Permanent link">&para;</a></h3>
-<p>Install globally to use <code>marvin</code> from anywhere:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@inneropen/marvin-cli
+<h1 id="site-rebuild">Site Rebuild<a class="headerlink" href="#site-rebuild" title="Permanent link">&para;</a></h1>
+<p>Ask Marvin to rebuild the workspace's static site, and see where the rebuild stands. These are
+Platform API commands (user token); the read-only site configuration is
+<a href="../site/"><code>marvin publish site</code></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Required role</p>
+<p>Both commands need the workspace <strong>EDITOR</strong> role or above — the same role that publishes.
+Without it the command fails with <code>Permission denied (403)</code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Server requirement</p>
+<p><code>POST/GET /api/platform/site/rebuild</code> is new: the server needs a Marvin release that includes the
+site rebuild endpoint (newer than rc.198). An older server answers 404.</p>
+</div>
+<h2 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>marvin<span class="w"> </span>platform<span class="w"> </span>site<span class="w"> </span>rebuild<span class="w"> </span><span class="o">[</span>--reason<span class="w"> </span>&lt;text&gt;<span class="o">]</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>marvin<span class="w"> </span>platform<span class="w"> </span>site<span class="w"> </span>rebuild-status
 </span></code></pre></div>
-<p>Verify installation:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>marvin<span class="w"> </span>--version
+<h2 id="how-a-rebuild-is-sent">How a rebuild is sent<a class="headerlink" href="#how-a-rebuild-is-sent" title="Permanent link">&para;</a></h2>
+<p>Marvin doesn't build the site itself. A rebuild goes to whatever the workspace has set up to build
+it, on the <strong>Webhook Triggered</strong> event: an outgoing webhook (your host's deploy hook), or an
+integration action subscribed to that event (for example Cloudflare Pages → Deploy).</p>
+<p>Rebuild requests coalesce. A request joins the workspace's pending rebuild if there is one, and the
+pending rebuild is sent once requests have been quiet for the server's <code>SITE_REBUILD_QUIET_SECONDS</code>
+(and no later than its maximum wait after the first request). Calling <code>site rebuild</code> ten times in a
+minute costs one build.</p>
+<h2 id="request-a-rebuild">Request a rebuild<a class="headerlink" href="#request-a-rebuild" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>marvin<span class="w"> </span>platform<span class="w"> </span>site<span class="w"> </span>rebuild
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>marvin<span class="w"> </span>platform<span class="w"> </span>site<span class="w"> </span>rebuild<span class="w"> </span>--reason<span class="w"> </span><span class="s2">"Nightly content sync"</span>
 </span></code></pre></div>
-<h3 id="local-development-installation">Local Development Installation<a class="headerlink" href="#local-development-installation" title="Permanent link">&para;</a></h3>
-<p>For development or contributing to the CLI:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Clone the repository</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/inneropen/marvin-cli.git
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nb">cd</span><span class="w"> </span>marvin-cli
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Install dependencies</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>npm<span class="w"> </span>install
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># Build the CLI</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>npm<span class="w"> </span>run<span class="w"> </span>build
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># Link globally</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>npm<span class="w"> </span>link
+<p><code>--reason</code> (at most 200 characters) goes into the build log; without it the server uses
+"Rebuild requested by <your name>".</p>
+<p>Table mode prints the outcome on stderr:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>✓ Rebuild queued (joins 1 earlier request(s)): sends at 2026-10-05T10:01:05Z
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  via Pages (integration: cloudflare_pages → deploy)
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  reason: Nightly content sync
 </span></code></pre></div>
-<p>After linking, you can run <code>marvin</code> from any directory.</p>
-<h3 id="running-without-installation">Running Without Installation<a class="headerlink" href="#running-without-installation" title="Permanent link">&para;</a></h3>
-<p>You can run the CLI directly with npx:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>npx<span class="w"> </span>@inneropen/marvin-cli<span class="w"> </span>publish<span class="w"> </span>entries
+<p>With <code>--json</code>, stdout gets:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">"ok"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">"requested"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">"queuedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-10-05T10:00:00Z"</span><span class="p">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">"lastRequestedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-10-05T10:00:05Z"</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">"expectedSendAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-10-05T10:01:05Z"</span><span class="p">,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">"requestCount"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="nt">"reason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Nightly content sync"</span><span class="p">,</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="nt">"target"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">  </span><span class="nt">"targets"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">"kind"</span><span class="p">:</span><span class="w"> </span><span class="s2">"integration"</span><span class="p">,</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"…"</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Pages"</span><span class="p">,</span><span class="w"> </span><span class="nt">"provider"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cloudflare_pages"</span><span class="p">,</span><span class="w"> </span><span class="nt">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"deploy"</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">  </span><span class="p">]</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>This downloads and runs the latest version without installing globally.</p>
-<h2 id="verify-installation">Verify Installation<a class="headerlink" href="#verify-installation" title="Permanent link">&para;</a></h2>
-<p>Check that the CLI is installed correctly:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Check version</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>marvin<span class="w"> </span>--version
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Show help</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>marvin<span class="w"> </span>--help
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># List available commands</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>marvin<span class="w"> </span>--help
+<p><code>requestCount</code> above 1 means the request joined a pending rebuild; <code>queuedAt</code> stays the first
+request's time. When nothing is set up to build the site the server answers <strong>409</strong> with what to
+configure, nothing is queued, and the command exits 1.</p>
+<h2 id="rebuild-status">Rebuild status<a class="headerlink" href="#rebuild-status" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>marvin<span class="w"> </span>platform<span class="w"> </span>site<span class="w"> </span>rebuild-status
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>marvin<span class="w"> </span>platform<span class="w"> </span>site<span class="w"> </span>rebuild-status<span class="w"> </span>--json
 </span></code></pre></div>
-<p>Expected output:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Official CLI for Marvin CMS
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>Usage: marvin [options] [command]
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>Options:
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  -V, --version              output the version number
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>  --api-url &lt;url&gt;           Marvin API URL, overrides MARVIN_API_URL
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>  --workspace &lt;slug&gt;        Workspace slug, overrides MARVIN_WORKSPACE_SLUG
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>  --output &lt;format&gt;         Output format: table, json, yaml, csv (default: "table")
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>  --json                    Shortcut for --output json
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>  --yaml                    Shortcut for --output yaml
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>  --csv                     Shortcut for --output csv
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>  -h, --help                display help for command
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>Commands:
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>  publish                   Publishing API commands (read-only, requires site token)
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>  platform                  Platform API commands (requires user authentication)
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>  admin                     Admin API commands (requires admin privileges)
-</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>  auth                      Authentication commands
-</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>  help [command]            display help for command
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>Configured:  yes
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>Builds via:  Deploy hook (webhook)
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>Quiet time:  60s (sent at most 600s after the first request)
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>Pending:     none
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>Last sent:   2026-10-05T09:00:00Z — Rebuild requested by Jo
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>Last build:  deployment completed at 2026-10-05T09:02:00Z — Deployed
 </span></code></pre></div>
-<h2 id="upgrading">Upgrading<a class="headerlink" href="#upgrading" title="Permanent link">&para;</a></h2>
-<p>To upgrade to the latest version:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Global installation</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>npm<span class="w"> </span>update<span class="w"> </span>-g<span class="w"> </span>@inneropen/marvin-cli
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Or reinstall</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@inneropen/marvin-cli@latest
+<p>The JSON has <code>configured</code>, <code>target</code>/<code>targets</code>, <code>quietSeconds</code>, <code>maxWaitSeconds</code>, <code>pending</code> (the
+queued rebuild: request count, first and last request, expected send time, reason, the changes it
+covers), <code>lastSent</code> (the last Webhook Triggered event) and <code>lastBuild</code> (the newest
+<code>site_build_*</code> / <code>site_deployment_*</code> status a host reported back), each <code>null</code> when there is none.</p>
+<h2 id="scripting">Scripting<a class="headerlink" href="#scripting" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Rebuild after an import, and fail the job if nothing builds the site</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>marvin<span class="w"> </span>workspace<span class="w"> </span>import<span class="w"> </span>--file<span class="w"> </span>bundle.zip
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>marvin<span class="w"> </span>platform<span class="w"> </span>site<span class="w"> </span>rebuild<span class="w"> </span>--reason<span class="w"> </span><span class="s2">"Import from staging"</span><span class="w"> </span>--json<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span>.expectedSendAt
 </span></code></pre></div>
-<p>Check for updates:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>npm<span class="w"> </span>outdated<span class="w"> </span>-g<span class="w"> </span>@inneropen/marvin-cli
-</span></code></pre></div>
-<h2 id="uninstalling">Uninstalling<a class="headerlink" href="#uninstalling" title="Permanent link">&para;</a></h2>
-<p>To remove the CLI:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Global installation</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>npm<span class="w"> </span>uninstall<span class="w"> </span>-g<span class="w"> </span>@inneropen/marvin-cli
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Local development</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>npm<span class="w"> </span>unlink
-</span></code></pre></div>
-<h2 id="troubleshooting-installation">Troubleshooting Installation<a class="headerlink" href="#troubleshooting-installation" title="Permanent link">&para;</a></h2>
-<h3 id="permission-errors-macoslinux">Permission Errors (macOS/Linux)<a class="headerlink" href="#permission-errors-macoslinux" title="Permanent link">&para;</a></h3>
-<p>If you get permission errors during global installation:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Option 1: Use sudo (not recommended)</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>sudo<span class="w"> </span>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@inneropen/marvin-cli
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Option 2: Configure npm to use a different directory (recommended)</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>mkdir<span class="w"> </span>~/.npm-global
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>npm<span class="w"> </span>config<span class="w"> </span><span class="nb">set</span><span class="w"> </span>prefix<span class="w"> </span><span class="s1">'~/.npm-global'</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">'export PATH=~/.npm-global/bin:$PATH'</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="nb">source</span><span class="w"> </span>~/.bashrc
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># Then install without sudo</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>npm<span class="w"> </span>install<span class="w"> </span>-g<span class="w"> </span>@inneropen/marvin-cli
-</span></code></pre></div>
-<h3 id="node-version-errors">Node Version Errors<a class="headerlink" href="#node-version-errors" title="Permanent link">&para;</a></h3>
-<p>If you get errors about Node version:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Check your Node version</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>node<span class="w"> </span>--version
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Upgrade Node.js (using nvm)</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>nvm<span class="w"> </span>install<span class="w"> </span><span class="m">18</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>nvm<span class="w"> </span>use<span class="w"> </span><span class="m">18</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="c1"># Or download from nodejs.org</span>
-</span></code></pre></div>
-<h3 id="command-not-found">Command Not Found<a class="headerlink" href="#command-not-found" title="Permanent link">&para;</a></h3>
-<p>If <code>marvin</code> command is not found after installation:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Check npm global bin directory</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>npm<span class="w"> </span>bin<span class="w"> </span>-g
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Make sure it's in your PATH</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="nb">echo</span><span class="w"> </span><span class="nv">$PATH</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="c1"># Add to PATH if needed (macOS/Linux)</span>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="nb">echo</span><span class="w"> </span><span class="s1">'export PATH=$(npm bin -g):$PATH'</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bashrc
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="nb">source</span><span class="w"> </span>~/.bashrc
-</span></code></pre></div>
-<h3 id="build-errors-development">Build Errors (Development)<a class="headerlink" href="#build-errors-development" title="Permanent link">&para;</a></h3>
-<p>If you encounter build errors during development:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Clean and reinstall</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>rm<span class="w"> </span>-rf<span class="w"> </span>node_modules<span class="w"> </span>package-lock.json
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>npm<span class="w"> </span>install
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1"># Rebuild</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>npm<span class="w"> </span>run<span class="w"> </span>build
-</span></code></pre></div>
-<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
-<p>After installation:</p>
-<ol>
-<li><a href="../configuration/">Configure your credentials</a></li>
-<li><a href="../quickstart/">Follow the Quick Start guide</a></li>
-<li><a href="../../commands/overview/">Explore available commands</a></li>
-</ol>
-<h2 id="system-requirements">System Requirements<a class="headerlink" href="#system-requirements" title="Permanent link">&para;</a></h2>
+<h2 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Requirement</th>
-<th>Version</th>
+<th>Command</th>
+<th>Endpoint</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Node.js</td>
-<td>18.0.0 or higher</td>
+<td><code>rebuild</code></td>
+<td><code>POST /api/platform/site/rebuild</code> (202)</td>
 </tr>
 <tr>
-<td>npm</td>
-<td>9.0.0 or higher</td>
-</tr>
-<tr>
-<td>Operating System</td>
-<td>macOS, Linux, Windows 10+</td>
-</tr>
-<tr>
-<td>Disk Space</td>
-<td>~50MB</td>
+<td><code>rebuild-status</code></td>
+<td><code>GET /api/platform/site/rebuild</code></td>
 </tr>
 </tbody>
 </table>
-<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="../configuration/">Configuration Guide</a></li>
-<li><a href="../quickstart/">Quick Start</a></li>
-<li><a href="../../reference/error-handling/">Troubleshooting</a></li>
-</ul>
 
 
 

@@ -18,7 +18,7 @@
         <link rel="prev" href="../event-log/">
       
       
-        <link rel="next" href="../admin-users/">
+        <link rel="next" href="../workflows/">
       
       
         
@@ -1860,6 +1860,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../site-rebuild/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Site Rebuild
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3416,7 +3500,7 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>get<span class="w"> </span>&lt;id-or-slug&gt;
 </span></code></pre></div>
 <h3 id="create-scheduled-task">Create Scheduled Task<a class="headerlink" href="#create-scheduled-task" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--json<span class="w"> </span>&lt;json&gt;
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--data<span class="w"> </span>&lt;json<span class="p">|</span>@file<span class="p">|</span>-&gt;
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--file<span class="w"> </span>&lt;path&gt;
 </span></code></pre></div>
 <h3 id="update-scheduled-task">Update Scheduled Task<a class="headerlink" href="#update-scheduled-task" title="Permanent link">&para;</a></h3>
@@ -3515,12 +3599,12 @@
 </thead>
 <tbody>
 <tr>
-<td><code>--json &lt;json&gt;</code></td>
-<td>Task data as JSON string</td>
+<td><code>--data &lt;payload&gt;</code></td>
+<td>Task data: inline JSON, <code>@path</code> to read a file, or <code>-</code> for stdin</td>
 </tr>
 <tr>
 <td><code>--file &lt;path&gt;</code></td>
-<td>Path to JSON file with task data</td>
+<td>Path to a JSON file with task data (same as <code>--data @path</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -3538,12 +3622,12 @@
 <td>Task ID or slug (required)</td>
 </tr>
 <tr>
-<td><code>--json &lt;json&gt;</code></td>
-<td>Task data as JSON string</td>
+<td><code>--data &lt;payload&gt;</code></td>
+<td>Task data: inline JSON, <code>@path</code> to read a file, or <code>-</code> for stdin</td>
 </tr>
 <tr>
 <td><code>--file &lt;path&gt;</code></td>
-<td>Path to JSON file with task data</td>
+<td>Path to a JSON file with task data (same as <code>--data @path</code>)</td>
 </tr>
 <tr>
 <td><code>--enable</code></td>
@@ -3681,7 +3765,7 @@
 </span></code></pre></div>
 <h3 id="create-scheduled-task_1">Create Scheduled Task<a class="headerlink" href="#create-scheduled-task_1" title="Permanent link">&para;</a></h3>
 <p>Create interval-based task:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--json<span class="w"> </span><span class="s1">'{</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--data<span class="w"> </span><span class="s1">'{</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="s1">  "name": "Daily Cleanup",</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="s1">  "description": "Clean up temporary files daily",</span>
 </span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="s1">  "task_type": "cleanup_temp_files",</span>
@@ -3696,7 +3780,7 @@
 </span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="s1">}'</span>
 </span></code></pre></div>
 <p>Create cron-based task:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--json<span class="w"> </span><span class="s1">'{</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--data<span class="w"> </span><span class="s1">'{</span>
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="s1">  "name": "Weekly Backup",</span>
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="s1">  "description": "Backup database every Sunday at 2 AM",</span>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="s1">  "task_type": "backup_database",</span>
@@ -3731,12 +3815,12 @@
 </span><span id="__span-16-17"><a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>
 </span><span id="__span-16-18"><a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--file<span class="w"> </span>task.json
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>✓ Created scheduled task: task_abc123def456
 </span></code></pre></div>
 <h3 id="update-scheduled-task_1">Update Scheduled Task<a class="headerlink" href="#update-scheduled-task_1" title="Permanent link">&para;</a></h3>
 <p>Update task configuration:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>update<span class="w"> </span>task_cleanup<span class="w"> </span>--json<span class="w"> </span><span class="s1">'{</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>update<span class="w"> </span>task_cleanup<span class="w"> </span>--data<span class="w"> </span><span class="s1">'{</span>
 </span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="s1">  "task_config": {</span>
 </span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="s1">    "age_hours": 48</span>
 </span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="s1">  }</span>
@@ -3746,23 +3830,25 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>update<span class="w"> </span>task_cleanup<span class="w"> </span>--enable
 </span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>update<span class="w"> </span>task_sync<span class="w"> </span>--disable
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>✓ Updated scheduled task: task_cleanup
 </span></code></pre></div>
 <h3 id="delete-scheduled-task_1">Delete Scheduled Task<a class="headerlink" href="#delete-scheduled-task_1" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>delete<span class="w"> </span>task_old_backup<span class="w"> </span>--yes
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>✓ Deleted scheduled task: task_old_backup
 </span></code></pre></div>
+<p>With <code>--json</code>, stdout gets <code>{"deleted": "task_old_backup"}</code>.</p>
 <h3 id="run-task-manually">Run Task Manually<a class="headerlink" href="#run-task-manually" title="Permanent link">&para;</a></h3>
 <p>Execute a task immediately (bypasses schedule):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>run<span class="w"> </span>task_cleanup
 </span></code></pre></div>
-<p>Output:</p>
+<p>Output (stderr):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>✓ Task execution triggered: task_cleanup
 </span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>Check 'history' command for execution results
 </span></code></pre></div>
+<p>With <code>--json</code>, stdout gets <code>{"ok": true, ...}</code> with the server's response.</p>
 <h3 id="view-task-history_1">View Task History<a class="headerlink" href="#view-task-history_1" title="Permanent link">&para;</a></h3>
 <p>View recent executions:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span><span class="nb">history</span><span class="w"> </span>task_cleanup
@@ -3960,7 +4046,7 @@
 </span></code></pre></div>
 <h2 id="use-cases">Use Cases<a class="headerlink" href="#use-cases" title="Permanent link">&para;</a></h2>
 <h3 id="daily-cleanup-task">Daily Cleanup Task<a class="headerlink" href="#daily-cleanup-task" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--json<span class="w"> </span><span class="s1">'{</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--data<span class="w"> </span><span class="s1">'{</span>
 </span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="s1">  "name": "Daily Cleanup",</span>
 </span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="s1">  "task_type": "cleanup_temp_files",</span>
 </span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="s1">  "schedule_type": "interval",</span>
@@ -3970,7 +4056,7 @@
 </span><span id="__span-39-8"><a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a><span class="s1">}'</span>
 </span></code></pre></div>
 <h3 id="weekly-backup">Weekly Backup<a class="headerlink" href="#weekly-backup" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--json<span class="w"> </span><span class="s1">'{</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--data<span class="w"> </span><span class="s1">'{</span>
 </span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="s1">  "name": "Weekly Backup",</span>
 </span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a><span class="s1">  "task_type": "backup_database",</span>
 </span><span id="__span-40-4"><a id="__codelineno-40-4" name="__codelineno-40-4" href="#__codelineno-40-4"></a><span class="s1">  "schedule_type": "cron",</span>
@@ -3980,7 +4066,7 @@
 </span><span id="__span-40-8"><a id="__codelineno-40-8" name="__codelineno-40-8" href="#__codelineno-40-8"></a><span class="s1">}'</span>
 </span></code></pre></div>
 <h3 id="hourly-data-sync">Hourly Data Sync<a class="headerlink" href="#hourly-data-sync" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--json<span class="w"> </span><span class="s1">'{</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>marvin<span class="w"> </span>scheduled-tasks<span class="w"> </span>create<span class="w"> </span>--data<span class="w"> </span><span class="s1">'{</span>
 </span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="s1">  "name": "Hourly Sync",</span>
 </span><span id="__span-41-3"><a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a><span class="s1">  "task_type": "sync_external_data",</span>
 </span><span id="__span-41-4"><a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a><span class="s1">  "schedule_type": "interval",</span>
