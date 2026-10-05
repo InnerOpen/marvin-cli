@@ -38,9 +38,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # Track the latest published SDK develop tag (not the stale lockfile pin).
-          npm install
-          npm install --no-save @inneropen/marvin-sdk@develop
+          # Release exactly what the lockfile pins, including the SDK.
+          npm ci
 
       - name: Build
         run: npm run build

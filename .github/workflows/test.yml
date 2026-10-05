@@ -30,12 +30,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          # The CLI builds against the PUBLISHED SDK (develop tag) in CI, not the
-          # local workspace symlink. Install the tree, then force the SDK to the
-          # latest develop publish so CI always tracks the tag — `npm ci` would
-          # pin whatever stale version the lockfile happens to hold.
-          npm install
-          npm install --no-save @inneropen/marvin-sdk@develop
+          # Build against the SDK the lockfile pins (the released version package.json
+          # depends on). The SDK's `develop` dist-tag is no longer published on every
+          # develop push, so it went stale (3.2.0-next.28) and broke CI.
+          npm ci
 
       - name: Build
         run: npm run build
