@@ -12,7 +12,7 @@
         <meta name="author" content="Marvin Project">
       
       
-        <link rel="canonical" href="https://github.com/inneropen/marvin-cli/getting-started/configuration/">
+        <link rel="canonical" href="https://inneropen.github.io/marvin-cli/getting-started/configuration/">
       
       
         <link rel="prev" href="../quickstart/">
@@ -88,10 +88,6 @@
     <div data-md-component="announce">
       
     </div>
-    
-      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
-        
-      </div>
     
     
       
@@ -1617,34 +1613,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../commands/notifications/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Notifications
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../commands/scheduled-tasks/" class="md-nav__link">
         
   
@@ -2971,7 +2939,7 @@
 <p>This guide covers configuring the Marvin CLI with credentials, environment variables, and settings.</p>
 <div class="admonition info">
 <p class="admonition-title">Security Notice - v2.6.0+</p>
-<p>Version 2.6.0 introduces enhanced security features including secure credential storage, token masking in CI/CD, and input validation. See <a href="../../SECURITY.md">SECURITY.md</a> for details.</p>
+<p>Version 2.6.0 introduces enhanced security features including secure credential storage, token masking in CI/CD, and input validation. See <a href="https://github.com/InnerOpen/marvin-cli/blob/develop/SECURITY.md">SECURITY.md</a> for details.</p>
 </div>
 <h2 id="configuration-methods">Configuration Methods<a class="headerlink" href="#configuration-methods" title="Permanent link">&para;</a></h2>
 <p>The CLI supports multiple configuration methods, in order of precedence:</p>
@@ -2992,7 +2960,7 @@
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Publishing API: Site client token</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nv">MARVIN_SITE_TOKEN</span><span class="o">=</span>site_client_your_token_here
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Platform API: User token (get via &#39;marvin login&#39;)</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Platform API: User token (get via 'marvin login')</span>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="nv">MARVIN_USER_TOKEN</span><span class="o">=</span>user_your_token_here
 </span></code></pre></div>
 <div class="admonition warning">
@@ -3003,7 +2971,7 @@
 <li>Password flags on <code>marvin user change-password</code> - Use interactive prompts</li>
 <li>Token argument on <code>marvin workspace token</code> - Use <code>--from-stdin</code> or interactive prompt</li>
 </ul>
-<p>See <a href="../../MIGRATION.md">MIGRATION.md</a> for upgrade instructions.</p>
+<p>See <a href="https://github.com/InnerOpen/marvin-cli/blob/develop/MIGRATION.md">MIGRATION.md</a> for upgrade instructions.</p>
 </div>
 <h3 id="optional-variables">Optional Variables<a class="headerlink" href="#optional-variables" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Default output format</span>
@@ -3303,7 +3271,7 @@
 <li>✅ Input validation (paths, URLs, emails, JSON)</li>
 <li>✅ Graceful error handling</li>
 </ul>
-<p>See <a href="../../SECURITY.md">SECURITY.md</a> for complete security documentation.</p>
+<p>See <a href="https://github.com/InnerOpen/marvin-cli/blob/develop/SECURITY.md">SECURITY.md</a> for complete security documentation.</p>
 </div>
 <h3 id="essential-security-practices">Essential Security Practices<a class="headerlink" href="#essential-security-practices" title="Permanent link">&para;</a></h3>
 <ol>
@@ -3331,7 +3299,7 @@
 <li>
 <p><strong>Rotate tokens regularly</strong>
    <div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="c1"># Create new token</span>
-</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>marvin<span class="w"> </span>platform<span class="w"> </span>api-clients<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span><span class="s2">&quot;Production-2026&quot;</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>marvin<span class="w"> </span>platform<span class="w"> </span>api-clients<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span><span class="s2">"Production-2026"</span>
 </span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>
 </span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="c1"># Update credentials</span>
 </span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a>marvin<span class="w"> </span>login
@@ -3355,10 +3323,10 @@
 <li>
 <p><strong>Never use <code>--user-token</code> flag</strong> (removed for security in v2.6.0)
    <div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="c1"># WRONG (removed)</span>
-</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>marvin<span class="w"> </span>platform<span class="w"> </span>entries<span class="w"> </span>list<span class="w"> </span>--user-token<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>marvin<span class="w"> </span>platform<span class="w"> </span>entries<span class="w"> </span>list<span class="w"> </span>--user-token<span class="w"> </span><span class="s2">"</span><span class="nv">$TOKEN</span><span class="s2">"</span>
 </span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>
 </span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="c1"># RIGHT (environment variable)</span>
-</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MARVIN_USER_TOKEN</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span>
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MARVIN_USER_TOKEN</span><span class="o">=</span><span class="s2">"</span><span class="nv">$TOKEN</span><span class="s2">"</span>
 </span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a>marvin<span class="w"> </span>platform<span class="w"> </span>entries<span class="w"> </span>list
 </span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a>
 </span><span id="__span-37-8"><a id="__codelineno-37-8" name="__codelineno-37-8" href="#__codelineno-37-8"></a><span class="c1"># RIGHT (saved credentials)</span>
@@ -3447,7 +3415,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotation", "content.code.copy", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotation", "content.code.copy", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
