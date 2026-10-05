@@ -1,5 +1,43 @@
 # Migration Guide
 
+## 3.0.0
+
+3.0.0 is a major release because it drops commands and changes how a refused command is reported.
+It targets Marvin rc.189 or later and depends on `@inneropen/marvin-sdk` ^4.0.0.
+
+### `marvin platform notifications` is gone
+
+Marvin removed its built-in Apprise notifier, and the API and SDK 4 dropped the notifications
+module with it, so `platform notifications list|get|create|update|delete|test` no longer exist.
+Send notifications through an integration instead (for example the Apprise integration plugin)
+and route events to it from the workspace's automations.
+
+### A 403 now says which role you need
+
+Marvin now enforces workspace roles on settings and content routes: settings (webhooks,
+variables, scheduled tasks, SMTP and test email, invites, members, API clients, workspace export
+and backups) need ADMIN, entry types and forms need ADMIN to change, and collections, resources
+and asset edits need EDITOR. See [Workspace roles](docs/reference/authentication.md#workspace-roles).
+
+When your role is too low the CLI used to print "Authentication Error … check that you're logged
+in". It now prints:
+
+```
+✗ Permission denied (403)
+This needs the ADMIN role in workspace 'acme'.
+```
+
+With `--json` the error object changed from `{"error": "Authentication failed: Forbidden"}` to:
+
+```json
+{"error": "This needs the ADMIN role in workspace 'acme'.", "status": 403, "requiredRole": "ADMIN", "workspace": "acme"}
+```
+
+Scripts that matched the old text should check `status == 403` (and `requiredRole`) instead. The
+exit code is still 1, and a 401 is still reported as an authentication error.
+
+## 2.6.0
+
 This guide helps you migrate from older versions of Marvin CLI to version 2.6.0+, which includes critical security improvements.
 
 ## Overview
