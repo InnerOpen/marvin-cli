@@ -22,6 +22,12 @@ marvin admin system stats
 marvin admin system health
 ```
 
+### Installed Plugins
+
+```bash
+marvin admin system plugins
+```
+
 ## Description
 
 The admin system commands provide platform-wide system information, statistics, and health monitoring. These commands are restricted to users with the `SUPER_ADMIN` platform role and provide insights into system version, configuration, resource usage, and health status.
@@ -56,6 +62,15 @@ marvin login
 ### `marvin admin system health`
 
 No additional options. Returns health status.
+
+### `marvin admin system plugins`
+
+No additional options. Lists the plugin packages installed on the server — integration and AI
+provider plugins — with columns Name, Kind (`integration` or `ai_provider`), Version, Loaded (`yes`,
+or `no:` and the load error), and Providers (each provider slug the plugin adds, with how many
+workspaces have connected it). `--json` returns the full records, including each provider's actions.
+For the providers a workspace can connect, see
+[`marvin platform integrations providers`](integrations.md#providers-and-plugins).
 
 ## Examples
 

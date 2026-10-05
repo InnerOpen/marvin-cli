@@ -161,11 +161,16 @@ marvin platform webhooks list --all          # every page
 marvin platform secrets create --name "Mailgun key" --value-stdin < key.txt
 marvin platform event-log list --limit 20
 marvin workspace export --out-file workspace.json
+
+marvin platform workflows run tag-new-posts --dry-run   # what a workflow would do
+marvin platform integrations list --needs-attention     # connections with open alerts
+marvin platform site rebuild --reason "Content sync"    # queue a site rebuild
 ```
 
 `marvin platform --help` lists every group: entries, collections, resources, assets, entry-types,
 forms, webhooks, invites, api-clients, workspace-members, variables, secrets, email templates and
-subscriptions, scheduled tasks, the event log, and AI (providers, models, operations, settings).
+subscriptions, scheduled tasks, the event log, workflows, integrations (connections, event
+subscriptions, error handling), site rebuilds, and AI (providers, models, operations, settings).
 
 ### Admin (SUPER_ADMIN)
 

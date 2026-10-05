@@ -93,6 +93,9 @@ nav:
           - API Clients: commands/api-clients.md
           - Event Log: commands/event-log.md
           - Scheduled Tasks: commands/scheduled-tasks.md
+          - Workflows: commands/workflows.md
+          - Integrations: commands/integrations.md
+          - Site Rebuild: commands/site-rebuild.md
       - Admin API:
           - Users: commands/admin-users.md
           - System: commands/admin-system.md

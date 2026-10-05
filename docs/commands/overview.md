@@ -76,6 +76,9 @@ marvin platform [command]
 | `scheduled-tasks` | Manage scheduled tasks |
 | `workspace-members` | Manage workspace members |
 | `invites` | Manage workspace invites |
+| `workflows` | Manage workflows: triggers, conditions, actions, runs |
+| `integrations` | Manage integrations, event subscriptions, error handling |
+| `site` | Request a site rebuild and check its status |
 
 **Learn more**: [Platform API Commands](workspaces.md)
 
@@ -292,6 +295,9 @@ marvin platform entry create --help
 - [API Clients](api-clients.md)
 - [Event Log](event-log.md)
 - [Scheduled Tasks](scheduled-tasks.md)
+- [Workflows](workflows.md)
+- [Integrations](integrations.md)
+- [Site Rebuild](site-rebuild.md)
 
 ### Admin API
 

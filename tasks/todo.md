@@ -72,3 +72,21 @@ Gap matrix: 146 already covered · 55 Bucket A (SDK exists, add CLI cmd) · 21 B
 - Verified the gate: injecting a fake endpoint fails it with a naming message; restore → green.
 
 **Note on scope of the gate:** catches coverage drift (new/removed endpoints) and registration errors. It does NOT verify runtime correctness (paths/verbs/response shapes) — CLI tests mock the SDK, so a live smoke test is still needed for that. The snapshot is only as fresh as the last `coverage:refresh`.
+
+
+---
+
+# CLI 3.1 — catch up with the API (2026-10-05)
+
+Plan: script-safe output (batch 0), `platform workflows` (batch 1), `platform integrations` + `platform site rebuild` (batch 2), docs.
+
+- [x] Batch 0: stdout = data, messages on stderr; `{"deleted": id}` / `{"ok": true, …}`; `--data` (+ deprecated `--json <payload>` rewrite, removed in 4.0); `--out-file`; `--page/--all` on webhooks/invites/admin groups; submissions `--limit/--offset`; secrets `--value-stdin`/prompt; README + 4 help texts; coverage snapshot rc.198 (with the integration SDK); table-driven `--output json` test over every write command
+- [x] Batch 1: `platform workflows` (list/get/options/create/update/delete/enable/disable/validate/preview/run/executions/execution)
+- [x] Batch 2: `platform integrations` (+ errors/alert-routing/subscriptions), `platform site rebuild|rebuild-status`, `workflows samples`, `admin system plugins`; SDK ^4.1.0
+- [x] Docs: workflows, integrations, site-rebuild pages; MIGRATION 3.1.0
+- [ ] Relock package-lock.json once @inneropen/marvin-sdk 4.1.0 is published (`npm install @inneropen/marvin-sdk@^4.1.0`)
+
+## Review
+- Unit: 300 tests green; `tsc` build clean; `npm pack --dry-run` OK; `mkdocs build --strict` OK.
+- Live smoke against a local rc.198 backend (+ site rebuild endpoint, + integration SDK and the Apprise plugin): workflows end to end (create → validate → preview → dry run → enable → run → executions → execution → samples), integrations (providers, plugins, create, list, get, check, errors/set/reset, resolve, run, subscriptions create/update/list, alert-routing get/set), site rebuild-status and rebuild (409 with nothing configured), paged lists, `--data @file`, `--value-stdin`.
+- Found: SDK HttpClient parses a 204 that carries `content-type: application/json` as JSON, fails, treats the parse error as a network error and retries the DELETE, which then 404s. The resource is deleted but the command reports "Resource not found" and exits 1 (workflows, secrets, integrations, subscriptions deletes). Pre-existing in SDK 4.0; fix belongs in the SDK.

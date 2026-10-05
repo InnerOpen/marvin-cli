@@ -86,6 +86,20 @@ pass show mailgun/api-key | marvin platform secrets create --name "Mailgun key" 
 now take `--page`, `--per-page` and `--all`. Without them you still get the first 50. `platform forms
 submissions` takes `--limit` (default 100) and `--offset` (default 0).
 
+### New in 3.1
+
+- `marvin platform workflows` (alias `automations`): list, create, validate, preview, run and dry-run
+  workflows, and read their run history. See [Workflows](docs/commands/workflows.md).
+- `marvin platform integrations`: connections, providers, event subscriptions, the error policy and
+  its per-connection overrides, alert routing. See [Integrations](docs/commands/integrations.md).
+- `marvin platform site rebuild` / `rebuild-status`: queue a site rebuild and see where it stands.
+  See [Site Rebuild](docs/commands/site-rebuild.md).
+- `marvin admin system plugins`: the plugin packages installed on the server.
+
+3.1.0 depends on `@inneropen/marvin-sdk` ^4.1.0. The new groups need a matching server: Marvin
+rc.198 or later, with the integration SDK installed for `integrations`, and a release that includes
+the site rebuild endpoint for `site rebuild`.
+
 ## 3.0.0
 
 3.0.0 is a major release because it drops commands and changes how a refused command is reported.
