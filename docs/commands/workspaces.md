@@ -2,6 +2,9 @@
 
 Manage workspaces, switch between workspaces, and configure site tokens for Publishing API access.
 
+!!! note "Required role"
+    `workspace export` and `workspace backups` need the workspace **ADMIN** (or OWNER) role. Without it the command fails with `Permission denied (403)` and names the role it needs. See [Workspace roles](../reference/authentication.md#workspace-roles).
+
 ## Commands
 
 ### List Workspaces

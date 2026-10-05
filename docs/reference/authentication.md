@@ -187,6 +187,36 @@ User login permissions depend on workspace role:
 | **ADMIN** | Full workspace access |
 | **OWNER** | Everything + billing |
 
+## Workspace Roles
+
+Platform commands run as your user, and Marvin checks your role in the workspace before it acts.
+Roles rank OWNER > ADMIN > EDITOR > AUTHOR > VIEWER; a role can do everything the ones below it can.
+
+| Needs | Commands |
+|-------|----------|
+| **ADMIN** (or OWNER) | `platform webhooks` (except `types`), `platform variables`, `platform scheduled-tasks` (except `types`), `platform email-subscriptions`, `platform invites`, `platform workspace-members`, `platform api-clients`, `platform ai providers`, `platform email test-smtp`/`test-template`/`update-template`, `platform email-templates create`/`update`/`delete`/`test-send`/`event-connections`, `platform secrets create`/`update`/`delete`/`reveal`, `workspace export`, `workspace backups`, `platform entry-types create`/`update`/`delete`, `platform forms create`/`update`/`delete` |
+| **EDITOR** | `platform collections create`/`update`/`delete`/`reorder`/`update-entry`, `platform resources create`/`update`/`delete`, `platform assets update`/`delete`, `platform forms submissions`, and changing anyone's entry or approving, publishing or scheduling one |
+| **AUTHOR** | `platform entries create` (as a draft), changing or deleting your own entries until they are approved or published, `platform assets upload` |
+| **VIEWER** | Reading: `list` and `get` on entries, collections, resources, assets, entry types and forms |
+| **SUPER_ADMIN** (platform role) | Everything under `marvin admin` |
+
+Reads of workspace settings (webhooks, variables, scheduled tasks, API clients, members, backups)
+are ADMIN-only too, since they expose configuration.
+
+When your role is too low the command exits with status 1 and says what it needs:
+
+```
+✗ Permission denied (403)
+This needs the ADMIN role in workspace 'acme'.
+
+Suggestions:
+  • Ask a workspace OWNER or ADMIN to change your role (marvin platform workspace-members update-role)
+  • Check you're in the right workspace: marvin workspace current
+```
+
+With `--json` the error is `{"error": "...", "status": 403, "requiredRole": "ADMIN", "workspace": "acme"}`.
+`marvin <command> --help` marks these commands with "(needs workspace ADMIN)" and the like.
+
 ## API Client Credentials
 
 ### Overview

@@ -13,6 +13,8 @@ import { registerAuthCommands } from "./commands/auth.js";
 import { registerWorkspaceCommands } from "./commands/platform/workspaces.js";
 import { credentialsManager } from "./config/credentials.js";
 import { env } from "./config/environment.js";
+import { trackCommandContext } from "./shared/command-context.js";
+import { annotateRequiredRoles } from "./shared/permissions.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(readFileSync(join(__dirname, "../package.json"), "utf-8"));
@@ -55,6 +57,9 @@ program
 
 program.addHelpText("before", `\n${buildAuthStatus()}\n`);
 
+// Lets the error handler name the command (and its workspace) when the backend refuses it
+trackCommandContext(program);
+
 // Auth always visible
 registerAuthCommands(program);
 
@@ -72,5 +77,7 @@ program.addCommand(createUserCommand(), { hidden: !hasUserToken });
 
 // System (health, version) — always visible, no auth required
 program.addCommand(createSystemCommand());
+
+annotateRequiredRoles(program);
 
 program.parse();

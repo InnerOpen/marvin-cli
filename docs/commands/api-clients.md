@@ -2,6 +2,9 @@
 
 Manage site client tokens (Publishing API tokens) for your workspace.
 
+!!! note "Required role"
+    Every API client command, reads included, needs the workspace **ADMIN** (or OWNER) role. Without it the command fails with `Permission denied (403)` and names the role it needs. See [Workspace roles](../reference/authentication.md#workspace-roles).
+
 ## Commands
 
 ### List API Clients

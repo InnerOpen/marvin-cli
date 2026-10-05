@@ -89,26 +89,23 @@ marvin auth whoami
 
 **Symptom:**
 ```
-Error: 403 Forbidden
-Permission denied
+✗ Permission denied (403)
+This needs the ADMIN role in workspace 'acme'.
 ```
 
 **Causes:**
-- Insufficient user permissions
-- API client lacks required scope
-- Workspace role too restrictive
+- Your role in the workspace is below what the command needs (settings commands need ADMIN,
+  content changes EDITOR, entry types and forms ADMIN; see [Workspace roles](authentication.md#workspace-roles))
+- You're in a different workspace than you meant
+- `marvin admin` commands need the SUPER_ADMIN platform role
 
 **Solutions:**
 ```bash
-# Check user role
-marvin auth whoami --json | jq -r '.role'
+# Which workspace am I in?
+marvin workspace current
 
-# Contact workspace admin to:
-# - Upgrade your role
-# - Grant additional permissions
-# - Add you to the workspace
-
-# For API clients, update scopes in Marvin UI
+# Ask a workspace OWNER or ADMIN to change your role, e.g.
+marvin platform workspace-members update-role --help
 ```
 
 ### Connection Errors

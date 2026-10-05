@@ -2,8 +2,31 @@
  * Error handling utilities for CLI commands
  */
 
-import { MarvinApiError, MarvinAuthError, MarvinConfigError, MarvinValidationError } from "@inneropen/marvin-sdk";
+import { MarvinApiError, MarvinAuthError, MarvinConfigError, MarvinError, MarvinValidationError } from "@inneropen/marvin-sdk";
 import chalk from "chalk";
+import { getCommandContext } from "./command-context.js";
+import { describePermissionDenied, type PermissionDenied } from "./permissions.js";
+
+/** A 403: the caller is signed in but their role doesn't allow the operation. */
+function isForbidden(error: unknown): error is MarvinError {
+  return error instanceof MarvinError && error.statusCode === 403;
+}
+
+/** The server's `detail` for an error that carries a response body, if it has a plain one. */
+function serverDetail(error: unknown): string | undefined {
+  if (!(error instanceof MarvinApiError) || !error.responseBody) return undefined;
+  try {
+    const detail = JSON.parse(error.responseBody).detail;
+    return typeof detail === "string" ? detail : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function permissionDenied(): PermissionDenied {
+  const ctx = getCommandContext();
+  return describePermissionDenied(ctx?.path, ctx?.workspace);
+}
 
 function isJsonMode(): boolean {
   return process.argv.includes('--json') || process.argv.includes('--output') && process.argv[process.argv.indexOf('--output') + 1] === 'json';
@@ -22,7 +45,16 @@ export function handleCommandError(error: unknown): void {
   if (isMachineMode()) {
     let message = 'Unknown error';
     let status: number | undefined;
-    if (error instanceof MarvinApiError) {
+    const extra: Record<string, string> = {};
+    if (isForbidden(error)) {
+      const denied = permissionDenied();
+      status = 403;
+      message = denied.message;
+      if (denied.requiredRole) extra.requiredRole = denied.requiredRole;
+      if (denied.workspace) extra.workspace = denied.workspace;
+      const detail = serverDetail(error);
+      if (detail) extra.detail = detail;
+    } else if (error instanceof MarvinApiError) {
       status = error.statusCode;
       if (error.responseBody) {
         try {
@@ -41,7 +73,7 @@ export function handleCommandError(error: unknown): void {
     }
     if (isJsonMode()) {
       // Write to stdout so `| jq .` works — exit code 1 signals failure
-      console.log(JSON.stringify({ error: message, ...(status ? { status } : {}) }));
+      console.log(JSON.stringify({ error: message, ...(status ? { status } : {}), ...extra }));
     } else if (process.argv.includes('--yaml') || (process.argv.includes('--output') && process.argv[process.argv.indexOf('--output') + 1] === 'yaml')) {
       console.log(`error: ${JSON.stringify(message)}${status ? `\nstatus: ${status}` : ''}`);
     } else {
@@ -50,6 +82,20 @@ export function handleCommandError(error: unknown): void {
     process.exitCode = 1;
     return;
   }
+
+  if (isForbidden(error)) {
+    const denied = permissionDenied();
+    console.error(chalk.red("✗ Permission denied (403)"));
+    console.error(denied.message);
+    const detail = serverDetail(error);
+    if (detail) console.error(chalk.dim(detail));
+    console.error();
+    console.error(chalk.yellow("Suggestions:"));
+    denied.suggestions.forEach(s => console.error(chalk.dim(`  • ${s}`)));
+    process.exitCode = 1;
+    return;
+  }
+
   if (error instanceof MarvinAuthError) {
     console.error(chalk.red("✗ Authentication Error"));
     console.error(chalk.dim(error.message));
@@ -95,10 +141,6 @@ export function handleCommandError(error: unknown): void {
       console.error(chalk.yellow("Suggestions:"));
       console.error(chalk.dim("  • Run 'marvin login' to authenticate"));
       console.error(chalk.dim("  • Check that your credentials haven't expired"));
-    } else if (error.statusCode === 403) {
-      console.error(chalk.yellow("Suggestions:"));
-      console.error(chalk.dim("  • Verify you have permission for this operation"));
-      console.error(chalk.dim("  • Check you're in the correct workspace"));
     } else if (error.statusCode === 404) {
       console.error(chalk.yellow("Suggestions:"));
       console.error(chalk.dim("  • Double-check the ID or slug you provided"));

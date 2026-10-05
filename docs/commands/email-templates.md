@@ -2,6 +2,9 @@
 
 Manage workspace email templates for system notifications and user communications.
 
+!!! note "Required role"
+    Listing and reading templates is open to any workspace member. Creating, updating, deleting, test-sending templates and managing event connections need the workspace **ADMIN** (or OWNER) role. Without it the command fails with `Permission denied (403)` and names the role it needs. See [Workspace roles](../reference/authentication.md#workspace-roles).
+
 ## Commands
 
 ### List Email Templates

@@ -2,6 +2,9 @@
 
 Manage automated scheduled tasks for workspace maintenance and operations.
 
+!!! note "Required role"
+    Every scheduled-task command except `types`, reads included, needs the workspace **ADMIN** (or OWNER) role. Without it the command fails with `Permission denied (403)` and names the role it needs. See [Workspace roles](../reference/authentication.md#workspace-roles).
+
 ## Commands
 
 ### List Scheduled Tasks

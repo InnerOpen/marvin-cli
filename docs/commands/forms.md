@@ -2,6 +2,9 @@
 
 Manage workspace forms, view submissions, and interact with published forms via the Publishing API.
 
+!!! note "Required role"
+    Listing and reading forms is open to any workspace member. Creating, updating or deleting a form needs **ADMIN** (or OWNER); reading submissions needs **EDITOR** or above. Without it the command fails with `Permission denied (403)` and names the role it needs. See [Workspace roles](../reference/authentication.md#workspace-roles).
+
 ## Commands
 
 ### List Forms

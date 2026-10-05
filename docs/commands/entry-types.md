@@ -2,6 +2,9 @@
 
 View entry type definitions and schemas for your workspace.
 
+!!! note "Required role"
+    Listing and reading entry types is open to any workspace member. Creating, updating or deleting one needs the workspace **ADMIN** (or OWNER) role. Without it the command fails with `Permission denied (403)` and names the role it needs. See [Workspace roles](../reference/authentication.md#workspace-roles).
+
 ## Commands
 
 ### List Entry Types
