@@ -133,6 +133,12 @@ const UNIVERSAL_FIXTURE: Record<string, unknown> = {
   // Workflows (automations): the list's Trigger/Steps columns read the definition
   definition: { trigger: { type: 'event', event: 'entry_published' }, actions: [{ kind: 'operation' }] },
 
+  // Integrations: open alerts ("needs attention") and the providers' logo URL
+  attention: [{ id: 'alert-1', code: 'rate_limited', count: 2 }],
+  provider: 'slack',
+  integrationName: 'Team Slack',
+  action: 'post_message',
+
   // Event type options (event-log types — not a list/log/logs command, not discovered)
   label: 'label-val',
   category: 'category-val',

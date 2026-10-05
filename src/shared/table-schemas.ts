@@ -20,6 +20,12 @@ import type {
   Automation,
   AutomationExecution,
   AutomationPlanStep,
+  Integration,
+  IntegrationProviderInfo,
+  IntegrationPluginInfo,
+  IntegrationEventSubscription,
+  AdminPlugin,
+  AutomationDryRunSample,
 } from '@inneropen/marvin-sdk/platform'
 import type { ColumnSpec } from '../output.js'
 import {
@@ -344,6 +350,66 @@ export const TABLE_SCHEMAS = {
     Status: 'status',
     Error: (s: AutomationPlanStep) => s.error ?? '',
   } satisfies ColumnSpec<AutomationPlanStep>,
+
+  'workflows.samples': {
+    Kind: 'kind',
+    ID: 'id',
+    Label: (s: AutomationDryRunSample) => s.label ?? '',
+    Event: (s: AutomationDryRunSample) => s.event_type ?? '',
+    'Occurred at': (s: AutomationDryRunSample) => s.occurred_at ?? '',
+    Conditions: (s: AutomationDryRunSample) => (s.conditions_pass == null ? '' : s.conditions_pass ? 'pass' : 'fail'),
+  } satisfies ColumnSpec<AutomationDryRunSample>,
+
+  // ---- Integrations ----
+  'integrations.list': {
+    ID: 'id',
+    Slug: 'slug',
+    Name: 'name',
+    Provider: 'provider',
+    Enabled: 'enabled',
+    Status: 'status',
+    // Open alerts ("needs attention"): total occurrences and the codes behind them
+    Attention: (i: Integration) => {
+      const open = i.attention ?? []
+      if (!open.length) return ''
+      const count = open.reduce((n, a) => n + (a.count ?? 1), 0)
+      return `⚠ ${count} (${[...new Set(open.map((a) => a.code))].join(', ')})`
+    },
+  } satisfies ColumnSpec<Integration>,
+
+  'integrations.providers': {
+    Slug: 'slug',
+    Name: 'name',
+    Category: 'category',
+    Actions: (p: IntegrationProviderInfo) => (p.actions ?? []).map((a) => a.key).join(', '),
+    Emits: (p: IntegrationProviderInfo) => (p.emits ?? []).length,
+    Logo: (p: IntegrationProviderInfo & { logoUrl?: string | null }) => p.logoUrl ?? p.icon ?? '',
+  } satisfies ColumnSpec<IntegrationProviderInfo & { logoUrl?: string | null }>,
+
+  'integrations.plugins': {
+    Name: 'name',
+    Source: 'source',
+    Loaded: (p: IntegrationPluginInfo) => (p.ok ? 'yes' : `no: ${p.error ?? ''}`),
+    Providers: (p: IntegrationPluginInfo) => (p.slugs ?? []).join(', '),
+    Version: (p: IntegrationPluginInfo) => p.version ?? '',
+  } satisfies ColumnSpec<IntegrationPluginInfo>,
+
+  'integrations.subscriptions.list': {
+    ID: 'id',
+    Event: 'eventType',
+    Integration: (s: IntegrationEventSubscription) => s.integrationName ?? s.integrationId,
+    Action: 'action',
+    Enabled: 'enabled',
+  } satisfies ColumnSpec<IntegrationEventSubscription>,
+
+  // ---- Admin ----
+  'admin.system.plugins': {
+    Name: 'name',
+    Kind: 'kind',
+    Version: (p: AdminPlugin) => p.version ?? '',
+    Loaded: (p: AdminPlugin) => (p.ok ? 'yes' : `no: ${p.error ?? ''}`),
+    Providers: (p: AdminPlugin) => (p.providers ?? []).map((pr) => `${pr.slug} (${pr.workspaces} ws)`).join(', '),
+  } satisfies ColumnSpec<AdminPlugin>,
 } satisfies Record<string, ColumnSpec<any>>
 
 export type SchemaKey = keyof typeof TABLE_SCHEMAS

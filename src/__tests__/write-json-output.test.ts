@@ -43,31 +43,37 @@ vi.mock('../config/credentials.js', () => ({
   },
 }))
 
+/** The placeholder for every required id argument: a UUID, so slug lookups are skipped. */
+const ID = '00000000-0000-4000-8000-000000000001'
+
 /** What every SDK call resolves to: an object with the fields commands print or read. */
 const RESOURCE = {
-  id: 'id-1',
+  id: ID,
   slug: 'slug-1',
   name: 'Name',
   title: 'Title',
   message: 'done',
-  status: 'success',
+  status: 'ok',
   ok: true,
   token: 'test-token',
   workspaceRole: 'ADMIN',
   imported: { entries: 1 },
 }
 
-/** A client whose every method, at any depth, resolves with RESOURCE (or bytes for downloads). */
+/**
+ * A client whose every method, at any depth, resolves with RESOURCE — or [RESOURCE] for a list*
+ * method (commands that take an id or slug look it up in a list), or bytes for downloads.
+ */
 function mockClient(): any {
-  const node = (): any =>
-    new Proxy(() => Promise.resolve({ ...RESOURCE }), {
+  const node = (name = ''): any =>
+    new Proxy(() => Promise.resolve(name.startsWith('list') ? [{ ...RESOURCE }] : { ...RESOURCE }), {
       get: (_t, prop) => {
         if (prop === 'then') return undefined
         if (prop === 'validatePathParam') return (v: string) => v
         if (prop === 'download' || prop === 'downloadBackup' || prop === 'getFile') {
           return () => Promise.resolve(new Blob(['bytes']))
         }
-        return node()
+        return node(String(prop))
       },
     })
   return node()
@@ -96,6 +102,8 @@ const OVERRIDES: Record<string, { positional?: string[]; options?: string[] }> =
   'platform api-clients create': { options: ['--name', 'Site'] },
   'platform api-clients update': { options: ['--name', 'Site'] },
   'workspace import': { options: ['--file', binFile] },
+  'platform integrations errors set': { options: ['--no-review', '--alert'] },
+  'platform integrations alert-routing set': { options: ['--no-email-admins', '--reminder-hours', '24'] },
 }
 
 /** Write commands this test can't drive, and why. */
@@ -132,8 +140,7 @@ interface WriteCommand {
 function placeholderFor(argName: string): string {
   if (/email/i.test(argName)) return 'someone@example.com'
   if (/role/i.test(argName)) return 'EDITOR'
-  // a UUID, so commands that also accept a slug don't go looking it up
-  return '00000000-0000-4000-8000-000000000001'
+  return ID
 }
 
 function collectWriteCommands(cmd: Command, path: string[] = []): WriteCommand[] {
@@ -232,8 +239,8 @@ describe('result shapes', () => {
 
   it('create keeps the ✓ line on stderr and the resource on stdout', async () => {
     await buildProgram().parseAsync(['node', 'marvin', 'platform', 'webhooks', 'create', '--data', '{"name":"n"}', '--json'])
-    expect(JSON.parse(io.out())).toMatchObject({ id: 'id-1' })
-    expect(io.err()).toContain('✓ Created webhook: id-1')
+    expect(JSON.parse(io.out())).toMatchObject({ id: ID })
+    expect(io.err()).toContain(`✓ Created webhook: ${ID}`)
   })
 })
 

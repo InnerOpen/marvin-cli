@@ -346,6 +346,29 @@ export function registerWorkflowCommands(parent: Command): void {
     });
 
   workflows
+    .command("samples <workflow>")
+    .description("Events (and entries) a dry run of an event-triggered workflow can test against, newest first")
+    .option("--limit <number>", "How many samples", "10")
+    .action(async function(this: Command, ref: string, cmdOpts) {
+      try {
+        const limit = validatePositiveInteger(cmdOpts.limit, "--limit");
+        const opts = optsOf(this);
+        const mode = getOutputMode(opts);
+        const client = await clientFactory.createPlatformClient(opts);
+        const result = await client.automations.samples(await resolveWorkflowId(client, ref), limit);
+        if (mode !== "table") {
+          renderData(result, mode);
+          return;
+        }
+        if (!result.event_type) say("This workflow isn't triggered by an event, so a dry run needs no sample.");
+        else say(`Trigger event: ${result.event_type} — pass one to 'run --dry-run' with --event-id or --entry-id`);
+        renderList(result.samples, TABLE_SCHEMAS["workflows.samples"], mode);
+      } catch (error) {
+        handleCommandError(error);
+      }
+    });
+
+  workflows
     .command("executions <workflow>")
     .alias("runs")
     .description("Recent runs of a workflow, newest first")

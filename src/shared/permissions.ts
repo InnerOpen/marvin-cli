@@ -4,10 +4,11 @@
  * The backend answers a 403 when the caller's workspace role is below a route's gate. The SDK
  * turns that into a MarvinAuthError without the response body, so the CLI can't read which role
  * the route wanted; this table says it instead. It mirrors the backend's gates:
- * - ADMIN (or OWNER): workspace settings — webhooks, workflows, variables, scheduled tasks, email
+ * - ADMIN (or OWNER): workspace settings — webhooks, workflows, integrations (all but the provider
+ *   catalogue), variables, scheduled tasks, email
  *   subscriptions, SMTP and test email, invites, members, API clients, AI providers, secret
  *   writes, workspace export and backups — reads included; and entry-type and form writes.
- * - EDITOR: collection, resource and asset-edit writes, and reading form submissions.
+ * - EDITOR: collection, resource and asset-edit writes, reading form submissions, and site rebuilds.
  * - AUTHOR: creating entries and changing your own drafts; EDITOR for anyone else's entry or to
  *   approve, publish or schedule one.
  * - SUPER_ADMIN (platform role): everything under `marvin admin`.
@@ -33,6 +34,8 @@ export const REQUIRED_ROLES: Readonly<Record<string, RequiredRole | null>> = {
   "platform webhooks": "ADMIN",
   "platform webhooks types": null,
   "platform workflows": "ADMIN",
+  "platform integrations": "ADMIN",
+  "platform integrations providers": null,
   "platform variables": "ADMIN",
   "platform scheduled-tasks": "ADMIN",
   "platform scheduled-tasks types": null,
@@ -65,6 +68,7 @@ export const REQUIRED_ROLES: Readonly<Record<string, RequiredRole | null>> = {
   "platform forms delete": "ADMIN",
 
   // Content: EDITOR to change
+  "platform site": "EDITOR",
   "platform forms submissions": "EDITOR",
   "platform collections create": "EDITOR",
   "platform collections update": "EDITOR",

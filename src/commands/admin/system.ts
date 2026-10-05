@@ -1,9 +1,10 @@
 import { Command } from "commander";
+import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 import { clientFactory } from "../../shared/clients.js";
 import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
-import { renderData } from "../../output.js";
+import { renderList, renderData } from "../../output.js";
 
 export function registerAdminSystemCommands(parent: Command): void {
   const system = new Command("system")
@@ -77,6 +78,21 @@ export function registerAdminSystemCommands(parent: Command): void {
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
+      }
+    });
+
+  // Installed plugin packages (integration and AI providers)
+  system
+    .command("plugins")
+    .description("List the installed plugin packages, whether each loaded, and the providers they add")
+    .action(async function(this: Command) {
+      try {
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
+        const plugins = await client.adminSystem.listPlugins();
+        renderList(plugins, TABLE_SCHEMAS["admin.system.plugins"], getOutputMode(opts));
+      } catch (error) {
+        handleCommandError(error);
       }
     });
 }
