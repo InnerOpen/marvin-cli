@@ -15,6 +15,7 @@ import { credentialsManager } from "./config/credentials.js";
 import { env } from "./config/environment.js";
 import { trackCommandContext } from "./shared/command-context.js";
 import { annotateRequiredRoles } from "./shared/permissions.js";
+import { rewriteDeprecatedJsonPayload } from "./shared/json-input.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(readFileSync(join(__dirname, "../package.json"), "utf-8"));
@@ -80,4 +81,5 @@ program.addCommand(createSystemCommand());
 
 annotateRequiredRoles(program);
 
-program.parse();
+// `--json <payload>` (deprecated, removed in 4.0) becomes `--data <payload>` before Commander sees it
+program.parse(rewriteDeprecatedJsonPayload(program, process.argv));

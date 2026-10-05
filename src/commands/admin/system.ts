@@ -71,7 +71,9 @@ export function registerAdminSystemCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const health = await client.adminSystem.check();
 
-        console.log(`System status: ${health.status}`);
+        const mode = getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>());
+        if (mode === "table") process.stdout.write(`System status: ${health.status}\n`);
+        else renderData(health, mode);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

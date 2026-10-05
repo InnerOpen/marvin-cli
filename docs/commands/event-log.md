@@ -28,6 +28,15 @@ marvin event-log entity <entity-id> [options]
 marvin event-log user <user-id> [options]
 ```
 
+### List Event Types
+
+```bash
+marvin event-log types
+```
+
+Lists the event types you can subscribe to and the variables each one carries. These are the events
+that email subscriptions, integration subscriptions and workflow triggers react to.
+
 ## Description
 
 The event log provides a complete audit trail of all activities in your workspace. Track entry publications, form submissions, user actions, webhook deliveries, and more. Use filters to find specific events or monitor user activity.
@@ -277,6 +286,9 @@ marvin event-log list --json --limit 2
 ```
 
 ## Event Types
+
+The table below shows common event types. `marvin event-log types` prints the current, complete list
+of subscribable types with the variables each one provides.
 
 | Event Type | Description |
 |------------|-------------|

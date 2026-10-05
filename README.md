@@ -5,7 +5,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/@inneropen/marvin-cli)](https://www.npmjs.com/package/@inneropen/marvin-cli)
 [![license](https://img.shields.io/npm/l/@inneropen/marvin-cli)](./LICENSE)
 
-Official command-line interface for [Marvin CMS](https://github.com/jmashburn/Marvin) Publishing API.
+Official command-line interface for [Marvin CMS](https://github.com/jmashburn/Marvin): read published content through the Publishing API and manage workspaces through the Platform API.
 
 ## Features
 
@@ -13,8 +13,9 @@ Official command-line interface for [Marvin CMS](https://github.com/jmashburn/Ma
 - 🔄 **Multiple output formats** - Table, JSON, YAML, CSV
 - 🔍 **Filter and query** - Filter by entry type, collection, asset type
 - 🎨 **Renderer inspection** - View entry type renderers and capabilities
-- 🚀 **Fast** - Direct HTTP calls to publishing API
-- 🔐 **Site client tokens** - Uses publishing API (not admin API)
+- 🚀 **Fast** - Direct HTTP calls through the Marvin SDK
+- 🔐 **Two token types** - Site client tokens for the Publishing API, user tokens for workspace management
+- 🧰 **Script-safe** - Data on stdout, messages on stderr; every write command has a JSON result
 - 👥 **Workspace roles** - Create invitation tokens with specific roles (VIEWER, AUTHOR, EDITOR, ADMIN, OWNER)
 - 🔒 **Enterprise-grade security** - Secure credential handling, no shell history exposure, token masking in CI/CD
 
@@ -82,7 +83,7 @@ For CI/CD and automation:
 export MARVIN_USER_TOKEN="user_..."
 
 # Site client authentication (Publishing API)
-export MARVIN_SITE_TOKEN="site_client_..."
+export MARVIN_SITE_CLIENT_TOKEN="site_client_..."
 
 # Workspace configuration
 export MARVIN_WORKSPACE_SLUG="your-workspace"
@@ -114,323 +115,141 @@ marvin workspace token --for my-workspace
 
 ## Usage
 
-### Basic Commands
+The CLI has three families of commands, one per API:
+
+| Group | API | Auth | What it's for |
+|---|---|---|---|
+| `marvin publish …` | Publishing API (read-only) | site client token | What a site renders: site config, published entries, collections, resources, assets |
+| `marvin platform …`, `marvin workspace …`, `marvin user …` | Platform API | user token (`marvin login`) | Managing a workspace: content, structure, webhooks, secrets, workflows, integrations… |
+| `marvin admin …` | Platform API, admin routes | user token with SUPER_ADMIN | Instance administration: users, groups, backups, maintenance |
+
+`marvin system health` and `marvin system version` need no token. Commands whose group you can't use
+(no site token, or no user token) are hidden from `marvin --help`. Every command takes `--help`, and a
+command that needs a workspace role says so in its help text, e.g. "(needs workspace ADMIN)".
+
+### Publishing API
 
 ```bash
-# Get workspace site configuration
-marvin site
-
-# List all published entries
-marvin entries
-
-# Get a single entry
-marvin entry about
-
-# List collections
-marvin collections
-
-# Get a collection with its entries
-marvin collection featured
-
-# List entries in a collection
-marvin collection-entries featured
-
-# List all resources
-marvin resources
-
-# Get a single resource
-marvin resource kuroki-s022
-
-# Get entries that use a resource
-marvin resource-entries kuroki-s022
-
-# List all assets
-marvin assets
+marvin publish site                          # workspace site configuration
+marvin publish entries                       # published entries
+marvin publish entries --entry-type page     # …of one entry type
+marvin publish entries --collection featured --limit 10
+marvin publish entry about                   # one entry by slug
+marvin publish collections                   # collections
+marvin publish collection featured           # one collection
+marvin publish collection-entries featured   # its entries, in order
+marvin publish resources                     # resources
+marvin publish resource kuroki-s022          # one resource
+marvin publish resource-entries kuroki-s022  # entries that use it
+marvin publish assets --type image           # assets, filtered by type
+marvin publish asset hero-image              # one asset
+marvin publish renderers                     # renderers the workspace needs
 ```
 
-### Filtering
+### Platform API (workspace management)
 
 ```bash
-# Filter entries by type
-marvin entries --entry-type page
-marvin entries --entry-type project
+marvin login                                 # save your user token (prompted, hidden)
+marvin workspace list                        # workspaces you belong to
+marvin workspace use my-site                 # set the active workspace
 
-# Filter entries by collection
-marvin entries --collection featured
-
-# Limit results
-marvin entries --limit 10
-
-# Filter assets by MIME type
-marvin assets --type image
-marvin assets --type video
+marvin platform entries list
+marvin platform entries create --data @entry.json
+marvin platform entries update <id> --data '{"title":"New title"}'
+marvin platform collections list
+marvin platform webhooks list --all          # every page
+marvin platform secrets create --name "Mailgun key" --value-stdin < key.txt
+marvin platform event-log list --limit 20
+marvin workspace export --out-file workspace.json
 ```
 
-### Output Formats
+`marvin platform --help` lists every group: entries, collections, resources, assets, entry-types,
+forms, webhooks, invites, api-clients, workspace-members, variables, secrets, email templates and
+subscriptions, scheduled tasks, the event log, and AI (providers, models, operations, settings).
 
-The CLI supports four output formats:
-
-#### Table (default)
+### Admin (SUPER_ADMIN)
 
 ```bash
-marvin entries
+marvin admin users list
+marvin admin groups list --all
+marvin admin backups list
+marvin admin maintenance summary
 ```
 
-Output:
-```
-┌───────────────┬─────────┬─────────┬───────────┬────────────┐
-│ Title         │ Slug    │ Type    │ Status    │ Published  │
-├───────────────┼─────────┼─────────┼───────────┼────────────┤
-│ About Us      │ about   │ page    │ published │ 2026-07-01 │
-│ Contact       │ contact │ page    │ published │ 2026-07-02 │
-└───────────────┴─────────┴─────────┴───────────┴────────────┘
-```
+### Request bodies: `--data`
 
-#### JSON
+Write commands take their JSON body with `--data`:
 
 ```bash
-marvin entries --json
-# or
-marvin entries --output json
+marvin platform entries create --data '{"title":"Hello","entryType":"page"}'   # inline
+marvin platform entries create --data @entry.json                              # from a file
+cat entry.json | marvin platform entries create --data -                       # from stdin
+cat entry.json | marvin platform entries create                                # piped stdin also works
 ```
 
-Output:
-```json
-[
-  {
-    "slug": "about",
-    "title": "About Us",
-    "entryType": "page",
-    "status": "published",
-    "publishedAt": "2026-07-01T12:00:00Z"
-  }
-]
-```
+`--file <path>` is the same as `--data @path`. The old `--json '<payload>'` spelling still works in
+3.x with a deprecation warning and is **removed in 4.0** (see [MIGRATION.md](MIGRATION.md)).
 
-#### YAML
+### Output formats
+
+Every command takes `--output table|json|yaml|csv` (or the `--json`, `--yaml`, `--csv` shortcuts).
+Table is the default.
 
 ```bash
-marvin collections --yaml
+marvin publish entries                   # table
+marvin publish entries --json            # JSON
+marvin publish collections --yaml        # YAML
+marvin publish resources --csv > resources.csv
 ```
 
-Output:
-```yaml
-- slug: featured
-  name: Featured Projects
-  description: Our best work
-  entryCount: 5
-```
+**stdout carries data only.** Confirmations ("✓ Created…"), progress and warnings go to stderr, so
+`--json | jq` always gets clean JSON. In JSON/YAML/CSV mode:
 
-#### CSV
+- create/update commands print the created or updated resource;
+- delete, remove and revoke commands print `{"deleted": "<id>"}`;
+- run, test, rerun and import commands print `{"ok": true, …}` with whatever the server returned;
+- errors print `{"error": "…", "status": 403, …}` and exit with code 1.
 
 ```bash
-marvin resources --csv > resources.csv
+id=$(marvin platform entries create --data @entry.json --json | jq -r .id)
+marvin platform entries delete "$id" --yes --json      # {"deleted": "<id>"}
 ```
 
-Output:
-```csv
-Name,Slug,Type,Description,URL
-Kuroki S022 Denim,kuroki-s022,fabric,Premium Japanese selvedge,https://kuroki.com
-```
-
-### Command-Line Options
-
-Global options (use before the command):
+### Global options
 
 ```bash
-marvin --help                    # Show help
-marvin --version                 # Show version
-marvin --api-url <url>           # Override MARVIN_API_URL
-marvin --token <token>           # Override MARVIN_SITE_CLIENT_TOKEN
-marvin --workspace <slug>        # Override MARVIN_WORKSPACE_SLUG
-marvin --output <format>         # Set output format (table, json, yaml, csv)
-marvin --json                    # Shortcut for --output json
-marvin --yaml                    # Shortcut for --output yaml
-marvin --csv                     # Shortcut for --output csv
+marvin --help                    # show help
+marvin --version                 # show version
+marvin --api-url <url>           # override MARVIN_API_URL
+marvin --workspace <slug>        # override the active workspace / MARVIN_WORKSPACE_SLUG
+marvin --output <format>         # table, json, yaml, csv
+marvin --json | --yaml | --csv   # shortcuts for --output
+marvin publish --site-token <t>  # site token for one publish command (alias: --token)
 ```
 
-**Example:**
-
-```bash
-# Use a different workspace
-marvin --workspace other-workspace entries
-
-# Output as JSON
-marvin entries --json
-
-# Override API URL and output CSV
-marvin --api-url https://marvin.example.com assets --csv
-```
-
-## Commands Reference
-
-### Site
-
-```bash
-marvin site [--json|--yaml]
-```
-
-Fetch workspace site configuration (title, tagline, logo, etc.).
-
-### Entries
-
-```bash
-marvin entries [options]
-```
-
-**Options:**
-- `--entry-type <slug>` - Filter by entry type (e.g., `page`, `project`)
-- `--collection <slug>` - Filter by collection
-- `--limit <number>` - Limit results
-
-**Examples:**
-```bash
-marvin entries                          # All entries
-marvin entries --entry-type page        # Only pages
-marvin entries --collection featured    # Entries in "featured" collection
-marvin entries --limit 5                # First 5 entries
-```
-
-### Entry
-
-```bash
-marvin entry <slug>
-```
-
-Fetch a single entry by slug.
-
-### Collections
-
-```bash
-marvin collections
-```
-
-List all collections with entry counts.
-
-### Collection
-
-```bash
-marvin collection <slug>
-```
-
-Fetch a single collection with metadata.
-
-### Collection Entries
-
-```bash
-marvin collection-entries <slug>
-```
-
-List all entries in a collection.
-
-### Resources
-
-```bash
-marvin resources
-```
-
-List all resources (fabrics, tools, suppliers, etc.).
-
-### Resource
-
-```bash
-marvin resource <slug>
-```
-
-Fetch a single resource by slug.
-
-### Resource Entries
-
-```bash
-marvin resource-entries <slug>
-```
-
-List all entries that reference a resource.
-
-### Assets
-
-```bash
-marvin assets [options]
-```
-
-**Options:**
-- `--type <type>` - Filter by MIME type prefix (e.g., `image`, `video`, `audio`)
-- `--limit <number>` - Limit results
-
-**Examples:**
-```bash
-marvin assets                # All assets
-marvin assets --type image   # Only images
-marvin assets --type video   # Only videos
-```
-
-### Publish Renderers
-
-```bash
-marvin publish renderers [options]
-```
-
-List entry types with their renderer declarations and capabilities. By default, only shows entry types marked as rendered (`isRendered: true`).
-
-**Options:**
-- `--all` - Include all entry types, not just rendered ones
-
-**Examples:**
-```bash
-marvin publish renderers              # Rendered entry types only
-marvin publish renderers --all        # All entry types
-marvin publish renderers --json       # JSON output
-```
-
-Output:
-```
-┌──────────────────┬─────────────────┬───────────┬──────────────────────────────────┬─────────────┬──────────┐
-│ Name             │ Slug            │ Renderer  │ Package                          │ Publishable │ Routable │
-├──────────────────┼─────────────────┼───────────┼──────────────────────────────────┼─────────────┼──────────┤
-│ Page             │ page            │ page      │ @inneropen/marvin-renderers-core │ true        │ true     │
-│ Article          │ article         │ article   │ @inneropen/marvin-renderers-core │ true        │ true     │
-│ FAQ              │ faq             │ faq       │ @inneropen/marvin-renderers-core │ true        │ true     │
-│ Navigation Item  │ navigation-item │ navigation│ @inneropen/marvin-renderers-core │ true        │ false    │
-└──────────────────┴─────────────────┴───────────┴──────────────────────────────────┴─────────────┴──────────┘
-```
-
-See [Renderers Command Documentation](docs/commands/renderers.md) for details.
+Global options can go before or after the command: `marvin --json publish entries` and
+`marvin publish entries --json` are the same.
 
 ## Scripting Examples
 
-### Export all entries to JSON
-
 ```bash
-marvin entries --json > entries.json
+# Export all published entries
+marvin publish entries --json > entries.json
+
+# Count them
+marvin publish entries --json | jq 'length'
+
+# Does an entry exist?
+if marvin publish entry about --json > /dev/null 2>&1; then echo "exists"; fi
+
+# Names of all image assets
+marvin publish assets --type image --json | jq -r '.[].name'
+
+# Every webhook, across all pages
+marvin platform webhooks list --all --json | jq -r '.[].name'
 ```
 
-### Get entry count
-
-```bash
-marvin entries --json | jq 'length'
-```
-
-### Export resources to CSV for spreadsheet
-
-```bash
-marvin resources --csv > resources.csv
-```
-
-### Check if a specific entry exists
-
-```bash
-if marvin entry about --json > /dev/null 2>&1; then
-  echo "About page exists"
-else
-  echo "About page not found"
-fi
-```
-
-### List all image assets
-
-```bash
-marvin assets --type image --json | jq -r '.[].name'
-```
+See [docs/guides/scripting.md](docs/guides/scripting.md) for more.
 
 ## Security Features
 
@@ -574,10 +393,10 @@ You're connecting to a non-localhost server over HTTP:
 
 ```bash
 # Use HTTPS for production
-marvin --api-url https://marvin.example.com entries list
+marvin --api-url https://marvin.example.com publish entries
 
 # HTTP is OK for localhost
-marvin --api-url http://localhost:8000 entries list
+marvin --api-url http://localhost:8000 publish entries
 ```
 
 **"Warning: API URL points to private IP range"**
@@ -587,7 +406,7 @@ You're connecting to a private IP address. This is usually intentional for inter
 ```bash
 # If this is your internal Marvin server, this is OK
 # If unexpected, verify the URL
-marvin --api-url https://marvin.internal.company.com entries list
+marvin --api-url https://marvin.internal.company.com publish entries
 ```
 
 ## Development
@@ -595,7 +414,7 @@ marvin --api-url https://marvin.internal.company.com entries list
 ### Run without building
 
 ```bash
-npm start -- entries --json
+npm start -- publish entries --json
 ```
 
 ### Watch mode
@@ -607,7 +426,7 @@ npm run dev
 Then in another terminal:
 
 ```bash
-marvin entries
+marvin publish entries
 ```
 
 ### Run tests
@@ -624,13 +443,13 @@ This CLI uses:
 - **dotenv** - Environment configuration
 - **TypeScript** - Type safety
 
-The CLI is a thin wrapper around the Marvin Publishing API. It does NOT:
+The CLI is a thin wrapper around the Marvin API, through [`@inneropen/marvin-sdk`](https://www.npmjs.com/package/@inneropen/marvin-sdk). It does NOT:
 - Import the Python backend
 - Start the FastAPI server
 - Access the database directly
-- Require admin authentication
 
-It ONLY makes HTTP calls to the Publishing API endpoints using site client tokens.
+It only makes HTTP calls: Publishing API endpoints with a site client token, Platform API
+endpoints with a user token.
 
 ## Related Documentation
 

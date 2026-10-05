@@ -76,17 +76,67 @@ fi
 marvin publish entries --json
 ```
 
+## stdout vs stderr
+
+stdout carries data only. Everything meant for a person goes to stderr: `✓ Created…` confirmations,
+progress lines, hints and warnings (including deprecation warnings). So `--json | jq` always gets
+one clean JSON document, and `2>/dev/null` hides the chatter without losing data.
+
+What each kind of command prints on stdout in JSON, YAML or CSV mode:
+
+| Command kind | stdout |
+|---|---|
+| list / get | the items or the object |
+| create / update | the created or updated resource |
+| delete / remove / revoke | `{"deleted": "<id>"}` |
+| run / test / rerun / import and other actions | `{"ok": true, ...}` plus whatever the server returned |
+| any error | `{"error": "...", "status": 403, ...}`, and the exit code is 1 |
+
+In table mode a delete or an action prints only its `✓` line, on stderr, so stdout is empty.
+
+```bash
+id=$(marvin platform entries create --data @entry.json --json | jq -r .id)
+marvin platform entries delete "$id" --yes --json        # {"deleted": "<id>"}
+marvin platform webhooks test "$id" --json | jq .ok      # true
+```
+
+Write commands take their body with `--data`: inline JSON, `@path` to read a file, or `-` to read
+stdin (`--file <path>` is the same as `--data @path`). The old `--json '<payload>'` spelling still
+works in 3.x with a warning on stderr and is removed in 4.0.
+
+## Paged lists
+
+`platform webhooks list`, `platform invites list` and `admin groups list` return one page (50 items)
+by default. Use `--page <n>` and `--per-page <n>` to pick a page, or `--all` to fetch every page:
+
+```bash
+marvin platform webhooks list --all --json | jq length
+```
+
+`platform forms submissions <form-id>` takes `--limit` (default 100) and `--offset` (default 0).
+
+## Secrets without shell history
+
+`platform secrets create` and `update` read the value from stdin with `--value-stdin`, or prompt
+for it (hidden) when run in a terminal. `--value <value>` still works but warns, because the value
+ends up in your shell history.
+
+```bash
+pass show mailgun/api-key | marvin platform secrets create --name "Mailgun key" --value-stdin
+marvin platform secrets update <id> --value-stdin < new-key.txt
+```
+
 ## Exit Codes
 
 The CLI uses standard exit codes:
 
-| Code | Meaning | Action |
-|------|---------|--------|
-| `0` | Success | Command completed successfully |
-| `1` | General error | Check error message |
-| `401` | Authentication failed | Check credentials |
-| `404` | Not found | Resource doesn't exist |
-| `500` | Server error | Check server logs |
+| Code | Meaning |
+|------|---------|
+| `0` | Success |
+| `1` | Any error: bad input, authentication, permission, not found, server error |
+
+The HTTP status isn't the exit code. With `--json` the error object on stdout carries it:
+`{"error": "...", "status": 404}`.
 
 ### Using Exit Codes
 

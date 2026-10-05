@@ -51,7 +51,7 @@ export function formatTokenForOutput(token: string | null | undefined, showChars
  */
 export function displayTokenWarning(): void {
   if (!shouldShowFullToken()) {
-    console.log('⚠️  Token is masked because output is not a TTY (CI/logging environment)');
-    console.log('   Run this command interactively to see the full token');
+    process.stderr.write('⚠️  Token is masked because output is not a TTY (CI/logging environment)\n');
+    process.stderr.write('   Run this command interactively to see the full token\n');
   }
 }

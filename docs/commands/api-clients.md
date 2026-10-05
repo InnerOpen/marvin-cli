@@ -23,7 +23,7 @@ marvin api-clients get <id>
 
 ```bash
 marvin api-clients create --name <name>
-marvin api-clients create --json <json>
+marvin api-clients create --data <json|@file|->
 marvin api-clients create --file <path>
 ```
 
@@ -31,7 +31,7 @@ marvin api-clients create --file <path>
 
 ```bash
 marvin api-clients update <id> --name <name>
-marvin api-clients update <id> --json <json>
+marvin api-clients update <id> --data <json|@file|->
 marvin api-clients update <id> --file <path>
 ```
 
@@ -93,8 +93,8 @@ marvin workspace use <workspace>
 |--------|-------------|
 | `--name <name>` | Client name |
 | `--description <description>` | Client description |
-| `--json <json>` | Client data as JSON string |
-| `--file <path>` | Path to JSON file |
+| `--data <payload>` | Client data: inline JSON, `@path` to read a file, or `-` for stdin |
+| `--file <path>` | Path to a JSON file (same as `--data @path`) |
 
 Either `--name`, `--json`, or `--file` is required.
 
@@ -105,8 +105,8 @@ Either `--name`, `--json`, or `--file` is required.
 | `<id>` | API client ID (required) |
 | `--name <name>` | Client name |
 | `--description <description>` | Client description |
-| `--json <json>` | Client data as JSON string |
-| `--file <path>` | Path to JSON file |
+| `--data <payload>` | Client data: inline JSON, `@path` to read a file, or `-` for stdin |
+| `--file <path>` | Path to a JSON file (same as `--data @path`) |
 
 ### `marvin api-clients delete <id>`
 
@@ -178,7 +178,7 @@ Create with name and description:
 marvin api-clients create --name "Production Site" --description "Token for production website"
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Created API client: 01234567-89ab-cdef-0123-456789abcdef
@@ -189,7 +189,7 @@ Output:
 Create from JSON:
 
 ```bash
-marvin api-clients create --json '{
+marvin api-clients create --data '{
   "name": "Staging Environment",
   "description": "Token for staging site"
 }'
@@ -218,7 +218,7 @@ marvin api-clients update 01234567-89ab-cdef-0123-4567 \
   --description "Main production site"
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Updated API client: 01234567-89ab-cdef-0123-4567
@@ -232,11 +232,13 @@ Delete a client (requires confirmation):
 marvin api-clients delete 01234567-89ab-cdef-0123-4567 --yes
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Deleted API client: 01234567-89ab-cdef-0123-4567
 ```
+
+With `--json`, stdout gets `{"deleted": "01234567-89ab-cdef-0123-4567"}`.
 
 ### Rotate Token
 
@@ -246,7 +248,7 @@ Generate a new token (invalidates the old one):
 marvin api-clients rotate-token 01234567-89ab-cdef-0123-456789abcdef
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Rotated token for API client: 01234567-89ab-cdef-0123-456789abcdef

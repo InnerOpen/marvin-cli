@@ -2,14 +2,16 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
 import { handleCommandError } from "../../shared/error-handler.js";
+import { say, emitDeleted } from "../../shared/io.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
+import { validatePositiveInteger } from "../../shared/validation.js";
 
 export function registerPlatformFormCommands(parent: Command): void {
   const forms = parent
     .command("forms")
-    .description("Form CRUD operations");
+    .description("Forms: definitions, their submissions, and the public submit endpoint");
 
   // List forms
   forms
@@ -45,11 +47,9 @@ export function registerPlatformFormCommands(parent: Command): void {
     });
 
   // Create form
-  forms
+  addDataOptions(forms
     .command("create")
-    .description("Create a new form")
-    .option("--json <json>", "Form data as JSON string")
-    .option("--file <path>", "Path to JSON file with form data (use '-' for stdin)")
+    .description("Create a new form"), "form data")
     .action(async function(this: Command, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -58,7 +58,7 @@ export function registerPlatformFormCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const form = await client.forms.create(data);
-        console.log(`✓ Created form: ${form.id} (${form.slug})`);
+        say(`✓ Created form: ${form.id} (${form.slug})`);
         renderData(form, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -66,11 +66,9 @@ export function registerPlatformFormCommands(parent: Command): void {
     });
 
   // Update form
-  forms
+  addDataOptions(forms
     .command("update <id>")
-    .description("Update a form")
-    .option("--json <json>", "Form data as JSON string")
-    .option("--file <path>", "Path to JSON file with form data (use '-' for stdin)")
+    .description("Update a form"), "form data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -79,7 +77,7 @@ export function registerPlatformFormCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const form = await client.forms.update(id, data);
-        console.log(`✓ Updated form: ${form.id} (${form.slug})`);
+        say(`✓ Updated form: ${form.id} (${form.slug})`);
         renderData(form, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -103,7 +101,7 @@ export function registerPlatformFormCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         await client.forms.delete(id);
-        console.log(`✓ Deleted form: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted form: ${id}`);
       } catch (error) {
         handleCommandError(error);
       }
@@ -112,13 +110,21 @@ export function registerPlatformFormCommands(parent: Command): void {
   // Get form submissions
   forms
     .command("submissions <formId>")
-    .description("Get submissions for a form")
-    .action(async function(this: Command, formId: string) {
+    .description("List a form's submissions, newest first")
+    .option("--limit <number>", "Maximum number of submissions to return", "100")
+    .option("--offset <number>", "Number of submissions to skip", "0")
+    .action(async function(this: Command, formId: string, cmdOpts) {
       try {
+        const limit = validatePositiveInteger(cmdOpts.limit, "--limit");
+        const offset = parseInt(cmdOpts.offset, 10);
+        if (isNaN(offset) || offset < 0) throw new Error(`--offset must be 0 or more, got: ${cmdOpts.offset}`);
+
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
 
-        const submissions = await client.forms.getSubmissions(formId);
+        // The SDK's getSubmissions() takes no paging, so pass limit/offset on the raw GET
+        const id = client.validatePathParam(formId, "form ID");
+        const submissions = await client.get<unknown[]>(`/api/platform/forms/${id}/submissions`, { limit, offset });
 
         renderList(submissions as any[], TABLE_SCHEMAS['forms.submissions'], getOutputMode(opts));
       } catch (error) {
@@ -144,11 +150,9 @@ export function registerPlatformFormCommands(parent: Command): void {
     });
 
   // Submit to published form (Publishing API)
-  forms
+  addDataOptions(forms
     .command("submit <slug>")
-    .description("Submit data to a published form (Publishing API)")
-    .option("--json <json>", "Submission data as JSON string")
-    .option("--file <path>", "Path to JSON file with submission data (use '-' for stdin)")
+    .description("Submit data to a published form (Publishing API)"), "submission data")
     .action(async function(this: Command, slug: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -158,7 +162,7 @@ export function registerPlatformFormCommands(parent: Command): void {
         const workspace = await client.workspaces.getCurrent();
 
         const submission = await client.forms.submitForm(workspace.slug ?? '', slug, data);
-        console.log(`✓ Submitted to form: ${slug}`);
+        say(`✓ Submitted to form: ${slug}`);
         renderData(submission, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);

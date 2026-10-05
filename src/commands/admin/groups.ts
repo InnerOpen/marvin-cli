@@ -4,7 +4,9 @@ import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { addPageOptions, fetchPages } from "../../shared/pagination.js";
+import { say, emitDeleted } from "../../shared/io.js";
 
 export function registerAdminGroupCommands(parent: Command): void {
   const groups = new Command("groups")
@@ -13,16 +15,16 @@ export function registerAdminGroupCommands(parent: Command): void {
   parent.addCommand(groups);
 
   // List groups
-  groups
+  addPageOptions(groups
     .command("list")
-    .description("List all workspaces/groups")
-    .action(async function(this: Command) {
+    .description("List workspaces/groups (one page; --all for every page)"))
+    .action(async function(this: Command, cmdOpts) {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
-        const result = await client.workspaces.listAdminGroups();
+        const items = await fetchPages<any>(client, "/api/admin/groups", cmdOpts);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(result.items || [] as any, {
+        renderList(items, {
           id: 'id',
           name: 'name',
           slug: 'slug',
@@ -34,11 +36,9 @@ export function registerAdminGroupCommands(parent: Command): void {
     });
 
   // Create group
-  groups
+  addDataOptions(groups
     .command("create")
-    .description("Create a new workspace/group")
-    .option("--json <json>", "Group data as JSON string")
-    .option("--file <path>", "Path to JSON file with group data (use '-' for stdin)")
+    .description("Create a new workspace/group"), "group data")
     .action(async function(this: Command, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -46,7 +46,7 @@ export function registerAdminGroupCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.workspaces.create(data);
 
-        console.log(`✓ Created group: ${result.id}`);
+        say(`✓ Created group: ${result.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(result, getOutputMode(globalOpts));
       } catch (error) {
@@ -73,11 +73,9 @@ export function registerAdminGroupCommands(parent: Command): void {
     });
 
   // Update group
-  groups
+  addDataOptions(groups
     .command("update <id>")
-    .description("Update a workspace/group")
-    .option("--json <json>", "Group data as JSON string")
-    .option("--file <path>", "Path to JSON file with group data (use '-' for stdin)")
+    .description("Update a workspace/group"), "group data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -85,7 +83,7 @@ export function registerAdminGroupCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.workspaces.update(id, data);
 
-        console.log(`✓ Updated group: ${result.id}`);
+        say(`✓ Updated group: ${result.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(result, getOutputMode(globalOpts));
       } catch (error) {
@@ -111,7 +109,7 @@ export function registerAdminGroupCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.workspaces.delete(id, cmdOpts.force === true);
 
-        console.log(`✓ Deleted group: ${id}`);
+        emitDeleted(id, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Deleted group: ${id}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

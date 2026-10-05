@@ -4,6 +4,40 @@ import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { handleCommandError } from "../../shared/error-handler.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
+import { say, warn, emitDeleted } from "../../shared/io.js";
+import { promptSecure, readFromStdin } from "../../shared/prompt.js";
+
+interface SecretValueOptions {
+  value?: string;
+  valueStdin?: boolean;
+}
+
+/**
+ * The secret's value, without it landing in shell history: `--value-stdin` reads it from a pipe,
+ * otherwise an interactive terminal prompts for it (hidden). `--value` still works but warns.
+ * Returns undefined when `optional` and nothing was given (update without a new value).
+ */
+async function resolveSecretValue(cmdOpts: SecretValueOptions, optional: boolean): Promise<string | undefined> {
+  if (cmdOpts.value !== undefined && cmdOpts.valueStdin) {
+    throw new Error("Use either --value-stdin or --value, not both");
+  }
+  if (cmdOpts.valueStdin) {
+    const value = await readFromStdin();
+    if (!value) throw new Error("--value-stdin read an empty value");
+    return value;
+  }
+  if (cmdOpts.value !== undefined) {
+    warn("--value puts the secret in your shell history; prefer --value-stdin or the interactive prompt.");
+    return cmdOpts.value;
+  }
+  if (optional) return undefined;
+  if (!process.stdin.isTTY) {
+    throw new Error("No secret value: pipe it in with --value-stdin (or run interactively to be prompted)");
+  }
+  const value = await promptSecure("Secret value (input hidden):");
+  if (!value) throw new Error("Secret value is required");
+  return value;
+}
 
 export function registerSecretCommands(parent: Command): void {
   const secrets = parent
@@ -34,10 +68,11 @@ export function registerSecretCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const slugs = await client.secrets.slugs();
-        if (getOutputMode(opts) === "json") {
-          console.log(JSON.stringify(slugs, null, 2));
+        const mode = getOutputMode(opts);
+        if (mode === "table") {
+          for (const slug of slugs as string[]) process.stdout.write(`${slug}\n`);
         } else {
-          (slugs as string[]).forEach((slug) => console.log(slug));
+          renderData(slugs, mode);
         }
       } catch (error) {
         handleCommandError(error);
@@ -64,22 +99,24 @@ export function registerSecretCommands(parent: Command): void {
     .command("create")
     .description("Create a new secret (value is encrypted and never returned in reads)")
     .requiredOption("--name <name>", "Secret name")
-    .requiredOption("--value <value>", "Secret value (will be encrypted at rest)")
+    .option("--value-stdin", "Read the secret value from stdin (e.g. `pass show x | marvin … --value-stdin`)")
+    .option("--value <value>", "Secret value (deprecated: lands in shell history; prompts when omitted)")
     .option("--slug <slug>", "Secret slug for {{SLUG}} interpolation (auto-generated if omitted)")
     .option("--description <description>", "Secret description")
     .action(async function(this: Command, cmdOpts) {
       try {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const value = await resolveSecretValue(cmdOpts, false);
         const client = await clientFactory.createPlatformClient(opts);
         const rawSlug = cmdOpts.slug || cmdOpts.name;
         const data: any = {
           name: cmdOpts.name,
           slug: rawSlug.toUpperCase().replace(/[^A-Z0-9]+/g, '_'),
-          value: cmdOpts.value,
+          value,
         };
         if (cmdOpts.description) data.description = cmdOpts.description;
         const secret = await client.secrets.create(data);
-        console.log(`✓ Created secret: ${secret.id}`);
+        say(`✓ Created secret: ${secret.id}`);
         renderData(secret, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -91,23 +128,25 @@ export function registerSecretCommands(parent: Command): void {
     .command("update <id>")
     .description("Update a secret's name, description, or value")
     .option("--name <name>", "New secret name")
-    .option("--value <value>", "New secret value (will be encrypted at rest)")
+    .option("--value-stdin", "Read a new secret value from stdin")
+    .option("--value <value>", "New secret value (deprecated: lands in shell history)")
     .option("--description <description>", "New secret description")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data: any = {};
         if (cmdOpts.name) data.name = cmdOpts.name;
-        if (cmdOpts.value) data.value = cmdOpts.value;
+        const value = await resolveSecretValue(cmdOpts, true);
+        if (value) data.value = value;
         if (cmdOpts.description !== undefined) data.description = cmdOpts.description;
         if (Object.keys(data).length === 0) {
-          console.error("Error: Provide at least one of --name, --value, or --description");
+          console.error("Error: Provide at least one of --name, --value-stdin, or --description");
           process.exitCode = 1;
           return;
         }
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const secret = await client.secrets.update(id, data);
-        console.log(`✓ Updated secret: ${secret.id}`);
+        say(`✓ Updated secret: ${secret.id}`);
         renderData(secret, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -129,7 +168,7 @@ export function registerSecretCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         await client.secrets.delete(id);
-        console.log(`✓ Deleted secret: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted secret: ${id}`);
       } catch (error) {
         handleCommandError(error);
       }

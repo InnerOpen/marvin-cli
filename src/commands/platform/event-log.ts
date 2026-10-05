@@ -125,7 +125,7 @@ export function registerEventLogCommands(parent: Command): void {
   // Event types (subscribable event type catalogue)
   eventLog
     .command("types")
-    .description("List all subscribable event types (for webhooks and email subscriptions)")
+    .description("List the subscribable event types and the variables each one carries (for email and integration subscriptions and workflow triggers)")
     .action(async function(this: Command) {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());

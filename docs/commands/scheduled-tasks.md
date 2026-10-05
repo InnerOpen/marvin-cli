@@ -22,7 +22,7 @@ marvin scheduled-tasks get <id-or-slug>
 ### Create Scheduled Task
 
 ```bash
-marvin scheduled-tasks create --json <json>
+marvin scheduled-tasks create --data <json|@file|->
 marvin scheduled-tasks create --file <path>
 ```
 
@@ -99,16 +99,16 @@ marvin workspace use <workspace>
 
 | Option | Description |
 |--------|-------------|
-| `--json <json>` | Task data as JSON string |
-| `--file <path>` | Path to JSON file with task data |
+| `--data <payload>` | Task data: inline JSON, `@path` to read a file, or `-` for stdin |
+| `--file <path>` | Path to a JSON file with task data (same as `--data @path`) |
 
 ### `marvin scheduled-tasks update <id-or-slug>`
 
 | Option | Description |
 |--------|-------------|
 | `<id-or-slug>` | Task ID or slug (required) |
-| `--json <json>` | Task data as JSON string |
-| `--file <path>` | Path to JSON file with task data |
+| `--data <payload>` | Task data: inline JSON, `@path` to read a file, or `-` for stdin |
+| `--file <path>` | Path to a JSON file with task data (same as `--data @path`) |
 | `--enable` | Enable the task |
 | `--disable` | Disable the task |
 
@@ -195,7 +195,7 @@ Output:
 Create interval-based task:
 
 ```bash
-marvin scheduled-tasks create --json '{
+marvin scheduled-tasks create --data '{
   "name": "Daily Cleanup",
   "description": "Clean up temporary files daily",
   "task_type": "cleanup_temp_files",
@@ -213,7 +213,7 @@ marvin scheduled-tasks create --json '{
 Create cron-based task:
 
 ```bash
-marvin scheduled-tasks create --json '{
+marvin scheduled-tasks create --data '{
   "name": "Weekly Backup",
   "description": "Backup database every Sunday at 2 AM",
   "task_type": "backup_database",
@@ -252,7 +252,7 @@ EOF
 marvin scheduled-tasks create --file task.json
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Created scheduled task: task_abc123def456
@@ -263,7 +263,7 @@ Output:
 Update task configuration:
 
 ```bash
-marvin scheduled-tasks update task_cleanup --json '{
+marvin scheduled-tasks update task_cleanup --data '{
   "task_config": {
     "age_hours": 48
   }
@@ -277,7 +277,7 @@ marvin scheduled-tasks update task_cleanup --enable
 marvin scheduled-tasks update task_sync --disable
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Updated scheduled task: task_cleanup
@@ -289,11 +289,13 @@ Output:
 marvin scheduled-tasks delete task_old_backup --yes
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Deleted scheduled task: task_old_backup
 ```
+
+With `--json`, stdout gets `{"deleted": "task_old_backup"}`.
 
 ### Run Task Manually
 
@@ -303,12 +305,14 @@ Execute a task immediately (bypasses schedule):
 marvin scheduled-tasks run task_cleanup
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Task execution triggered: task_cleanup
 Check 'history' command for execution results
 ```
+
+With `--json`, stdout gets `{"ok": true, ...}` with the server's response.
 
 ### View Task History
 
@@ -498,7 +502,7 @@ Run at specific times:
 ### Daily Cleanup Task
 
 ```bash
-marvin scheduled-tasks create --json '{
+marvin scheduled-tasks create --data '{
   "name": "Daily Cleanup",
   "task_type": "cleanup_temp_files",
   "schedule_type": "interval",
@@ -511,7 +515,7 @@ marvin scheduled-tasks create --json '{
 ### Weekly Backup
 
 ```bash
-marvin scheduled-tasks create --json '{
+marvin scheduled-tasks create --data '{
   "name": "Weekly Backup",
   "task_type": "backup_database",
   "schedule_type": "cron",
@@ -524,7 +528,7 @@ marvin scheduled-tasks create --json '{
 ### Hourly Data Sync
 
 ```bash
-marvin scheduled-tasks create --json '{
+marvin scheduled-tasks create --data '{
   "name": "Hourly Sync",
   "task_type": "sync_external_data",
   "schedule_type": "interval",

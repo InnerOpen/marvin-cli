@@ -22,14 +22,14 @@ marvin forms get <id>
 ### Create Form
 
 ```bash
-marvin forms create --json <json>
+marvin forms create --data <json|@file|->
 marvin forms create --file <path>
 ```
 
 ### Update Form
 
 ```bash
-marvin forms update <id> --json <json>
+marvin forms update <id> --data <json|@file|->
 marvin forms update <id> --file <path>
 ```
 
@@ -42,7 +42,7 @@ marvin forms delete <id> --yes
 ### Get Form Submissions
 
 ```bash
-marvin forms submissions <form-id>
+marvin forms submissions <form-id> [--limit <n>] [--offset <n>]
 ```
 
 ### Get Published Form (Publishing API)
@@ -54,7 +54,7 @@ marvin forms get-published <slug>
 ### Submit to Published Form (Publishing API)
 
 ```bash
-marvin forms submit <slug> --json <json>
+marvin forms submit <slug> --data <json|@file|->
 marvin forms submit <slug> --file <path>
 ```
 
@@ -107,16 +107,16 @@ export MARVIN_SITE_CLIENT_TOKEN=marvin_sk_your_token
 
 | Option | Description |
 |--------|-------------|
-| `--json <json>` | Form data as JSON string |
-| `--file <path>` | Path to JSON file (use '-' for stdin) |
+| `--data <payload>` | Form data: inline JSON, `@path` to read a file, or `-` for stdin |
+| `--file <path>` | Path to a JSON file (same as `--data @path`; `-` for stdin) |
 
 ### `marvin forms update <id>`
 
 | Option | Description |
 |--------|-------------|
 | `<id>` | Form ID (required) |
-| `--json <json>` | Form data as JSON string |
-| `--file <path>` | Path to JSON file (use '-' for stdin) |
+| `--data <payload>` | Form data: inline JSON, `@path` to read a file, or `-` for stdin |
+| `--file <path>` | Path to a JSON file (same as `--data @path`; `-` for stdin) |
 
 ### `marvin forms delete <id>`
 
@@ -130,6 +130,8 @@ export MARVIN_SITE_CLIENT_TOKEN=marvin_sk_your_token
 | Option | Description |
 |--------|-------------|
 | `<form-id>` | Form ID (required) |
+| `--limit <n>` | Maximum number of submissions to return (default `100`) |
+| `--offset <n>` | Number of submissions to skip (default `0`) |
 | `--json` | Output as JSON |
 | `--yaml` | Output as YAML |
 | `--output <format>` | Output format: table, json, yaml |
@@ -147,8 +149,8 @@ export MARVIN_SITE_CLIENT_TOKEN=marvin_sk_your_token
 | Option | Description |
 |--------|-------------|
 | `<slug>` | Form slug (required) |
-| `--json <json>` | Submission data as JSON string |
-| `--file <path>` | Path to JSON file (use '-' for stdin) |
+| `--data <payload>` | Submission data: inline JSON, `@path` to read a file, or `-` for stdin |
+| `--file <path>` | Path to a JSON file (same as `--data @path`; `-` for stdin) |
 
 ## Examples
 
@@ -195,10 +197,10 @@ Output:
 
 ### Create Form
 
-Create from JSON string:
+Create from inline JSON:
 
 ```bash
-marvin forms create --json '{
+marvin forms create --data '{
   "name": "Contact Form",
   "slug": "contact",
   "status": "active",
@@ -264,10 +266,10 @@ marvin forms create --file contact-form.json
 Create from stdin:
 
 ```bash
-cat contact-form.json | marvin forms create --file -
+cat contact-form.json | marvin forms create --data -
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Created form: 01234567-89ab-cdef-0123-456789abcdef (contact)
@@ -276,7 +278,7 @@ Output:
 ### Update Form
 
 ```bash
-marvin forms update 01234567-89ab-cdef-0123-4567 --json '{
+marvin forms update 01234567-89ab-cdef-0123-4567 --data '{
   "status": "active",
   "notifications": {
     "email": "updated@example.com"
@@ -284,7 +286,7 @@ marvin forms update 01234567-89ab-cdef-0123-4567 --json '{
 }'
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Updated form: 01234567-89ab-cdef-0123-4567 (contact)
@@ -296,16 +298,24 @@ Output:
 marvin forms delete 01234567-89ab-cdef-0123-4567 --yes
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Deleted form: 01234567-89ab-cdef-0123-4567
 ```
 
+With `--json`, stdout gets `{"deleted": "01234567-89ab-cdef-0123-4567"}`.
+
 ### View Submissions
 
 ```bash
 marvin forms submissions 01234567-89ab-cdef-0123-4567
+```
+
+Submissions come newest first, 100 at a time. Page through older ones with `--offset`:
+
+```bash
+marvin forms submissions 01234567-89ab-cdef-0123-4567 --limit 50 --offset 50
 ```
 
 Output:
@@ -375,14 +385,14 @@ marvin forms get-published contact --json
 Submit to published form:
 
 ```bash
-marvin forms submit contact --json '{
+marvin forms submit contact --data '{
   "name": "John Doe",
   "email": "john@example.com",
   "message": "Test submission"
 }'
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Submitted to form: contact
@@ -627,7 +637,7 @@ When creating with invalid field configuration:
 echo '{"name": "test"}' | jq .
 
 # Check required fields
-marvin forms create --json '{
+marvin forms create --data '{
   "name": "Test Form",
   "slug": "test",
   "fields": [...]

@@ -14,7 +14,8 @@ import { createPlatformCommand } from '../commands/platform/index.js'
 import { createAdminCommand } from '../commands/admin/index.js'
 import { registerWorkspaceCommands } from '../commands/platform/workspaces.js'
 import { clientFactory } from '../shared/clients.js'
-import { trackCommandContext, commandPath } from '../shared/command-context.js'
+import { trackCommandContext, commandPath, resetCommandContext } from '../shared/command-context.js'
+import { captureOutput, type Captured } from './helpers/capture.js'
 import { REQUIRED_ROLES, requiredRoleFor, describePermissionDenied, annotateRequiredRoles } from '../shared/permissions.js'
 import { handleCommandError } from '../shared/error-handler.js'
 
@@ -154,17 +155,18 @@ describe('describePermissionDenied', () => {
 })
 
 describe('a 403 from a command', () => {
-  const stdout: string[] = []
-  const stderr: string[] = []
+  let io: Captured
+  let stdout: string[]
+  let stderr: string[]
   const argv = process.argv
 
   beforeEach(() => {
-    stdout.length = 0
-    stderr.length = 0
     activeWorkspace.slug = undefined
     delete process.env.MARVIN_WORKSPACE_SLUG
-    vi.spyOn(console, 'log').mockImplementation((...a: unknown[]) => { stdout.push(a.join(' ')) })
-    vi.spyOn(console, 'error').mockImplementation((...a: unknown[]) => { stderr.push(a.join(' ')) })
+    resetCommandContext()
+    io = captureOutput()
+    stdout = io.stdout
+    stderr = io.stderr
   })
 
   afterEach(() => {
@@ -173,7 +175,7 @@ describe('a 403 from a command', () => {
     process.exitCode = 0
   })
 
-  // The error handler reads the output mode from process.argv, as it does in the real CLI.
+  // The error handler takes the output mode from the parsed command, or process.argv before one ran.
   async function run(...args: string[]): Promise<void> {
     process.argv = ['node', 'marvin', ...args]
     await buildProgram().parseAsync(process.argv)
@@ -181,7 +183,8 @@ describe('a 403 from a command', () => {
 
   it('says which role and workspace an ADMIN-only command needs', async () => {
     vi.mocked(clientFactory.createPlatformClient).mockResolvedValue({
-      webhooks: { list: vi.fn().mockRejectedValue(forbidden()) },
+      // `webhooks list` pages through the API itself (client.get), not the SDK's page-1 helper
+      get: vi.fn().mockRejectedValue(forbidden()),
     } as any)
 
     await run('platform', 'webhooks', 'list', '--workspace', 'acme')

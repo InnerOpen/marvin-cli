@@ -7,6 +7,7 @@ import { clientFactory } from '../../shared/clients.js';
 import { renderData } from '../../output.js';
 import { getOutputMode, type PlatformCommandOptions } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
+import { emitOk } from '../../shared/io.js';
 
 export function registerProfileCommands(parent: Command): void {
   const profile = parent
@@ -45,7 +46,7 @@ export function registerProfileCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         await client.user.updateProfile(data);
-        console.log('✓ Profile updated');
+        emitOk({ updated: data }, getOutputMode(opts), '✓ Profile updated');
       } catch (error) {
         handleCommandError(error);
       }

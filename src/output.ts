@@ -1,5 +1,10 @@
 export type OutputMode = "table" | "json" | "yaml" | "csv";
 
+/** Write one line of data to stdout. Human messages never come through here (see shared/io.ts). */
+function out(text: string): void {
+  process.stdout.write(`${text}\n`);
+}
+
 export type ColumnSpec<T> = Record<string, keyof T | ((row: T) => unknown)>;
 
 function resolveValue<T>(row: T, accessor: keyof T | ((row: T) => unknown)): unknown {
@@ -30,7 +35,8 @@ function projectedRows<T>(rows: T[], columns: ColumnSpec<T>): Record<string, str
 
 export function renderTable<T>(rows: T[], columns: ColumnSpec<T>): void {
   if (!rows.length) {
-    console.log("No results");
+    // A message, not data: stdout stays empty so `| wc -l` and friends count nothing.
+    process.stderr.write("No results\n");
     return;
   }
 
@@ -39,7 +45,7 @@ export function renderTable<T>(rows: T[], columns: ColumnSpec<T>): void {
 
 export function renderJson(data: unknown): void {
   const serialized = JSON.stringify(data ?? [], null, 2);
-  console.log(serialized);
+  out(serialized);
 }
 
 function yamlScalar(value: unknown): string {
@@ -83,7 +89,7 @@ function toYaml(data: unknown, indent = 0): string {
 }
 
 export function renderYaml(data: unknown): void {
-  console.log(toYaml(data));
+  out(toYaml(data));
 }
 
 function csvCell(value: unknown): string {
@@ -98,16 +104,16 @@ export function renderCsv<T>(rows: T[], columns: ColumnSpec<T>): void {
     if (rows.length === 0) return;
     const first = rows[0] as Record<string, unknown>;
     const inferred = Object.keys(first);
-    console.log(inferred.map(csvCell).join(","));
+    out(inferred.map(csvCell).join(","));
     for (const row of rows as Record<string, unknown>[]) {
-      console.log(inferred.map((key) => csvCell(row[key])).join(","));
+      out(inferred.map((key) => csvCell(row[key])).join(","));
     }
     return;
   }
 
-  console.log(labels.map(csvCell).join(","));
+  out(labels.map(csvCell).join(","));
   for (const row of projectedRows(rows, columns)) {
-    console.log(labels.map((label) => csvCell(row[label])).join(","));
+    out(labels.map((label) => csvCell(row[label])).join(","));
   }
 }
 

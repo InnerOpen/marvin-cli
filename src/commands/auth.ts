@@ -6,13 +6,14 @@ import { handleCommandError } from "../shared/error-handler.js";
 import { clientFactory } from "../shared/clients.js";
 import { renderData } from "../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../shared/types.js";
-import { readJsonInput } from "../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../shared/json-input.js";
+import { say, emitOk } from "../shared/io.js";
 
 function promptForToken(label: string): Promise<string> {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout,
+      output: process.stderr,
     });
 
     const stdin = process.stdin as any;
@@ -21,20 +22,20 @@ function promptForToken(label: string): Promise<string> {
     }
 
     let token = "";
-    console.log(`Enter ${label} (input hidden):`);
+    process.stderr.write(`Enter ${label} (input hidden):\n`);
 
     process.stdin.on("data", (char) => {
       const key = char.toString();
 
       if (key === "\n" || key === "\r" || key === "") {
-        console.log();
+        process.stderr.write("\n");
         if (stdin.isTTY) {
           stdin.setRawMode(false);
         }
         rl.close();
         resolve(token);
       } else if (key === "") {
-        console.log("\nCancelled");
+        process.stderr.write("\nCancelled\n");
         process.exit(0);
       } else if (key === "" || key === "\b") {
         if (token.length > 0) {
@@ -83,7 +84,7 @@ export function registerAuthCommands(parent: Command): void {
             return;
           }
 
-          console.log("Validating site token...");
+          say("Validating site token...");
           try {
             const { MarvinClient } = await import("@inneropen/marvin-sdk");
             const client = new MarvinClient({
@@ -92,7 +93,7 @@ export function registerAuthCommands(parent: Command): void {
               workspaceSlug: workspace,
             });
             await client.collections.list();
-            console.log("✓ Site token is valid");
+            say("✓ Site token is valid");
           } catch (error) {
             console.error("✗ Site token validation failed");
             if (error instanceof Error) console.error(error.message);
@@ -105,7 +106,7 @@ export function registerAuthCommands(parent: Command): void {
           if (!credentialsManager.getActiveWorkspace()) {
             credentialsManager.setActiveWorkspace(workspace);
           }
-          console.log(`✓ Site token saved for workspace: ${workspace}`);
+          say(`✓ Site token saved for workspace: ${workspace}`);
           savedAny = true;
         }
 
@@ -126,12 +127,12 @@ export function registerAuthCommands(parent: Command): void {
             return;
           }
 
-          console.log("Validating user token...");
+          say("Validating user token...");
           try {
             const { PlatformClient } = await import("@inneropen/marvin-sdk/platform");
             const client = new PlatformClient({ apiUrl, userToken });
             await client.user.getProfile();
-            console.log("✓ User token is valid");
+            say("✓ User token is valid");
           } catch (error) {
             console.error("✗ User token validation failed");
             if (error instanceof Error) console.error(error.message);
@@ -144,13 +145,13 @@ export function registerAuthCommands(parent: Command): void {
 
           if (allOpts.workspace) {
             credentialsManager.setActiveWorkspace(allOpts.workspace);
-            console.log(`✓ Logged in successfully`);
-            console.log(`✓ Active workspace set to: ${allOpts.workspace}`);
+            say(`✓ Logged in successfully`);
+            say(`✓ Active workspace set to: ${allOpts.workspace}`);
           } else {
-            console.log(`✓ Logged in successfully`);
+            say(`✓ Logged in successfully`);
             if (!savedAny) {
-              console.log(`  Credentials saved to ~/.marvin/credentials.json`);
-              console.log(`  Set active workspace with: marvin workspace use <slug>`);
+              say(`  Credentials saved to ~/.marvin/credentials.json`);
+              say(`  Set active workspace with: marvin workspace use <slug>`);
             }
           }
           savedAny = true;
@@ -181,16 +182,16 @@ export function registerAuthCommands(parent: Command): void {
             return;
           }
           credentialsManager.removeSiteToken(workspace);
-          console.log(`✓ Site token cleared for workspace: ${workspace}`);
+          say(`✓ Site token cleared for workspace: ${workspace}`);
         } else if (cmdOpts.all) {
           credentialsManager.clear();
-          console.log("✓ All credentials cleared");
+          say("✓ All credentials cleared");
         } else {
           const creds = credentialsManager.load();
           delete creds.userToken;
           credentialsManager.save(creds);
-          console.log("✓ Logged out (user token cleared)");
-          console.log("  Site tokens preserved — use --site-token or --all to remove them");
+          say("✓ Logged out (user token cleared)");
+          say("  Site tokens preserved — use --site-token or --all to remove them");
         }
       } catch (error) {
         handleCommandError(error);
@@ -198,17 +199,15 @@ export function registerAuthCommands(parent: Command): void {
     });
 
   // Register a new user (public — no token required)
-  parent
+  addDataOptions(parent
     .command("register")
     .description("Register a new user account")
     .option("--email <email>", "User email")
-    .option("--password <password>", "User password")
-    .option("--json <json>", "Registration data as JSON string")
-    .option("--file <path>", "Path to JSON file with registration data (use '-' for stdin)")
+    .option("--password <password>", "User password"), "registration data")
     .action(async function (this: Command, cmdOpts) {
       try {
         let data: any = {};
-        if (cmdOpts.json || cmdOpts.file) {
+        if (cmdOpts.data !== undefined || cmdOpts.file) {
           data = await readJsonInput(cmdOpts);
         }
         if (cmdOpts.email) data.email = cmdOpts.email;
@@ -218,7 +217,7 @@ export function registerAuthCommands(parent: Command): void {
         const client = clientFactory.createAuthClient(opts);
         const user = await client.register(data);
 
-        console.log(`✓ Registered user: ${user.email}`);
+        say(`✓ Registered user: ${user.email}`);
         renderData(user, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -234,7 +233,7 @@ export function registerAuthCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = clientFactory.createAuthClient(opts);
         await client.forgotPassword({ email });
-        console.log("✓ If that email exists, a reset link was sent");
+        emitOk({ email }, getOutputMode(opts), "✓ If that email exists, a reset link was sent");
       } catch (error) {
         handleCommandError(error);
       }
@@ -251,7 +250,7 @@ export function registerAuthCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = clientFactory.createAuthClient(opts);
         await client.resetPassword({ token: cmdOpts.token, newPassword: cmdOpts.password });
-        console.log("✓ Password reset successfully");
+        emitOk(null, getOutputMode(opts), "✓ Password reset successfully");
       } catch (error) {
         handleCommandError(error);
       }

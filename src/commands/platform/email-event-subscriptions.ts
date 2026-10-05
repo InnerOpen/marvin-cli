@@ -3,6 +3,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { handleCommandError } from "../../shared/error-handler.js";
+import { say, emitDeleted } from "../../shared/io.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerEmailEventSubscriptionCommands(parent: Command): void {
@@ -61,7 +62,7 @@ export function registerEmailEventSubscriptionCommands(parent: Command): void {
         if (cmdOpts.recipientEmail) data.recipient_email = cmdOpts.recipientEmail;
         if (cmdOpts.recipientField) data.recipient_field = cmdOpts.recipientField;
         const subscription = await client.emailEventSubscriptions.create(data);
-        console.log(`✓ Created email subscription: ${subscription.id}`);
+        say(`✓ Created email subscription: ${subscription.id}`);
         renderData(subscription, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -83,7 +84,7 @@ export function registerEmailEventSubscriptionCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         await client.emailEventSubscriptions.delete(id);
-        console.log(`✓ Deleted email subscription: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted email subscription: ${id}`);
       } catch (error) {
         handleCommandError(error);
       }

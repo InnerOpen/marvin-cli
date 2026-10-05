@@ -180,7 +180,7 @@ marvin email-templates create \
   --button-text "Get Started"
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Created email template: Welcome Email
@@ -221,11 +221,13 @@ Delete a template (requires confirmation):
 marvin email-templates delete 01234567-89ab-cdef-0123-456789abcdef --yes
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Deleted template: 01234567-89ab-cdef-0123-456789abcdef
 ```
+
+With `--json`, stdout gets `{"deleted": "01234567-89ab-cdef-0123-456789abcdef"}`.
 
 ### Test Send
 
@@ -235,12 +237,14 @@ Send a test email:
 marvin email-templates test-send 01234567-89ab-cdef-0123-456789abcdef user@example.com
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Test email sent successfully
   Recipient: user@example.com
 ```
+
+With `--json`, stdout gets `{"ok": true, ...}` with the server's response.
 
 ### JSON Output
 

@@ -4,7 +4,8 @@ import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted, emitOk } from "../../shared/io.js";
 
 export function registerAdminEmailCommands(parent: Command): void {
   const email = new Command("email")
@@ -38,7 +39,7 @@ export function registerAdminEmailCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.adminSystem.sendTestEmail({ email: address });
 
-        console.log(`✓ Test email sent to ${address}`);
+        emitOk({ email: address }, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Test email sent to ${address}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -92,11 +93,9 @@ export function registerAdminEmailCommands(parent: Command): void {
     });
 
   // Create template
-  templates
+  addDataOptions(templates
     .command("create")
-    .description("Create a new system email template")
-    .option("--json <json>", "Template data as JSON string")
-    .option("--file <path>", "Path to JSON file with template data (use '-' for stdin)")
+    .description("Create a new system email template"), "template data")
     .action(async function(this: Command, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -104,7 +103,7 @@ export function registerAdminEmailCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.adminSystem.createEmailTemplate(data);
 
-        console.log(`✓ Created email template: ${result.id}`);
+        say(`✓ Created email template: ${result.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(result, getOutputMode(globalOpts));
       } catch (error) {
@@ -114,11 +113,9 @@ export function registerAdminEmailCommands(parent: Command): void {
     });
 
   // Update template
-  templates
+  addDataOptions(templates
     .command("update <id>")
-    .description("Update a system email template")
-    .option("--json <json>", "Template data as JSON string")
-    .option("--file <path>", "Path to JSON file with template data (use '-' for stdin)")
+    .description("Update a system email template"), "template data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -126,7 +123,7 @@ export function registerAdminEmailCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.adminSystem.updateEmailTemplate(id, data);
 
-        console.log(`✓ Updated email template: ${result.id}`);
+        say(`✓ Updated email template: ${result.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(result, getOutputMode(globalOpts));
       } catch (error) {
@@ -144,7 +141,7 @@ export function registerAdminEmailCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.adminSystem.sendEmailTemplateTest(id, address);
 
-        console.log(`✓ Test email for template ${id} sent to ${address}`);
+        emitOk({ templateId: id, email: address }, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Test email for template ${id} sent to ${address}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -167,7 +164,7 @@ export function registerAdminEmailCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.adminSystem.deleteEmailTemplate(id);
 
-        console.log(`✓ Deleted email template: ${id}`);
+        emitDeleted(id, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Deleted email template: ${id}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

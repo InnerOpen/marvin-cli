@@ -3,6 +3,7 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { handleCommandError } from "../../shared/error-handler.js";
+import { say, emitDeleted } from "../../shared/io.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerVariableCommands(parent: Command): void {
@@ -45,7 +46,7 @@ export function registerVariableCommands(parent: Command): void {
         };
         if (cmdOpts.description) data.description = cmdOpts.description;
         const variable = await client.variables.create(data);
-        console.log(`✓ Created variable: ${variable.id}`);
+        say(`✓ Created variable: ${variable.id}`);
         renderData(variable, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -73,7 +74,7 @@ export function registerVariableCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const variable = await client.variables.update(id, data);
-        console.log(`✓ Updated variable: ${variable.id}`);
+        say(`✓ Updated variable: ${variable.id}`);
         renderData(variable, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -95,7 +96,7 @@ export function registerVariableCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         await client.variables.delete(id);
-        console.log(`✓ Deleted variable: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted variable: ${id}`);
       } catch (error) {
         handleCommandError(error);
       }

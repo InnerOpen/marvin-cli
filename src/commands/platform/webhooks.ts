@@ -4,8 +4,10 @@ import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode } from "../../shared/types.js";
 import { handleCommandError } from "../../shared/error-handler.js";
-import { readFileSync } from "fs";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { addPageOptions, fetchPages } from "../../shared/pagination.js";
+import { say, emitDeleted, emitOk } from "../../shared/io.js";
 
 export function registerWebhookCommands(parent: Command): void {
   const webhooks = new Command("webhooks")
@@ -14,13 +16,13 @@ export function registerWebhookCommands(parent: Command): void {
   parent.addCommand(webhooks);
 
   // List
-  webhooks
+  addPageOptions(webhooks
     .command("list")
-    .description("List all webhooks")
-    .action(async function(this: Command) {
+    .description("List webhooks (one page; --all for every page)"))
+    .action(async function(this: Command, cmdOpts) {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
-        const items = await client.webhooks.list();
+        const items = await fetchPages(client, "/api/groups/webhooks", cmdOpts);
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderList(items as any[], TABLE_SCHEMAS['webhooks.list'], getOutputMode(globalOpts));
@@ -47,29 +49,17 @@ export function registerWebhookCommands(parent: Command): void {
     });
 
   // Create
-  webhooks
+  addDataOptions(webhooks
     .command("create")
-    .description("Create a new webhook")
-    .option("--json <json>", "Webhook data as JSON string")
-    .option("--file <path>", "Path to JSON file with webhook data")
+    .description("Create a new webhook"), "webhook data")
     .action(async function(this: Command, cmdOpts) {
       try {
-        let data: any;
-
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
-        } else {
-          console.error("Error: Provide webhook data via --json or --file");
-          process.exitCode = 1;
-          return;
-        }
+        const data = await readJsonInput(cmdOpts);
 
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const webhook = await client.webhooks.create(data);
 
-        console.log(`✓ Created webhook: ${webhook.id}`);
+        say(`✓ Created webhook: ${webhook.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(webhook, getOutputMode(globalOpts));
       } catch (error) {
@@ -79,29 +69,17 @@ export function registerWebhookCommands(parent: Command): void {
     });
 
   // Update
-  webhooks
+  addDataOptions(webhooks
     .command("update <id>")
-    .description("Update a webhook")
-    .option("--json <json>", "Webhook data as JSON string")
-    .option("--file <path>", "Path to JSON file with webhook data")
+    .description("Update a webhook"), "webhook data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
-        let data: any;
-
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
-        } else {
-          console.error("Error: Provide webhook data via --json or --file");
-          process.exitCode = 1;
-          return;
-        }
+        const data = await readJsonInput(cmdOpts);
 
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const webhook = await client.webhooks.update(id, data);
 
-        console.log(`✓ Updated webhook: ${webhook.id}`);
+        say(`✓ Updated webhook: ${webhook.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(webhook, getOutputMode(globalOpts));
       } catch (error) {
@@ -126,7 +104,7 @@ export function registerWebhookCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.webhooks.delete(id);
 
-        console.log(`✓ Deleted webhook: ${id}`);
+        emitDeleted(id, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Deleted webhook: ${id}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -141,8 +119,9 @@ export function registerWebhookCommands(parent: Command): void {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.webhooks.test(id);
-        console.log("✓ Webhook test scheduled");
-        if (result?.message) console.log(result.message);
+        const lines = ["✓ Webhook test scheduled"];
+        if (result?.message) lines.push(result.message);
+        emitOk(result, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), ...lines);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -169,14 +148,15 @@ export function registerWebhookCommands(parent: Command): void {
   // Rerun
   webhooks
     .command("rerun")
-    .description("Rerun failed webhooks")
+    .description("Re-fire today's scheduled webhooks (everything due since 00:00 UTC), in the background")
     .action(async function(this: Command) {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.webhooks.rerun();
 
-        console.log(result.message);
-        console.log(`Requeued: ${result.requeued} webhooks`);
+        const lines = [`✓ ${result?.message ?? "Webhook rerun started"}`];
+        if (typeof result?.requeued === "number") lines.push(`Requeued: ${result.requeued} webhooks`);
+        emitOk(result, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), ...lines);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

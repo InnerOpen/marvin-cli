@@ -3,8 +3,9 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
 import { handleCommandError } from "../../shared/error-handler.js";
+import { say, emitDeleted, emitOk } from "../../shared/io.js";
 
 export function registerPlatformEntryCommands(parent: Command): void {
   const entries = parent
@@ -45,11 +46,9 @@ export function registerPlatformEntryCommands(parent: Command): void {
     });
 
   // Create entry
-  entries
+  addDataOptions(entries
     .command("create")
-    .description("Create a new entry")
-    .option("--json <json>", "Entry data as JSON string")
-    .option("--file <path>", "Path to JSON file with entry data (use '-' for stdin)")
+    .description("Create a new entry"), "entry data")
     .action(async function(this: Command, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -58,7 +57,7 @@ export function registerPlatformEntryCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const entry = await client.entries.create(data);
-        console.log(`✓ Created entry: ${entry.id}`);
+        say(`✓ Created entry: ${entry.id}`);
         renderData(entry, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -66,11 +65,9 @@ export function registerPlatformEntryCommands(parent: Command): void {
     });
 
   // Update entry
-  entries
+  addDataOptions(entries
     .command("update <id>")
-    .description("Update an entry")
-    .option("--json <json>", "Entry data as JSON string")
-    .option("--file <path>", "Path to JSON file with entry data (use '-' for stdin)")
+    .description("Update an entry"), "entry data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -79,7 +76,7 @@ export function registerPlatformEntryCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const entry = await client.entries.update(id, data);
-        console.log(`✓ Updated entry: ${entry.id}`);
+        say(`✓ Updated entry: ${entry.id}`);
         renderData(entry, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -103,7 +100,7 @@ export function registerPlatformEntryCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         await client.entries.delete(id);
-        console.log(`✓ Deleted entry: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted entry: ${id}`);
       } catch (error) {
         handleCommandError(error);
       }
@@ -135,7 +132,8 @@ export function registerPlatformEntryCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const result = await client.entries.addToCollection(entryId, collectionId);
-        console.log(`✓ ${result.message || `Added entry ${entryId} to collection ${collectionId}`}`);
+        emitOk({ ...result, entryId, collectionId }, getOutputMode(opts),
+          `✓ ${result.message || `Added entry ${entryId} to collection ${collectionId}`}`);
       } catch (error) {
         handleCommandError(error);
       }
@@ -151,7 +149,8 @@ export function registerPlatformEntryCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         await client.entries.removeFromCollection(entryId, collectionId);
-        console.log(`✓ Removed entry ${entryId} from collection ${collectionId}`);
+        emitOk({ entryId, collectionId, removed: true }, getOutputMode(opts),
+          `✓ Removed entry ${entryId} from collection ${collectionId}`);
       } catch (error) {
         handleCommandError(error);
       }

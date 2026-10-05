@@ -6,11 +6,13 @@
 
 import { Command } from 'commander';
 import { clientFactory } from '../../shared/clients.js';
-import { renderList } from '../../output.js';
+import { renderList, renderData } from '../../output.js';
 import { getOutputMode, type PlatformCommandOptions } from '../../shared/types.js';
 import { formatTokenForOutput, displayTokenWarning } from '../../shared/security.js';
 import { requireValidEmail } from '../../shared/validation.js';
 import { TABLE_SCHEMAS } from '../../shared/table-schemas.js';
+import { addPageOptions, fetchPages } from '../../shared/pagination.js';
+import { say, emitDeleted } from '../../shared/io.js';
 
 export function registerInviteCommands(parent: Command): void {
   const invites = parent
@@ -18,20 +20,20 @@ export function registerInviteCommands(parent: Command): void {
     .description('Manage workspace invitation tokens');
 
   // List invite tokens
-  invites
+  addPageOptions(invites
     .command('list')
-    .description('List all invitation tokens for the current workspace')
-    .action(async (_options, command: Command) => {
+    .description('List invitation tokens for the current workspace (one page; --all for every page)'))
+    .action(async (options, command: Command) => {
       try {
         const opts = command.optsWithGlobals<PlatformCommandOptions>();
         const mode = getOutputMode(opts);
         const sdk = await clientFactory.createPlatformClient(opts);
 
-        const tokens = await sdk.invites.list();
+        const tokens = await fetchPages<any>(sdk, '/api/groups/invitations', options);
 
         if (!tokens || tokens.length === 0) {
           if (mode === 'table') {
-            console.log('No invitation tokens found');
+            say('No invitation tokens found');
           } else {
             renderList([] as any[], {}, mode);
           }
@@ -47,7 +49,7 @@ export function registerInviteCommands(parent: Command): void {
 
         renderList(rows as any[], TABLE_SCHEMAS['invites.list'], mode);
         if (mode === 'table') {
-          console.log(`\nTotal: ${tokens.length} invitation token(s)`);
+          say(`\nTotal: ${tokens.length} invitation token(s)`);
         }
       } catch (error) {
         console.error('Failed to list invitation tokens:', error);
@@ -86,43 +88,44 @@ export function registerInviteCommands(parent: Command): void {
             token: token.token!,
           });
 
-          if (mode === 'json') {
-            console.log(JSON.stringify({
+          if (mode !== 'table') {
+            renderData({
               token: formatTokenForOutput(token.token!),
               inviteUrl,
               email: options.email,
               emailSent: result.success,
               error: result.error,
-            }, null, 2));
+            }, mode);
           } else {
             if (result.success) {
-              console.log(`✓ Invitation email sent to ${options.email}`);
+              say(`✓ Invitation email sent to ${options.email}`);
             } else {
-              console.log(`⚠ Email failed: ${result.error}`);
-              console.log('\nYou can still share the link manually:');
+              say(`⚠ Email failed: ${result.error}`);
+              say('\nYou can still share the link manually:');
             }
             displayTokenWarning();
-            console.log(`\nInvitation URL:`);
-            console.log(inviteUrl);
-            console.log(`Token: ${formatTokenForOutput(token.token!)}`);
+            say(`\nInvitation URL:`);
+            // The URL is the data: stdout, so `URL=$(marvin platform invites invite)` works
+            process.stdout.write(`${inviteUrl}\n`);
+            say(`Token: ${formatTokenForOutput(token.token!)}`);
           }
         } else {
           // No email, just show the link
-          if (mode === 'json') {
-            console.log(JSON.stringify({
+          if (mode !== 'table') {
+            renderData({
               token: formatTokenForOutput(token.token!),
               inviteUrl,
               usesLeft: token.usesLeft,
               workspaceRole: token.workspaceRole,
-            }, null, 2));
+            }, mode);
           } else {
             displayTokenWarning();
-            console.log('✓ Invitation created');
-            console.log(`\nInvitation URL:`);
-            console.log(inviteUrl);
-            console.log(`\nToken: ${formatTokenForOutput(token.token!)}`);
-            console.log(`Workspace Role: ${token.workspaceRole || 'EDITOR'}`);
-            console.log(`Uses remaining: ${token.usesLeft}`);
+            say('✓ Invitation created');
+            say(`\nInvitation URL:`);
+            process.stdout.write(`${inviteUrl}\n`);
+            say(`\nToken: ${formatTokenForOutput(token.token!)}`);
+            say(`Workspace Role: ${token.workspaceRole || 'EDITOR'}`);
+            say(`Uses remaining: ${token.usesLeft}`);
           }
         }
       } catch (error) {
@@ -140,11 +143,16 @@ export function registerInviteCommands(parent: Command): void {
     .action(async (options, command: Command) => {
       try {
         const opts = command.optsWithGlobals<PlatformCommandOptions>();
+        const mode = getOutputMode(opts);
         const sdk = await clientFactory.createPlatformClient(opts);
         const inviteUrl = sdk.invites.getInvitationUrl(options.token);
 
-        console.log('Invitation URL:');
-        console.log(inviteUrl);
+        if (mode !== 'table') {
+          renderData({ inviteUrl }, mode);
+        } else {
+          say('Invitation URL:');
+          process.stdout.write(`${inviteUrl}\n`);
+        }
       } catch (error) {
         console.error('Failed to generate link:', error);
         process.exitCode = 1;
@@ -164,14 +172,14 @@ export function registerInviteCommands(parent: Command): void {
           const readline = await import('readline/promises');
           const rl = readline.createInterface({
             input: process.stdin,
-            output: process.stdout,
+            output: process.stderr,
           });
 
           const answer = await rl.question('Revoke this invitation? The link will stop working. (y/N) ');
           rl.close();
 
           if (answer.toLowerCase() !== 'y') {
-            console.log('Cancelled');
+            say('Cancelled');
             return;
           }
         }
@@ -180,7 +188,7 @@ export function registerInviteCommands(parent: Command): void {
         const sdk = await clientFactory.createPlatformClient(opts);
         await sdk.invites.delete(options.id);
 
-        console.log('✓ Invitation revoked');
+        emitDeleted(options.id, getOutputMode(opts), '✓ Invitation revoked');
       } catch (error) {
         console.error('Failed to revoke invitation:', error);
         process.exitCode = 1;

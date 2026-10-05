@@ -11,6 +11,34 @@ The Marvin CLI supports four output formats to suit different use cases: table, 
 | **YAML** | Human-readable, configuration files | `--yaml` or `--output yaml` |
 | **CSV** | Spreadsheets, data analysis | `--csv` or `--output csv` |
 
+## stdout vs stderr
+
+stdout carries data only. Everything meant for a person goes to stderr: `✓ Created…` confirmations,
+progress lines, hints and warnings (including deprecation warnings). So `--json | jq` always gets
+one clean JSON document, and `2>/dev/null` hides the chatter without losing data.
+
+What each kind of command prints on stdout in JSON, YAML or CSV mode:
+
+| Command kind | stdout |
+|---|---|
+| list / get | the items or the object |
+| create / update | the created or updated resource |
+| delete / remove / revoke | `{"deleted": "<id>"}` |
+| run / test / rerun / import and other actions | `{"ok": true, ...}` plus whatever the server returned |
+| any error | `{"error": "...", "status": 403, ...}`, and the exit code is 1 |
+
+In table mode a delete or an action prints only its `✓` line, on stderr, so stdout is empty.
+
+```bash
+id=$(marvin platform entries create --data @entry.json --json | jq -r .id)
+marvin platform entries delete "$id" --yes --json        # {"deleted": "<id>"}
+marvin platform webhooks test "$id" --json | jq .ok      # true
+```
+
+Write commands take their body with `--data`: inline JSON, `@path` to read a file, or `-` to read
+stdin (`--file <path>` is the same as `--data @path`). The old `--json '<payload>'` spelling still
+works in 3.x with a warning on stderr and is removed in 4.0.
+
 ## Table Format
 
 Default format for human-readable output in the terminal.

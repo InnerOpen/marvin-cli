@@ -11,6 +11,12 @@
  *   uv run python -c "import json;from marvin.app import app;print(json.dumps(app.openapi()))"
  * (no running server or DB required — app.openapi() only reads route metadata).
  *
+ * The backend only mounts /api/groups/integrations/* when `marvin-integration-sdk` is importable,
+ * so install it into the backend's environment first (the same tarball core's sdk.yml uses):
+ *   uv pip install https://github.com/InnerOpen/marvin-integration-sdk/archive/refs/heads/develop.tar.gz
+ * Without it the snapshot silently loses the whole integrations surface; this script refuses to
+ * write such a snapshot.
+ *
  * After refreshing, run `npm test` (or `npm run coverage:refresh` prints a diff):
  * any newly added endpoint will fail the drift gate until it is classified in
  * src/__tests__/api-coverage-manifest.json.
@@ -70,6 +76,15 @@ function extractOperations(openapi) {
 
 const openapi = loadOpenApi()
 const ops = extractOperations(openapi)
+
+if (!ops.some((o) => o.includes(' /api/groups/integrations'))) {
+  console.error(
+    '\nThe OpenAPI has no /api/groups/integrations routes: the backend was loaded without\n' +
+      'marvin-integration-sdk, so this snapshot would drop the integrations surface. Install it\n' +
+      'into the backend environment and run again (see the header of this script).',
+  )
+  process.exit(1)
+}
 
 const previous = existsSync(OPS_FILE) ? JSON.parse(readFileSync(OPS_FILE, 'utf-8')) : []
 const prevSet = new Set(previous)

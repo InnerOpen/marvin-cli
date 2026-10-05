@@ -4,7 +4,8 @@ import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted, emitOk } from "../../shared/io.js";
 
 export function registerAdminScheduledTaskCommands(parent: Command): void {
   const tasks = new Command("scheduled-tasks")
@@ -110,7 +111,7 @@ export function registerAdminScheduledTaskCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.adminScheduledTasks.execute(id);
 
-        console.log(`✓ Executed task ${id}`);
+        emitOk({ taskId: id }, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Executed task ${id}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -144,11 +145,9 @@ export function registerAdminScheduledTaskCommands(parent: Command): void {
     });
 
   // Create task
-  tasks
+  addDataOptions(tasks
     .command("create")
-    .description("Create a new scheduled task")
-    .option("--json <json>", "Task data as JSON string")
-    .option("--file <path>", "Path to JSON file with task data (use '-' for stdin)")
+    .description("Create a new scheduled task"), "task data")
     .action(async function(this: Command, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -156,7 +155,7 @@ export function registerAdminScheduledTaskCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.adminScheduledTasks.create(data);
 
-        console.log(`✓ Created scheduled task: ${result.id}`);
+        say(`✓ Created scheduled task: ${result.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(result, getOutputMode(globalOpts));
       } catch (error) {
@@ -166,11 +165,9 @@ export function registerAdminScheduledTaskCommands(parent: Command): void {
     });
 
   // Update task
-  tasks
+  addDataOptions(tasks
     .command("update <id>")
-    .description("Update a scheduled task")
-    .option("--json <json>", "Task data as JSON string")
-    .option("--file <path>", "Path to JSON file with task data (use '-' for stdin)")
+    .description("Update a scheduled task"), "task data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -178,7 +175,7 @@ export function registerAdminScheduledTaskCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.adminScheduledTasks.update(id, data);
 
-        console.log(`✓ Updated scheduled task: ${result.id}`);
+        say(`✓ Updated scheduled task: ${result.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(result, getOutputMode(globalOpts));
       } catch (error) {
@@ -203,7 +200,7 @@ export function registerAdminScheduledTaskCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.adminScheduledTasks.delete(id);
 
-        console.log(`✓ Deleted scheduled task: ${id}`);
+        emitDeleted(id, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Deleted scheduled task: ${id}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

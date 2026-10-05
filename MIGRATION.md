@@ -1,5 +1,91 @@
 # Migration Guide
 
+## 3.1.0
+
+3.1.0 makes the CLI safe to script: data on stdout, messages on stderr, and a JSON result from
+every write command. Nothing is removed yet, but two flags are renamed and the old spellings are
+deprecated.
+
+### `--data` replaces `--json <payload>` (removed in 4.0)
+
+Write commands took their body with `--json '<payload>'`, which collided with the global `--json`
+output switch. The body flag is now `--data`, and it reads a file or stdin too:
+
+```bash
+# before
+marvin platform webhooks create --json '{"name":"n","url":"https://example.com"}'
+
+# after
+marvin platform webhooks create --data '{"name":"n","url":"https://example.com"}'
+marvin platform webhooks create --data @webhook.json
+cat webhook.json | marvin platform webhooks create --data -
+```
+
+`--file <path>` still works and is the same as `--data @path`. The old `--json '<payload>'` still
+works throughout 3.x: the CLI rewrites it to `--data` and prints a deprecation warning on stderr. It
+no longer switches the output to JSON; add `--json` (or `--output json`) separately if you want JSON
+back. **`--json <payload>` is removed in 4.0.**
+
+### `--out-file` replaces `-o/--output <file>`
+
+`workspace export`, `workspace backups download`, `platform assets download` and
+`admin backups download` wrote to a file with `-o/--output <file>`. The long form clashed with the
+global `--output <format>` (which took the file name as an output format), so it is now
+`--out-file`. `-o` still works.
+
+```bash
+# before
+marvin workspace export -o workspace.json
+
+# after
+marvin workspace export --out-file workspace.json     # or: -o workspace.json
+```
+
+### Messages moved to stderr
+
+`✓ Created…`, `✓ Deleted…`, progress lines and hints now go to stderr. stdout carries only data.
+Scripts that grepped stdout for `✓ Created` should read the result instead:
+
+```bash
+# before
+marvin platform entries create --file entry.json | grep -q "✓ Created"
+
+# after
+id=$(marvin platform entries create --data @entry.json --json | jq -r .id)
+```
+
+### JSON results for deletes and actions
+
+In JSON, YAML and CSV mode, commands that used to print only a `✓` line now print a result:
+
+| Command | stdout with `--json` |
+|---|---|
+| delete, remove, revoke | `{"deleted": "<id>"}` |
+| run, test, rerun, import (and other actions) | `{"ok": true, ...}` plus the server's response |
+
+In table mode they print only the `✓` line, on stderr. Errors are unchanged:
+`{"error": "...", "status": ...}` on stdout and exit code 1.
+
+### `secrets --value` is deprecated
+
+`platform secrets create` and `update` put the value in your shell history. Pipe it in with
+`--value-stdin`, or leave the value out in a terminal and the CLI prompts for it (hidden).
+`--value` still works but prints a warning.
+
+```bash
+# before
+marvin platform secrets create --name "Mailgun key" --value "key-123"
+
+# after
+pass show mailgun/api-key | marvin platform secrets create --name "Mailgun key" --value-stdin
+```
+
+### Paged lists
+
+`platform webhooks list`, `platform invites list` and `admin groups list` returned page 1 only. They
+now take `--page`, `--per-page` and `--all`. Without them you still get the first 50. `platform forms
+submissions` takes `--limit` (default 100) and `--offset` (default 0).
+
 ## 3.0.0
 
 3.0.0 is a major release because it drops commands and changes how a refused command is reported.

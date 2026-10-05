@@ -6,6 +6,7 @@ import { MarvinApiError, MarvinAuthError, MarvinConfigError, MarvinError, Marvin
 import chalk from "chalk";
 import { getCommandContext } from "./command-context.js";
 import { describePermissionDenied, type PermissionDenied } from "./permissions.js";
+import type { OutputMode } from "../output.js";
 
 /** A 403: the caller is signed in but their role doesn't allow the operation. */
 function isForbidden(error: unknown): error is MarvinError {
@@ -28,13 +29,20 @@ function permissionDenied(): PermissionDenied {
   return describePermissionDenied(ctx?.path, ctx?.workspace);
 }
 
-function isJsonMode(): boolean {
-  return process.argv.includes('--json') || process.argv.includes('--output') && process.argv[process.argv.indexOf('--output') + 1] === 'json';
+/** argv scan, for errors raised before any command action ran (no context yet). */
+function outputModeFromArgv(): OutputMode {
+  const argv = process.argv;
+  const i = argv.indexOf('--output');
+  const value = i >= 0 ? argv[i + 1] : argv.find((a) => a.startsWith('--output='))?.slice('--output='.length);
+  if (argv.includes('--json') || value === 'json') return 'json';
+  if (argv.includes('--yaml') || value === 'yaml') return 'yaml';
+  if (argv.includes('--csv') || value === 'csv') return 'csv';
+  return 'table';
 }
 
-function isMachineMode(): boolean {
-  return process.argv.some(a => ['--json', '--yaml', '--csv'].includes(a)) ||
-    (process.argv.includes('--output') && ['json','yaml','csv'].includes(process.argv[process.argv.indexOf('--output') + 1] ?? ''));
+/** The output mode the running command was parsed with (so a deprecated `--json <payload>` doesn't count). */
+function currentOutputMode(): OutputMode {
+  return getCommandContext()?.outputMode ?? outputModeFromArgv();
 }
 
 /**
@@ -42,7 +50,8 @@ function isMachineMode(): boolean {
  */
 export function handleCommandError(error: unknown): void {
   // In machine-readable modes, emit minimal error and exit — no ANSI, no prose
-  if (isMachineMode()) {
+  const mode = currentOutputMode();
+  if (mode !== 'table') {
     let message = 'Unknown error';
     let status: number | undefined;
     const extra: Record<string, string> = {};
@@ -71,13 +80,13 @@ export function handleCommandError(error: unknown): void {
     } else if (error instanceof Error) {
       message = error.message;
     }
-    if (isJsonMode()) {
-      // Write to stdout so `| jq .` works — exit code 1 signals failure
-      console.log(JSON.stringify({ error: message, ...(status ? { status } : {}), ...extra }));
-    } else if (process.argv.includes('--yaml') || (process.argv.includes('--output') && process.argv[process.argv.indexOf('--output') + 1] === 'yaml')) {
-      console.log(`error: ${JSON.stringify(message)}${status ? `\nstatus: ${status}` : ''}`);
+    // Machine modes write the error to stdout as data so `| jq .` sees it; exit code 1 signals failure
+    if (mode === 'json') {
+      process.stdout.write(`${JSON.stringify({ error: message, ...(status ? { status } : {}), ...extra })}\n`);
+    } else if (mode === 'yaml') {
+      process.stdout.write(`error: ${JSON.stringify(message)}${status ? `\nstatus: ${status}` : ''}\n`);
     } else {
-      console.log(`error: ${message}`);
+      process.stdout.write(`error: ${message}\n`);
     }
     process.exitCode = 1;
     return;

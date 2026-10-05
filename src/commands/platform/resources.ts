@@ -1,10 +1,11 @@
 import { handleCommandError } from '../../shared/error-handler.js';
+import { say, emitDeleted } from "../../shared/io.js";
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
 
 export function registerPlatformResourceCommands(parent: Command): void {
   const resources = parent
@@ -41,11 +42,9 @@ export function registerPlatformResourceCommands(parent: Command): void {
       }
     });
 
-  resources
+  addDataOptions(resources
     .command("create")
-    .description("Create a new resource")
-    .option("--json <json>", "Resource data as JSON string")
-    .option("--file <path>", "Path to JSON file with resource data (use '-' for stdin)")
+    .description("Create a new resource"), "resource data")
     .action(async function(this: Command, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -53,7 +52,7 @@ export function registerPlatformResourceCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const resource = await client.resources.create(data);
-        console.log(`✓ Created resource: ${resource.id}`);
+        say(`✓ Created resource: ${resource.id}`);
         renderData(resource, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -61,11 +60,9 @@ export function registerPlatformResourceCommands(parent: Command): void {
       }
     });
 
-  resources
+  addDataOptions(resources
     .command("update <id>")
-    .description("Update a resource")
-    .option("--json <json>", "Resource data as JSON string")
-    .option("--file <path>", "Path to JSON file with resource data (use '-' for stdin)")
+    .description("Update a resource"), "resource data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -73,7 +70,7 @@ export function registerPlatformResourceCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const resource = await client.resources.update(id, data);
-        console.log(`✓ Updated resource: ${resource.id}`);
+        say(`✓ Updated resource: ${resource.id}`);
         renderData(resource, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -96,7 +93,7 @@ export function registerPlatformResourceCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         await client.resources.delete(id);
-        console.log(`✓ Deleted resource: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted resource: ${id}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

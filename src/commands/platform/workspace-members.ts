@@ -1,9 +1,10 @@
 import { handleCommandError } from '../../shared/error-handler.js';
+import { say, emitDeleted } from "../../shared/io.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { readFileSync } from "fs";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerWorkspaceMemberCommands(parent: Command): void {
@@ -46,32 +47,17 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
     });
 
   // Add workspace member
-  members
+  addDataOptions(members
     .command("add <workspace-id>")
-    .description("Add a user to a workspace with a specific role")
-    .option("--json <json>", "Member data as JSON string")
-    .option("--file <path>", "Path to JSON file with member data")
+    .description("Add a user to a workspace with a specific role"), "member data")
     .option("--user-id <id>", "User ID to add")
     .option("--role <role>", "Workspace role: OWNER, ADMIN, MEMBER, or VIEWER")
     .action(async function(this: Command, workspaceId: string, cmdOpts) {
       try {
-        let data: any;
-
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
-        } else if (cmdOpts.userId && cmdOpts.role) {
-          // Allow quick add via flags
-          data = {
-            user_id: cmdOpts.userId,
-            workspace_role: cmdOpts.role.toUpperCase(),
-          };
-        } else {
-          console.error("Error: Provide member data via --json, --file, or --user-id and --role");
-          process.exitCode = 1;
-          return;
-        }
+        // Quick add via flags; otherwise a full body from --data/--file/stdin
+        const data: any = cmdOpts.userId && cmdOpts.role && cmdOpts.data === undefined && !cmdOpts.file
+          ? { user_id: cmdOpts.userId, workspace_role: cmdOpts.role.toUpperCase() }
+          : await readJsonInput(cmdOpts);
 
         // Validate role
         const validRoles = ['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'];
@@ -85,7 +71,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
         const member = await client.workspaceMembers.add(workspaceId, data);
 
-        console.log(`✓ Added user to workspace with role: ${member.workspaceRole}`);
+        say(`✓ Added user to workspace with role: ${member.workspaceRole}`);
         renderData(member, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -94,30 +80,16 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
     });
 
   // Update member role
-  members
+  addDataOptions(members
     .command("update-role <workspace-id> <user-id>")
-    .description("Update a workspace member's role")
-    .option("--json <json>", "Member data as JSON string")
-    .option("--file <path>", "Path to JSON file with member data")
+    .description("Update a workspace member's role"), "member data")
     .option("--role <role>", "New workspace role: OWNER, ADMIN, MEMBER, or VIEWER")
     .action(async function(this: Command, workspaceId: string, userId: string, cmdOpts) {
       try {
-        let data: any;
-
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
-        } else if (cmdOpts.role) {
-          // Allow quick update via flag
-          data = {
-            workspace_role: cmdOpts.role.toUpperCase(),
-          };
-        } else {
-          console.error("Error: Provide member data via --json, --file, or --role");
-          process.exitCode = 1;
-          return;
-        }
+        // Quick update via --role; otherwise a full body from --data/--file/stdin
+        const data: any = cmdOpts.role && cmdOpts.data === undefined && !cmdOpts.file
+          ? { workspace_role: cmdOpts.role.toUpperCase() }
+          : await readJsonInput(cmdOpts);
 
         // Validate role
         const validRoles = ['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'];
@@ -131,7 +103,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
         const member = await client.workspaceMembers.updateRole(workspaceId, userId, data);
 
-        console.log(`✓ Updated member role to: ${member.workspaceRole}`);
+        say(`✓ Updated member role to: ${member.workspaceRole}`);
         renderData(member, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -156,7 +128,7 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
         await client.workspaceMembers.remove(workspaceId, userId);
 
-        console.log(`✓ Removed user from workspace`);
+        emitDeleted(userId, getOutputMode(opts), `✓ Removed user ${userId} from workspace`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

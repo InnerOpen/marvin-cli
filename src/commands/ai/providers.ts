@@ -2,7 +2,8 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted } from "../../shared/io.js";
 import { handleCommandError } from "../../shared/error-handler.js";
 
 export function registerAiProviderCommands(parent: Command): void {
@@ -50,11 +51,9 @@ export function registerAiProviderCommands(parent: Command): void {
     });
 
   // Create provider
-  providers
+  addDataOptions(providers
     .command("create")
-    .description("Create a new AI provider")
-    .option("--json <json>", "Provider data as JSON string")
-    .option("--file <path>", "Path to JSON file with provider data (use '-' for stdin)")
+    .description("Create a new AI provider"), "provider data")
     .action(async function(this: Command, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -63,7 +62,7 @@ export function registerAiProviderCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const provider = await client.ai.providers.create(data);
-        console.log(`✓ Created AI provider: ${provider.id}`);
+        say(`✓ Created AI provider: ${provider.id}`);
         renderData(provider, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -71,11 +70,9 @@ export function registerAiProviderCommands(parent: Command): void {
     });
 
   // Update provider
-  providers
+  addDataOptions(providers
     .command("update <id>")
-    .description("Update an AI provider")
-    .option("--json <json>", "Provider data as JSON string")
-    .option("--file <path>", "Path to JSON file with provider data (use '-' for stdin)")
+    .description("Update an AI provider"), "provider data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -84,7 +81,7 @@ export function registerAiProviderCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const provider = await client.ai.providers.update(id, data);
-        console.log(`✓ Updated AI provider: ${provider.id}`);
+        say(`✓ Updated AI provider: ${provider.id}`);
         renderData(provider, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -108,7 +105,7 @@ export function registerAiProviderCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         await client.ai.providers.delete(id);
-        console.log(`✓ Deleted AI provider: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted AI provider: ${id}`);
       } catch (error) {
         handleCommandError(error);
       }
@@ -158,11 +155,9 @@ export function registerAiProviderCommands(parent: Command): void {
     });
 
   // Create model under a provider
-  models
+  addDataOptions(models
     .command("create <provider-id>")
-    .description("Create a new model under an AI provider")
-    .option("--json <json>", "Model data as JSON string")
-    .option("--file <path>", "Path to JSON file with model data (use '-' for stdin)")
+    .description("Create a new model under an AI provider"), "model data")
     .action(async function(this: Command, providerId: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -171,7 +166,7 @@ export function registerAiProviderCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const model = await client.ai.providers.models.create(providerId, data);
-        console.log(`✓ Created AI model: ${model.id}`);
+        say(`✓ Created AI model: ${model.id}`);
         renderData(model, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -179,11 +174,9 @@ export function registerAiProviderCommands(parent: Command): void {
     });
 
   // Update model under a provider
-  models
+  addDataOptions(models
     .command("update <provider-id> <model-id>")
-    .description("Update a model under an AI provider")
-    .option("--json <json>", "Model data as JSON string")
-    .option("--file <path>", "Path to JSON file with model data (use '-' for stdin)")
+    .description("Update a model under an AI provider"), "model data")
     .action(async function(this: Command, providerId: string, modelId: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -192,7 +185,7 @@ export function registerAiProviderCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const model = await client.ai.providers.models.update(providerId, modelId, data);
-        console.log(`✓ Updated AI model: ${model.id}`);
+        say(`✓ Updated AI model: ${model.id}`);
         renderData(model, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -216,7 +209,7 @@ export function registerAiProviderCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         await client.ai.providers.models.delete(providerId, modelId);
-        console.log(`✓ Deleted AI model: ${modelId}`);
+        emitDeleted(modelId, getOutputMode(opts), `✓ Deleted AI model: ${modelId}`);
       } catch (error) {
         handleCommandError(error);
       }

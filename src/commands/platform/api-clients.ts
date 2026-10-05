@@ -2,10 +2,11 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { readFileSync } from "fs";
 import { handleCommandError } from "../../shared/error-handler.js";
 import { formatTokenForOutput, displayTokenWarning } from "../../shared/security.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted } from "../../shared/io.js";
 
 export function registerAPIClientCommands(parent: Command): void {
   const apiClients = parent
@@ -40,21 +41,17 @@ export function registerAPIClientCommands(parent: Command): void {
       }
     });
 
-  apiClients
+  addDataOptions(apiClients
     .command("create")
-    .description("Create a new API client (returns client with token)")
-    .option("--json <json>", "API client data as JSON string")
-    .option("--file <path>", "Path to JSON file with API client data")
+    .description("Create a new API client (returns client with token)"), "API client data")
     .option("--name <name>", "API client name")
     .option("--description <description>", "API client description")
     .action(async function(this: Command, cmdOpts) {
       try {
         let data: any;
 
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        if (cmdOpts.data !== undefined || cmdOpts.file) {
+          data = await readJsonInput(cmdOpts);
         } else if (cmdOpts.name) {
           // Allow quick creation via flags
           data = {
@@ -62,7 +59,7 @@ export function registerAPIClientCommands(parent: Command): void {
             description: cmdOpts.description,
           };
         } else {
-          console.error("Error: Provide API client data via --json, --file, or --name");
+          console.error("Error: Provide API client data via --data, --file, or --name");
           process.exitCode = 1;
           return;
         }
@@ -73,38 +70,34 @@ export function registerAPIClientCommands(parent: Command): void {
 
         const token = (apiClient as any).token;
 
-        console.log(`✓ Created API client: ${apiClient.id}`);
-        console.log(`⚠️  Save this token securely - it won't be shown again!`);
+        say(`✓ Created API client: ${apiClient.id}`);
+        say(`⚠️  Save this token securely - it won't be shown again!`);
         displayTokenWarning();
-        console.log(`   Token: ${formatTokenForOutput(token)}`);
+        say(`   Token: ${formatTokenForOutput(token)}`);
         renderData(apiClient, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
       }
     });
 
-  apiClients
+  addDataOptions(apiClients
     .command("update <id>")
-    .description("Update an API client")
-    .option("--json <json>", "API client data as JSON string")
-    .option("--file <path>", "Path to JSON file with API client data")
+    .description("Update an API client"), "API client data")
     .option("--name <name>", "API client name")
     .option("--description <description>", "API client description")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         let data: any;
 
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        if (cmdOpts.data !== undefined || cmdOpts.file) {
+          data = await readJsonInput(cmdOpts);
         } else if (cmdOpts.name || cmdOpts.description) {
           // Allow quick update via flags
           data = {};
           if (cmdOpts.name) data.name = cmdOpts.name;
           if (cmdOpts.description) data.description = cmdOpts.description;
         } else {
-          console.error("Error: Provide API client data via --json, --file, --name, or --description");
+          console.error("Error: Provide API client data via --data, --file, --name, or --description");
           process.exitCode = 1;
           return;
         }
@@ -113,7 +106,7 @@ export function registerAPIClientCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
         const apiClient = await client.apiClients.update(id, data);
 
-        console.log(`✓ Updated API client: ${apiClient.id}`);
+        say(`✓ Updated API client: ${apiClient.id}`);
         renderData(apiClient, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -135,7 +128,7 @@ export function registerAPIClientCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         await client.apiClients.delete(id);
-        console.log(`✓ Deleted API client: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted API client: ${id}`);
       } catch (error) {
         handleCommandError(error);
       }
@@ -152,10 +145,10 @@ export function registerAPIClientCommands(parent: Command): void {
 
         const token = (apiClient as any).token;
 
-        console.log(`✓ Rotated token for API client: ${apiClient.id}`);
-        console.log(`⚠️  Save this token securely - it won't be shown again!`);
+        say(`✓ Rotated token for API client: ${apiClient.id}`);
+        say(`⚠️  Save this token securely - it won't be shown again!`);
         displayTokenWarning();
-        console.log(`   New Token: ${formatTokenForOutput(token)}`);
+        say(`   New Token: ${formatTokenForOutput(token)}`);
         renderData(apiClient, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);

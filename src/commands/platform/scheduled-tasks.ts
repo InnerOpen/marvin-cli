@@ -4,8 +4,9 @@ import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
-import { readFileSync } from "fs";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted, emitOk } from "../../shared/io.js";
 
 export function registerScheduledTaskCommands(parent: Command): void {
   const tasks = new Command("scheduled-tasks")
@@ -59,21 +60,17 @@ export function registerScheduledTaskCommands(parent: Command): void {
     });
 
   // Create
-  tasks
+  addDataOptions(tasks
     .command("create")
-    .description("Create a new scheduled task")
-    .option("--json <json>", "Task data as JSON string")
-    .option("--file <path>", "Path to JSON file with task data")
+    .description("Create a new scheduled task"), "task data")
     .action(async function(this: Command, cmdOpts) {
       try {
         let data: any;
 
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        if (cmdOpts.data !== undefined || cmdOpts.file) {
+          data = await readJsonInput(cmdOpts);
         } else {
-          console.error("Error: Provide task data via --json or --file");
+          console.error("Error: Provide task data via --data or --file");
           console.error("\nExample JSON:");
           console.error(JSON.stringify({
             name: "Daily Cleanup",
@@ -91,7 +88,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const task = await client.scheduledTasks.create(data);
 
-        console.log(`✓ Created scheduled task: ${task.id}`);
+        say(`✓ Created scheduled task: ${task.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(task, getOutputMode(globalOpts));
       } catch (error) {
@@ -101,21 +98,17 @@ export function registerScheduledTaskCommands(parent: Command): void {
     });
 
   // Update
-  tasks
+  addDataOptions(tasks
     .command("update <id-or-slug>")
-    .description("Update a scheduled task")
-    .option("--json <json>", "Task data as JSON string")
-    .option("--file <path>", "Path to JSON file with task data")
+    .description("Update a scheduled task"), "task data")
     .option("--enable", "Enable the task")
     .option("--disable", "Disable the task")
     .action(async function(this: Command, idOrSlug: string, cmdOpts) {
       try {
         let data: any = {};
 
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
+        if (cmdOpts.data !== undefined || cmdOpts.file) {
+          data = await readJsonInput(cmdOpts);
         }
 
         // Apply quick flags
@@ -126,7 +119,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
         }
 
         if (Object.keys(data).length === 0) {
-          console.error("Error: Provide task data via --json, --file, --enable, or --disable");
+          console.error("Error: Provide task data via --data, --file, --enable, or --disable");
           process.exitCode = 1;
           return;
         }
@@ -134,7 +127,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const task = await client.scheduledTasks.update(idOrSlug, data);
 
-        console.log(`✓ Updated scheduled task: ${task.id}`);
+        say(`✓ Updated scheduled task: ${task.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(task, getOutputMode(globalOpts));
       } catch (error) {
@@ -159,7 +152,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.scheduledTasks.delete(idOrSlug);
 
-        console.log(`✓ Deleted scheduled task: ${idOrSlug}`);
+        emitDeleted(idOrSlug, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Deleted scheduled task: ${idOrSlug}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -176,8 +169,12 @@ export function registerScheduledTaskCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.scheduledTasks.execute(idOrSlug);
 
-        console.log(`✓ Task execution triggered: ${idOrSlug}`);
-        console.log("Check 'history' command for execution results");
+        emitOk(
+          { task: idOrSlug },
+          getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()),
+          `✓ Task execution triggered: ${idOrSlug}`,
+          "Check 'history' command for execution results",
+        );
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -202,13 +199,14 @@ export function registerScheduledTaskCommands(parent: Command): void {
           history = history.filter((h: any) => h.status === 'failed');
         }
 
-        if (history.length === 0) {
-          console.log("No execution history found");
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const mode = getOutputMode(globalOpts);
+        if (history.length === 0 && mode === "table") {
+          say("No execution history found");
           return;
         }
 
-        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-        renderList(history as any[], TABLE_SCHEMAS['scheduled-tasks.history'], getOutputMode(globalOpts));
+        renderList(history as any[], TABLE_SCHEMAS['scheduled-tasks.history'], mode);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -227,15 +225,18 @@ export function registerScheduledTaskCommands(parent: Command): void {
           detailed: cmdOpts.detailed || false
         });
 
+        const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const mode = getOutputMode(globalOpts);
         if (cmdOpts.detailed) {
           // Detailed view with schemas
-          const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
-          renderList(types as any[], TABLE_SCHEMAS['scheduled-tasks.types'], getOutputMode(globalOpts));
+          renderList(types as any[], TABLE_SCHEMAS['scheduled-tasks.types'], mode);
+        } else if (mode !== "table") {
+          renderData(types, mode);
         } else {
-          // Simple list
-          console.log("Available task types:");
-          (types as string[]).forEach(type => console.log(`  - ${type}`));
-          console.log("\nUse --detailed for metadata and config schemas");
+          // Simple list: the names are the data, the heading and hint are messages
+          say("Available task types:");
+          (types as string[]).forEach(type => process.stdout.write(`  - ${type}\n`));
+          say("\nUse --detailed for metadata and config schemas");
         }
       } catch (error) {
         handleCommandError(error);
@@ -257,7 +258,7 @@ export function registerScheduledTaskCommands(parent: Command): void {
         const mode = getOutputMode(globalOpts);
 
         if (entries.length === 0 && mode === 'table') {
-          console.log("No execution log entries found");
+          say("No execution log entries found");
           return;
         }
 
@@ -286,17 +287,25 @@ export function registerScheduledTaskCommands(parent: Command): void {
           success: allTasks.filter((t: any) => t.last_status === 'success').length,
         };
 
-        console.log("Scheduled Task Statistics:");
-        console.log(`  Total tasks:       ${stats.total}`);
-        console.log(`  Enabled:           ${stats.enabled}`);
-        console.log(`  Disabled:          ${stats.disabled}`);
-        console.log(`  Never run:         ${stats.never_run}`);
-        console.log(`  Last status:`);
-        console.log(`    Success:         ${stats.success}`);
-        console.log(`    Failed:          ${stats.failed}`);
+        const mode = getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>());
+        if (mode !== "table") {
+          renderData(stats, mode);
+          return;
+        }
+
+        process.stdout.write([
+          "Scheduled Task Statistics:",
+          `  Total tasks:       ${stats.total}`,
+          `  Enabled:           ${stats.enabled}`,
+          `  Disabled:          ${stats.disabled}`,
+          `  Never run:         ${stats.never_run}`,
+          `  Last status:`,
+          `    Success:         ${stats.success}`,
+          `    Failed:          ${stats.failed}`,
+        ].join("\n") + "\n");
 
         if (stats.failed > 0) {
-          console.log("\n⚠️  Some tasks have failed. Run 'list --failed-only' to see them.");
+          say("\n⚠️  Some tasks have failed. Run 'list --failed-only' to see them.");
         }
       } catch (error) {
         handleCommandError(error);

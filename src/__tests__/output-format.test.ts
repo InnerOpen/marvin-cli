@@ -24,6 +24,7 @@ import { Command } from 'commander'
 import { createPlatformCommand } from '../commands/platform/index.js'
 import { clientFactory } from '../shared/clients.js'
 import { TABLE_SCHEMAS } from '../shared/table-schemas.js'
+import { captureOutput, type Captured } from './helpers/capture.js'
 
 // ---------------------------------------------------------------------------
 // Universal fixture — covers every field name that any command column spec
@@ -188,7 +189,11 @@ function nestedNamespace(fixture: Record<string, unknown>): any {
 
 function createMockClient(fixture: Record<string, unknown>): any {
   return new Proxy(
-    { workspaces: { getCurrent: () => Promise.resolve(STUB_WORKSPACE) } } as Record<string, unknown>,
+    {
+      workspaces: { getCurrent: () => Promise.resolve(STUB_WORKSPACE) },
+      // Raw GET, used by the paginated lists (shared/pagination.ts) — a bare array passes through
+      get: () => Promise.resolve([fixture]),
+    } as Record<string, unknown>,
     {
       get(target: Record<string, unknown>, namespace: string) {
         if (namespace in target) return target[namespace]
@@ -259,8 +264,9 @@ const discoveredCommands = collectTargetCommands(_platformCmd, ['platform'])
 // ---------------------------------------------------------------------------
 
 describe('output format tests (fully dynamic)', () => {
-  const logs: string[] = []
-  const tableData: unknown[] = []
+  let io: Captured
+  let logs: string[] = []
+  let tableData: unknown[] = []
 
   afterEach(() => {
     vi.restoreAllMocks()
@@ -277,15 +283,10 @@ describe('output format tests (fully dynamic)', () => {
 
     describe(commandPath, () => {
       beforeEach(() => {
-        logs.length = 0
-        tableData.length = 0
-        vi.spyOn(console, 'log').mockImplementation((...args: unknown[]) => {
-          logs.push(args.map(String).join(' '))
-        })
-        vi.spyOn(console, 'table').mockImplementation((data: unknown) => {
-          tableData.push(data)
-        })
-        vi.spyOn(console, 'error').mockImplementation(() => {})
+        // stdout only: stderr carries messages, which must never leak into the data stream
+        io = captureOutput()
+        logs = io.stdout
+        tableData = io.tables
 
         const fixture = fixtureFromSchema(schemaKey)
         vi.mocked(clientFactory.createPlatformClient).mockResolvedValue(createMockClient(fixture))

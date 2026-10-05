@@ -150,7 +150,7 @@ Unlock a locked user account:
 marvin admin users unlock 01234567-89ab-cdef-0123-456789abcdef
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ User 01234567-89ab-cdef-0123-456789abcdef unlocked successfully

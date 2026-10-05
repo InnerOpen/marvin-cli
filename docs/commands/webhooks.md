@@ -10,7 +10,7 @@ Manage workspace webhooks for real-time event notifications to external services
 ### List Webhooks
 
 ```bash
-marvin webhooks list
+marvin webhooks list [--page <n>] [--per-page <n>] [--all]
 ```
 
 ### Get Webhook
@@ -22,14 +22,17 @@ marvin webhooks get <id>
 ### Create Webhook
 
 ```bash
-marvin webhooks create --json <json>
+marvin webhooks create --data <json|@file|->
 marvin webhooks create --file <path>
 ```
+
+`--data` takes inline JSON, `@path` to read a file, or `-` to read stdin. `--file <path>` is the
+same as `--data @path`.
 
 ### Update Webhook
 
 ```bash
-marvin webhooks update <id> --json <json>
+marvin webhooks update <id> --data <json|@file|->
 marvin webhooks update <id> --file <path>
 ```
 
@@ -45,7 +48,7 @@ marvin webhooks delete <id> --yes
 marvin webhooks test <id>
 ```
 
-### Rerun Failed Webhooks
+### Rerun Today's Webhooks
 
 ```bash
 marvin webhooks rerun
@@ -70,9 +73,14 @@ marvin workspace use <workspace>
 
 | Option | Description | Default |
 |--------|-------------|---------|
+| `--page <n>` | Page number | `1` |
+| `--per-page <n>` | Items per page | `50` |
+| `--all` | Fetch every page (ignores `--page`) | `false` |
 | `--json` | Output as JSON | `false` |
 | `--yaml` | Output as YAML | `false` |
 | `--output <format>` | Output format: table, json, yaml | `table` |
+
+Without `--all` the command returns one page (50 webhooks by default).
 
 ### `marvin webhooks get <id>`
 
@@ -87,18 +95,18 @@ marvin workspace use <workspace>
 
 | Option | Description |
 |--------|-------------|
-| `--json <json>` | Webhook data as JSON string |
-| `--file <path>` | Path to JSON file with webhook data |
+| `--data <payload>` | Webhook data: inline JSON, `@path` to read a file, or `-` for stdin |
+| `--file <path>` | Path to a JSON file with webhook data (same as `--data @path`) |
 
-Either `--json` or `--file` is required.
+Provide the body with `--data`, `--file`, or by piping JSON on stdin.
 
 ### `marvin webhooks update <id>`
 
 | Option | Description |
 |--------|-------------|
 | `<id>` | Webhook ID (required) |
-| `--json <json>` | Webhook data as JSON string |
-| `--file <path>` | Path to JSON file with webhook data |
+| `--data <payload>` | Webhook data: inline JSON, `@path` to read a file, or `-` for stdin |
+| `--file <path>` | Path to a JSON file with webhook data (same as `--data @path`) |
 
 ### `marvin webhooks delete <id>`
 
@@ -115,7 +123,9 @@ Either `--json` or `--file` is required.
 
 ### `marvin webhooks rerun`
 
-No additional options. Retries all failed webhook deliveries.
+No additional options. Re-fires today's scheduled webhooks (everything due since 00:00 UTC). The work
+runs in the background; the command returns as soon as it has started, with a message only (no
+count of deliveries).
 
 ## Examples
 
@@ -161,10 +171,10 @@ Output:
 
 ### Create Webhook
 
-Create from JSON string:
+Create from inline JSON:
 
 ```bash
-marvin webhooks create --json '{
+marvin webhooks create --data '{
   "name": "Slack Notifications",
   "url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
   "enabled": true,
@@ -195,10 +205,16 @@ EOF
 marvin webhooks create --file webhook.json
 ```
 
-Output:
+The confirmation goes to stderr and the created webhook to stdout:
 
 ```
 ✓ Created webhook: 01234567-89ab-cdef-0123-456789abcdef
+```
+
+With `--json`, stdout holds only the webhook object, so you can capture its ID:
+
+```bash
+id=$(marvin webhooks create --file webhook.json --json | jq -r .id)
 ```
 
 ### Update Webhook
@@ -206,7 +222,7 @@ Output:
 Update from JSON:
 
 ```bash
-marvin webhooks update 01234567-89ab-cdef-0123-4567 --json '{
+marvin webhooks update 01234567-89ab-cdef-0123-4567 --data '{
   "enabled": false,
   "events": ["entry.published"]
 }'
@@ -224,10 +240,16 @@ marvin webhooks update 01234567-89ab-cdef-0123-4567 --file updated-webhook.json
 marvin webhooks delete 01234567-89ab-cdef-0123-4567 --yes
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Deleted webhook: 01234567-89ab-cdef-0123-4567
+```
+
+With `--json`, stdout gets:
+
+```json
+{"deleted": "01234567-89ab-cdef-0123-4567"}
 ```
 
 ### Test Webhook
@@ -238,33 +260,30 @@ Send a test payload to verify configuration:
 marvin webhooks test 01234567-89ab-cdef-0123-4567
 ```
 
-Output:
+Output (stderr):
 
 ```
-✓ Webhook test successful
-Status code: 200
+✓ Webhook test scheduled
 ```
 
-Or if it fails:
+The test is queued; check the result with `marvin webhooks logs <id>`. With `--json`, stdout gets
+`{"ok": true, "message": "..."}`.
 
-```
-✗ Webhook test failed
-Status code: 401
-Error: Unauthorized
-```
+### Rerun Today's Webhooks
 
-### Rerun Failed Webhooks
+Re-fire every scheduled webhook due since 00:00 UTC today:
 
 ```bash
 marvin webhooks rerun
 ```
 
-Output:
+Output (stderr):
 
 ```
-Requeued failed webhooks
-Requeued: 3 webhooks
+✓ Webhook posting started
 ```
+
+With `--json`, stdout gets `{"ok": true, "message": "..."}`.
 
 ### JSON Output
 
@@ -355,7 +374,7 @@ Webhooks receive a JSON payload:
 ### Notify Slack on Published Entry
 
 ```bash
-marvin webhooks create --json '{
+marvin webhooks create --data '{
   "name": "Slack - Entry Published",
   "url": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
   "enabled": true,
@@ -366,7 +385,7 @@ marvin webhooks create --json '{
 ### Trigger Netlify Build
 
 ```bash
-marvin webhooks create --json '{
+marvin webhooks create --data '{
   "name": "Netlify Deploy",
   "url": "https://api.netlify.com/build_hooks/YOUR_HOOK_ID",
   "enabled": true,
@@ -380,7 +399,7 @@ marvin webhooks create --json '{
 ### Custom Integration with Authentication
 
 ```bash
-marvin webhooks create --json '{
+marvin webhooks create --data '{
   "name": "Custom API",
   "url": "https://api.example.com/marvin-webhook",
   "enabled": true,
@@ -396,8 +415,8 @@ marvin webhooks create --json '{
 ### Disable All Webhooks
 
 ```bash
-marvin webhooks list --json | jq -r '.[].id' | while read id; do
-  marvin webhooks update $id --json '{"enabled": false}'
+marvin webhooks list --all --json | jq -r '.[].id' | while read id; do
+  marvin webhooks update "$id" --data '{"enabled": false}' --json > /dev/null
   echo "Disabled webhook: $id"
 done
 ```
@@ -415,10 +434,11 @@ marvin webhooks list --json | jq -r '.[] | select(.enabled == true) | "\(.name) 
 
 # Test all active webhooks
 echo -e "\nTesting active webhooks:"
-marvin webhooks list --json | jq -r '.[] | select(.enabled == true) | .id' | while read id; do
+marvin webhooks list --all --json | jq -r '.[] | select(.enabled == true) | .id' | while read id; do
   echo "Testing: $id"
-  if marvin webhooks test $id 2>&1 | grep -q "successful"; then
-    echo "  ✓ Success"
+  # stdout is {"ok": true, ...}; the exit code is non-zero if the API refused the test
+  if marvin webhooks test "$id" --json > /dev/null; then
+    echo "  ✓ Test scheduled"
   else
     echo "  ✗ Failed"
   fi
@@ -432,7 +452,7 @@ const { execSync } = require('child_process');
 
 // Get all webhooks
 const webhooks = JSON.parse(
-  execSync('marvin webhooks list --json', { encoding: 'utf-8' })
+  execSync('marvin webhooks list --all --json', { encoding: 'utf-8' })
 );
 
 console.log(`Total webhooks: ${webhooks.length}`);
@@ -445,16 +465,12 @@ webhooks
     console.log(`Testing: ${webhook.name}`);
     
     try {
-      const result = execSync(
-        `marvin webhooks test ${webhook.id}`,
+      // stdout is {"ok": true, ...}; a refused test throws (non-zero exit)
+      const result = JSON.parse(execSync(
+        `marvin webhooks test ${webhook.id} --json`,
         { encoding: 'utf-8' }
-      );
-      
-      if (result.includes('successful')) {
-        console.log('  ✓ Test passed');
-      } else {
-        console.log('  ✗ Test failed');
-      }
+      ));
+      console.log(result.ok ? '  ✓ Test scheduled' : '  ✗ Test failed');
     } catch (error) {
       console.error(`  ✗ Error: ${error.message}`);
     }
@@ -469,7 +485,7 @@ import json
 
 # Get all webhooks
 result = subprocess.run(
-    ['marvin', 'webhooks', 'list', '--json'],
+    ['marvin', 'webhooks', 'list', '--all', '--json'],
     capture_output=True,
     text=True
 )
@@ -553,7 +569,7 @@ When creating/updating with invalid JSON:
 echo '{"name": "test"}' | jq .
 
 # Then create webhook
-marvin webhooks create --json '{"name": "test", "url": "https://example.com", "events": ["*"]}'
+marvin webhooks create --data '{"name": "test", "url": "https://example.com", "events": ["*"]}'
 ```
 
 ## Security
@@ -600,13 +616,13 @@ function verifySignature(payload, signature, secret) {
 This command calls:
 
 ```
-GET /api/platform/workspaces/{workspace_id}/webhooks
-GET /api/platform/workspaces/{workspace_id}/webhooks/{id}
-POST /api/platform/workspaces/{workspace_id}/webhooks
-PATCH /api/platform/workspaces/{workspace_id}/webhooks/{id}
-DELETE /api/platform/workspaces/{workspace_id}/webhooks/{id}
-POST /api/platform/workspaces/{workspace_id}/webhooks/{id}/test
-POST /api/platform/workspaces/{workspace_id}/webhooks/rerun
+GET    /api/groups/webhooks?page=&perPage=
+GET    /api/groups/webhooks/{id}
+POST   /api/groups/webhooks
+PUT    /api/groups/webhooks/{id}
+DELETE /api/groups/webhooks/{id}
+GET    /api/groups/webhooks/{id}/test
+GET    /api/groups/webhooks/rerun
 ```
 
 See [API Mapping](../reference/api-mapping.md) for more details.

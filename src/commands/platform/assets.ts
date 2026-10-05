@@ -7,6 +7,8 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted, emitOk } from "../../shared/io.js";
 
 export function registerPlatformAssetCommands(parent: Command): void {
   const assets = parent
@@ -68,7 +70,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         const metadata = cmdOpts.metadata ? JSON.parse(cmdOpts.metadata) : undefined;
 
         // Upload
-        console.log(`Uploading ${filename} (${(stats.size / 1024).toFixed(2)} KB)...`);
+        say(`Uploading ${filename} (${(stats.size / 1024).toFixed(2)} KB)...`);
         const asset = await client.assets.upload(file, {
           slug: cmdOpts.slug,
           name: cmdOpts.name,
@@ -77,15 +79,15 @@ export function registerPlatformAssetCommands(parent: Command): void {
           metadata,
         });
 
-        console.log(`✓ Uploaded asset: ${asset.id}`);
-        console.log(`  Public URL: ${asset.publicUrl || 'N/A'}`);
-        console.log(`  Type: ${asset.assetType}`);
-        console.log(`  MIME: ${asset.mimeType}`);
-        console.log(`  Size: ${(asset.fileSize / 1024).toFixed(2)} KB`);
-        console.log(`  Checksum: ${asset.checksum}`);
+        say(`✓ Uploaded asset: ${asset.id}`);
+        say(`  Public URL: ${asset.publicUrl || 'N/A'}`);
+        say(`  Type: ${asset.assetType}`);
+        say(`  MIME: ${asset.mimeType}`);
+        say(`  Size: ${(asset.fileSize / 1024).toFixed(2)} KB`);
+        say(`  Checksum: ${asset.checksum}`);
 
         if (asset.width && asset.height) {
-          console.log(`  Dimensions: ${asset.width} × ${asset.height}`);
+          say(`  Dimensions: ${asset.width} × ${asset.height}`);
         }
 
         renderData(asset, getOutputMode(opts));
@@ -98,14 +100,14 @@ export function registerPlatformAssetCommands(parent: Command): void {
   assets
     .command("download <id>")
     .description("Download the raw file for an asset")
-    .option("-o, --output <file>", "Write file to path instead of stdout")
-    .action(async function(this: Command, id: string, cmdOpts: { output?: string }) {
+    .option("-o, --out-file <file>", "Write the file to this path instead of stdout")
+    .action(async function(this: Command, id: string, cmdOpts: { outFile?: string }) {
       try {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const data = await client.assets.getFile(id);
 
-        if (cmdOpts.output) {
+        if (cmdOpts.outFile) {
           let buffer: Buffer;
           if (Buffer.isBuffer(data)) {
             buffer = data;
@@ -119,8 +121,8 @@ export function registerPlatformAssetCommands(parent: Command): void {
           } else {
             buffer = Buffer.from(JSON.stringify(data, null, 2), "utf-8");
           }
-          writeFileSync(cmdOpts.output, buffer);
-          console.log(`✓ Wrote asset file to ${cmdOpts.output}`);
+          writeFileSync(cmdOpts.outFile, buffer);
+          emitOk({ file: cmdOpts.outFile, bytes: buffer.length }, getOutputMode(opts), `✓ Wrote asset file to ${cmdOpts.outFile}`);
         } else {
           renderData(data, getOutputMode(opts));
         }
@@ -130,28 +132,17 @@ export function registerPlatformAssetCommands(parent: Command): void {
       }
     });
 
-  assets
+  addDataOptions(assets
     .command("update <id>")
-    .description("Update an asset")
-    .option("--json <json>", "Asset data as JSON string")
-    .option("--file <path>", "Path to JSON file with asset data")
+    .description("Update an asset"), "asset data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
-        let data: any;
-        if (cmdOpts.json) {
-          data = JSON.parse(cmdOpts.json);
-        } else if (cmdOpts.file) {
-          data = JSON.parse(readFileSync(cmdOpts.file, "utf-8"));
-        } else {
-          console.error("Error: Provide asset data via --json or --file");
-          process.exitCode = 1;
-          return;
-        }
+        const data = await readJsonInput(cmdOpts);
 
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const asset = await client.assets.update(id, data);
-        console.log(`✓ Updated asset: ${asset.id}`);
+        say(`✓ Updated asset: ${asset.id}`);
         renderData(asset, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -174,7 +165,7 @@ export function registerPlatformAssetCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         await client.assets.delete(id);
-        console.log(`✓ Deleted asset: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted asset: ${id}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

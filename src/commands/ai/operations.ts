@@ -2,7 +2,8 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted, emitOk } from "../../shared/io.js";
 import { handleCommandError } from "../../shared/error-handler.js";
 
 export function registerAiOperationCommands(parent: Command): void {
@@ -47,14 +48,12 @@ export function registerAiOperationCommands(parent: Command): void {
     });
 
   // Execute an operation
-  operations
+  addDataOptions(operations
     .command("execute <slug>")
-    .description("Execute an AI operation")
-    .option("--json <json>", "Execution body as JSON string")
-    .option("--file <path>", "Path to JSON file with execution body (use '-' for stdin)")
+    .description("Execute an AI operation"), "execution body")
     .action(async function(this: Command, slug: string, cmdOpts) {
       try {
-        const body = (cmdOpts.json || cmdOpts.file || !process.stdin.isTTY)
+        const body = (cmdOpts.data !== undefined || cmdOpts.file || !process.stdin.isTTY)
           ? await readJsonInput(cmdOpts)
           : {};
 
@@ -62,7 +61,7 @@ export function registerAiOperationCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const execution = await client.ai.operations.execute(slug, body);
-        console.log(`✓ Executed AI operation: ${slug}`);
+        say(`✓ Executed AI operation: ${slug}`);
         renderData(execution, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -70,14 +69,12 @@ export function registerAiOperationCommands(parent: Command): void {
     });
 
   // Reindex RAG embeddings
-  operations
+  addDataOptions(operations
     .command("reindex")
-    .description("Rebuild the RAG embeddings index")
-    .option("--json <json>", "Reindex body as JSON string")
-    .option("--file <path>", "Path to JSON file with reindex body (use '-' for stdin)")
+    .description("Rebuild the RAG embeddings index"), "reindex body")
     .action(async function(this: Command, cmdOpts) {
       try {
-        const body = (cmdOpts.json || cmdOpts.file || !process.stdin.isTTY)
+        const body = (cmdOpts.data !== undefined || cmdOpts.file || !process.stdin.isTTY)
           ? await readJsonInput(cmdOpts)
           : {};
 
@@ -85,8 +82,9 @@ export function registerAiOperationCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const result = await client.ai.operations.reindex(body);
-        console.log(`✓ Triggered RAG reindex`);
-        renderData(result, getOutputMode(opts));
+        const mode = getOutputMode(opts);
+        emitOk(result as Record<string, unknown>, mode, `✓ Triggered RAG reindex`);
+        if (mode === "table" && result) renderData(result, mode);
       } catch (error) {
         handleCommandError(error);
       }
@@ -164,7 +162,7 @@ export function registerAiOperationCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         await client.ai.executions.delete(id);
-        console.log(`✓ Deleted AI execution: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted AI execution: ${id}`);
       } catch (error) {
         handleCommandError(error);
       }

@@ -1,6 +1,7 @@
 /**
  * Secure input prompting utilities
- * Handles password and token input without exposing values in shell history
+ * Handles password and token input without exposing values in shell history.
+ * Prompts are written to stderr so they never end up in captured stdout.
  */
 
 import * as readline from "readline";
@@ -18,7 +19,7 @@ export function promptSecure(message: string): Promise<string> {
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout,
+      output: process.stderr,
     });
 
     // Disable echo for password-like input
@@ -30,7 +31,7 @@ export function promptSecure(message: string): Promise<string> {
     }
 
     let input = "";
-    console.log(message);
+    process.stderr.write(`${message}\n`);
 
     const cleanup = () => {
       if (isTTY) {
@@ -44,12 +45,12 @@ export function promptSecure(message: string): Promise<string> {
 
       if (key === "\n" || key === "\r" || key === "") {
         // Enter or Ctrl+D
-        console.log(); // New line after input
+        process.stderr.write("\n"); // New line after input
         cleanup();
         resolve(input);
       } else if (key === "") {
         // Ctrl+C
-        console.log("\nCancelled");
+        process.stderr.write("\nCancelled\n");
         cleanup();
         process.exitCode = 1;
         resolve("");
@@ -72,7 +73,7 @@ export function prompt(message: string, defaultValue?: string): Promise<string> 
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
-      output: process.stdout,
+      output: process.stderr,
     });
 
     const promptText = defaultValue

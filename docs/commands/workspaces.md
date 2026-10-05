@@ -110,7 +110,7 @@ Set active workspace by slug:
 marvin workspace use my-company
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Active workspace set to: My Company (my-company)
@@ -142,7 +142,7 @@ Store site token for Publishing API:
 marvin workspace token marvin_sk_abc123def456
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Site token saved for workspace: my-company
@@ -164,7 +164,7 @@ Remove stored site token:
 marvin workspace token:remove
 ```
 
-Output:
+Output (stderr):
 
 ```
 ✓ Site token removed for workspace: my-company
@@ -175,6 +175,31 @@ Remove site token for a specific workspace:
 ```bash
 marvin workspace token:remove --for client-project
 ```
+
+### Export, Backups and Import
+
+`workspace export` writes the whole workspace as one JSON document: content (entries, collections,
+resources, assets, tags), structure (entry types, forms), settings (variables, secrets, AI and SMTP
+settings, email templates and subscriptions), integrations and their subscriptions, webhooks,
+incoming webhooks, scheduled tasks and workflows. Use it as a seed for restoring or migrating a
+workspace.
+
+```bash
+marvin workspace export --out-file workspace.json      # -o still works
+marvin workspace export --include-system-types > workspace.json
+```
+
+`workspace import` takes a ZIP bundle, not the JSON export. The ZIP comes from `workspace backups`:
+
+```bash
+marvin workspace backups create                         # makes a new ZIP on the server
+marvin workspace backups list
+marvin workspace backups download <filename> --out-file backup.zip
+marvin workspace import --file backup.zip [--overwrite]
+```
+
+With `--out-file`, the file path is reported on stderr (`{"ok": true, "file": "..."}` on stdout with
+`--json`). Without it, the export or backup bytes go to stdout.
 
 ## Use Cases
 

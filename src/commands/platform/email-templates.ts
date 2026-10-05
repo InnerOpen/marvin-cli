@@ -6,6 +6,7 @@ import { Command } from 'commander';
 import { clientFactory } from '../../shared/clients.js';
 import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
+import { say, emitDeleted, emitOk } from "../../shared/io.js";
 import type { PlatformCommandOptions } from '../../shared/types.js';
 import { renderList, renderData } from '../../output.js';
 import { TABLE_SCHEMAS } from '../../shared/table-schemas.js';
@@ -92,7 +93,7 @@ export function registerEmailTemplateCommands(parent: Command): void {
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(template as any, getOutputMode(globalOpts));
-        console.log(`✓ Created email template: ${template.name}`);
+        say(`✓ Created email template: ${template.name}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -135,7 +136,7 @@ export function registerEmailTemplateCommands(parent: Command): void {
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(template as any, getOutputMode(globalOpts));
-        console.log(`✓ Updated email template: ${template.name}`);
+        say(`✓ Updated email template: ${template.name}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -155,13 +156,13 @@ export function registerEmailTemplateCommands(parent: Command): void {
         const workspace = await client.workspaces.getCurrent();
 
         if (!options.yes) {
-          console.log('Delete template? Use --yes to confirm');
+          console.error('Delete template? Use --yes to confirm');
           process.exitCode = 1;
         return;
         }
 
         await client.emailTemplates.delete(workspace.id, templateId);
-        console.log(`✓ Deleted template: ${templateId}`);
+        emitDeleted(templateId, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Deleted template: ${templateId}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -197,8 +198,8 @@ export function registerEmailTemplateCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const workspace = await client.workspaces.getCurrent();
         const result = await client.emailTemplates.sendTest(workspace.id, templateId, email);
-        console.log(`✓ ${result.message}`);
-        console.log(`  Recipient: ${email}`);
+        emitOk({ ...result, recipient: email }, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()),
+          `✓ ${result.message}`, `  Recipient: ${email}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

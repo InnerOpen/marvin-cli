@@ -4,7 +4,8 @@ import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted, emitOk } from "../../shared/io.js";
 import { formatTokenForOutput, displayTokenWarning } from "../../shared/security.js";
 
 export function registerAdminUsersCommands(parent: Command): void {
@@ -59,11 +60,9 @@ export function registerAdminUsersCommands(parent: Command): void {
     });
 
   // Create user
-  users
+  addDataOptions(users
     .command("create")
-    .description("Create a new user")
-    .option("--json <json>", "User data as JSON string")
-    .option("--file <path>", "Path to JSON file with user data (use '-' for stdin)")
+    .description("Create a new user"), "user data")
     .action(async function(this: Command, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -71,7 +70,7 @@ export function registerAdminUsersCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const user = await client.adminUsers.create(data);
 
-        console.log(`✓ Created user: ${user.id}`);
+        say(`✓ Created user: ${user.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(user, getOutputMode(globalOpts));
       } catch (error) {
@@ -81,11 +80,9 @@ export function registerAdminUsersCommands(parent: Command): void {
     });
 
   // Update user
-  users
+  addDataOptions(users
     .command("update <id>")
-    .description("Update a user")
-    .option("--json <json>", "User data as JSON string")
-    .option("--file <path>", "Path to JSON file with user data (use '-' for stdin)")
+    .description("Update a user"), "user data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -93,7 +90,7 @@ export function registerAdminUsersCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const user = await client.adminUsers.update(id, data);
 
-        console.log(`✓ Updated user: ${user.id}`);
+        say(`✓ Updated user: ${user.id}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(user, getOutputMode(globalOpts));
       } catch (error) {
@@ -118,7 +115,7 @@ export function registerAdminUsersCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.adminUsers.delete(id);
 
-        console.log(`✓ Deleted user: ${id}`);
+        emitDeleted(id, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Deleted user: ${id}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -135,8 +132,15 @@ export function registerAdminUsersCommands(parent: Command): void {
         const result = await client.adminUsers.generatePasswordResetToken(userId);
 
         displayTokenWarning();
-        console.log(`Password reset token: ${formatTokenForOutput(result.token)}`);
-        console.log(`\nUser can reset password at: /reset-password?token=${formatTokenForOutput(result.token)}`);
+        const token = formatTokenForOutput(result.token);
+        const resetPath = `/reset-password?token=${token}`;
+        const mode = getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>());
+        if (mode === "table") {
+          process.stdout.write(`Password reset token: ${token}\n`);
+          say(`User can reset password at: ${resetPath}`);
+        } else {
+          renderData({ userId, token, resetPath }, mode);
+        }
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -152,7 +156,7 @@ export function registerAdminUsersCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.adminUsers.unlock(userId);
 
-        console.log(`✓ User ${userId} unlocked successfully`);
+        emitOk({ userId }, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ User ${userId} unlocked successfully`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

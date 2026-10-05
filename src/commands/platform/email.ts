@@ -1,9 +1,10 @@
 import { handleCommandError } from '../../shared/error-handler.js';
+import { say, emitOk } from "../../shared/io.js";
 import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
 
 export function registerPlatformEmailCommands(parent: Command): void {
   const email = parent
@@ -44,11 +45,9 @@ export function registerPlatformEmailCommands(parent: Command): void {
     });
 
   // Update system template
-  email
+  addDataOptions(email
     .command("update-template <id>")
-    .description("Update a system email template")
-    .option("--json <json>", "Template data as JSON string")
-    .option("--file <path>", "Path to JSON file with template data (use '-' for stdin)")
+    .description("Update a system email template"), "template data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -56,7 +55,7 @@ export function registerPlatformEmailCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const template = await client.emailTemplates.updateSystemTemplate(id, data);
-        console.log(`✓ Updated system template: ${id}`);
+        say(`✓ Updated system template: ${id}`);
         renderData(template, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -73,8 +72,7 @@ export function registerPlatformEmailCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const result = await client.emailTemplates.sendSystemTemplateTest(id, recipient);
-        console.log(`✓ ${result.message}`);
-        console.log(`  Recipient: ${recipient}`);
+        emitOk({ ...result, recipient: recipient }, getOutputMode(opts), `✓ ${result.message}`, `  Recipient: ${recipient}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -90,8 +88,7 @@ export function registerPlatformEmailCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const result = await client.emailTemplates.testSmtp(recipient);
-        console.log(`✓ ${result.message}`);
-        console.log(`  Recipient: ${recipient}`);
+        emitOk({ ...result, recipient: recipient }, getOutputMode(opts), `✓ ${result.message}`, `  Recipient: ${recipient}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

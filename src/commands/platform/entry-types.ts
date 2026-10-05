@@ -3,7 +3,8 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { handleCommandError } from "../../shared/error-handler.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted } from "../../shared/io.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 
 export function registerEntryTypeCommands(parent: Command): void {
@@ -40,18 +41,16 @@ export function registerEntryTypeCommands(parent: Command): void {
     });
 
   // Create
-  entryTypes
+  addDataOptions(entryTypes
     .command("create")
-    .description("Create a new entry type")
-    .option("--json <json>", "Entry type data as JSON string")
-    .option("--file <path>", "Path to JSON file with entry type data (use '-' for stdin)")
+    .description("Create a new entry type"), "entry type data")
     .action(async function(this: Command, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const entryType = await client.entryTypes.create(data);
-        console.log(`✓ Created entry type: ${entryType.id}`);
+        say(`✓ Created entry type: ${entryType.id}`);
         renderData(entryType, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -59,18 +58,16 @@ export function registerEntryTypeCommands(parent: Command): void {
     });
 
   // Update
-  entryTypes
+  addDataOptions(entryTypes
     .command("update <id>")
-    .description("Update an entry type")
-    .option("--json <json>", "Entry type data as JSON string")
-    .option("--file <path>", "Path to JSON file with entry type data (use '-' for stdin)")
+    .description("Update an entry type"), "entry type data")
     .action(async function(this: Command, id: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         const entryType = await client.entryTypes.update(id, data);
-        console.log(`✓ Updated entry type: ${entryType.id}`);
+        say(`✓ Updated entry type: ${entryType.id}`);
         renderData(entryType, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
@@ -92,7 +89,7 @@ export function registerEntryTypeCommands(parent: Command): void {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
         await client.entryTypes.delete(id);
-        console.log(`✓ Deleted entry type: ${id}`);
+        emitDeleted(id, getOutputMode(opts), `✓ Deleted entry type: ${id}`);
       } catch (error) {
         handleCommandError(error);
       }

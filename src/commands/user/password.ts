@@ -4,9 +4,10 @@
 
 import { Command } from 'commander';
 import { clientFactory } from '../../shared/clients.js';
-import type { PlatformCommandOptions } from '../../shared/types.js';
+import { getOutputMode, type PlatformCommandOptions } from '../../shared/types.js';
 import { promptSecure } from '../../shared/prompt.js';
 import { handleCommandError } from '../../shared/error-handler.js';
+import { emitOk } from '../../shared/io.js';
 
 export function registerPasswordCommands(parent: Command): void {
   parent
@@ -39,7 +40,8 @@ export function registerPasswordCommands(parent: Command): void {
           return;
         }
 
-        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const opts = parent.optsWithGlobals<PlatformCommandOptions>();
+        const client = await clientFactory.createPlatformClient(opts);
 
         const data = {
           currentPassword,
@@ -47,7 +49,7 @@ export function registerPasswordCommands(parent: Command): void {
         };
 
         await client.user.changePassword(data);
-        console.log('✓ Password changed successfully');
+        emitOk(null, getOutputMode(opts), '✓ Password changed successfully');
       } catch (error) {
         handleCommandError(error);
       }

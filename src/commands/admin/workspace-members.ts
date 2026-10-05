@@ -4,7 +4,8 @@ import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted } from "../../shared/io.js";
 
 export function registerAdminWorkspaceMemberCommands(parent: Command): void {
   const members = new Command("workspace-members")
@@ -52,11 +53,9 @@ export function registerAdminWorkspaceMemberCommands(parent: Command): void {
     });
 
   // Add member
-  members
+  addDataOptions(members
     .command("add <workspace-id>")
-    .description("Add a member to a workspace")
-    .option("--json <json>", "Member data as JSON string")
-    .option("--file <path>", "Path to JSON file with member data (use '-' for stdin)")
+    .description("Add a member to a workspace"), "member data")
     .action(async function(this: Command, workspaceId: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -64,7 +63,7 @@ export function registerAdminWorkspaceMemberCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.adminWorkspaces.addMember(workspaceId, data);
 
-        console.log(`✓ Added member to workspace ${workspaceId}`);
+        say(`✓ Added member to workspace ${workspaceId}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(result, getOutputMode(globalOpts));
       } catch (error) {
@@ -74,11 +73,9 @@ export function registerAdminWorkspaceMemberCommands(parent: Command): void {
     });
 
   // Update member role
-  members
+  addDataOptions(members
     .command("update-role <workspace-id> <user-id>")
-    .description("Update a workspace member's role")
-    .option("--json <json>", "Member data as JSON string")
-    .option("--file <path>", "Path to JSON file with member data (use '-' for stdin)")
+    .description("Update a workspace member's role"), "member data")
     .action(async function(this: Command, workspaceId: string, userId: string, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -86,7 +83,7 @@ export function registerAdminWorkspaceMemberCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.adminWorkspaces.updateMember(workspaceId, userId, data);
 
-        console.log(`✓ Updated member ${userId} in workspace ${workspaceId}`);
+        say(`✓ Updated member ${userId} in workspace ${workspaceId}`);
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(result, getOutputMode(globalOpts));
       } catch (error) {
@@ -111,7 +108,7 @@ export function registerAdminWorkspaceMemberCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         await client.adminWorkspaces.removeMember(workspaceId, userId);
 
-        console.log(`✓ Removed member ${userId} from workspace ${workspaceId}`);
+        emitDeleted(userId, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Removed member ${userId} from workspace ${workspaceId}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

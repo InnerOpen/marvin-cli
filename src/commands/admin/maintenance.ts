@@ -4,6 +4,7 @@ import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderData } from "../../output.js";
+import { say, emitOk } from "../../shared/io.js";
 
 export function registerAdminMaintenanceCommands(parent: Command): void {
   const maintenance = new Command("maintenance")
@@ -36,7 +37,7 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.adminMaintenance.cleanTemp();
-        console.log(result.message);
+        emitOk(result, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ ${result.message}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -51,13 +52,14 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
 
-        console.log("Cleaning up events...");
+        say("Cleaning up events...");
         const events = await client.adminMaintenance.cleanupEvents();
-        console.log(`✓ ${events.message} (${events.deleted} deleted)`);
-
-        console.log("\nCleaning up tokens...");
+        say("Cleaning up tokens...");
         const tokens = await client.adminMaintenance.cleanupTokens();
-        console.log(`✓ ${tokens.message} (${tokens.deleted} deleted)`);
+
+        emitOk({ events, tokens }, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()),
+          `✓ ${events.message} (${events.deleted} deleted)`,
+          `✓ ${tokens.message} (${tokens.deleted} deleted)`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -72,7 +74,7 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.adminMaintenance.clearCache();
-        console.log(result.message);
+        emitOk(result, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ ${result.message}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -87,7 +89,7 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
         const result = await client.adminMaintenance.optimizeDatabase();
-        console.log(result.message);
+        emitOk(result, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ ${result.message}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

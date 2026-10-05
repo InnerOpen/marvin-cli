@@ -2,7 +2,8 @@ import { Command } from "commander";
 import { clientFactory } from "../../shared/clients.js";
 import { renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
-import { readJsonInput } from "../../shared/json-input.js";
+import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say } from "../../shared/io.js";
 import { handleCommandError } from "../../shared/error-handler.js";
 
 export function registerAiSettingsCommands(parent: Command): void {
@@ -27,11 +28,9 @@ export function registerAiSettingsCommands(parent: Command): void {
     });
 
   // Update settings
-  settings
+  addDataOptions(settings
     .command("update")
-    .description("Update workspace AI settings")
-    .option("--json <json>", "Settings data as JSON string")
-    .option("--file <path>", "Path to JSON file with settings data (use '-' for stdin)")
+    .description("Update workspace AI settings"), "settings data")
     .action(async function(this: Command, cmdOpts) {
       try {
         const data = await readJsonInput(cmdOpts);
@@ -40,7 +39,7 @@ export function registerAiSettingsCommands(parent: Command): void {
         const client = await clientFactory.createPlatformClient(opts);
 
         const result = await client.ai.settings.update(data);
-        console.log(`✓ Updated workspace AI settings`);
+        say(`✓ Updated workspace AI settings`);
         renderData(result, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);

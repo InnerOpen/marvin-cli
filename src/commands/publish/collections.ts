@@ -48,10 +48,8 @@ export function registerCollectionCommands(parent: Command): void {
 
         if (!collection || Array.isArray(collection)) {
           const mode = getOutputMode(opts);
-          if (mode === "json") {
-            console.log("[]");
-          } else if (mode === "yaml") {
-            console.log("[]");
+          if (mode === "json" || mode === "yaml") {
+            process.stdout.write("[]\n");
           } else {
             console.error(`Collection not found: ${slug}`);
           }
