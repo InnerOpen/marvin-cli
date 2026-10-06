@@ -92,6 +92,7 @@ nav:
           - Forms: commands/forms.md
           - API Clients: commands/api-clients.md
           - Event Log: commands/event-log.md
+          - Events: commands/events.md
           - Scheduled Tasks: commands/scheduled-tasks.md
           - Workflows: commands/workflows.md
           - Integrations: commands/integrations.md

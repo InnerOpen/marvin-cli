@@ -234,6 +234,13 @@ The Platform API provides full CRUD operations for workspace management.
 | `marvin platform event-log` | `GET` | `/platform/workspaces/{slug}/events` |
 | `marvin platform event <id>` | `GET` | `/platform/workspaces/{slug}/events/{id}` |
 
+### Events hub
+
+| Command | HTTP Method | Endpoint |
+|---------|-------------|----------|
+| `marvin events list` | `GET` | `/api/platform/event-types/connections` (+ `/api/event/types` for names and categories) |
+| `marvin events show <event-type>` | `GET` | `/api/platform/event-types/{event_type}/connections?limit=` |
+
 ### Workspace Members
 
 | Command | HTTP Method | Endpoint |

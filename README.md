@@ -120,7 +120,7 @@ The CLI has three families of commands, one per API:
 | Group | API | Auth | What it's for |
 |---|---|---|---|
 | `marvin publish …` | Publishing API (read-only) | site client token | What a site renders: site config, published entries, collections, resources, assets |
-| `marvin platform …`, `marvin workspace …`, `marvin user …` | Platform API | user token (`marvin login`) | Managing a workspace: content, structure, webhooks, secrets, workflows, integrations… |
+| `marvin platform …`, `marvin workspace …`, `marvin user …`, `marvin events …` | Platform API | user token (`marvin login`) | Managing a workspace: content, structure, webhooks, secrets, workflows, integrations… |
 | `marvin admin …` | Platform API, admin routes | user token with SUPER_ADMIN | Instance administration: users, groups, backups, maintenance |
 
 `marvin system health` and `marvin system version` need no token. Commands whose group you can't use
@@ -176,6 +176,9 @@ marvin platform blueprints apply recently-published     # add a ready-made colle
 marvin platform tags attach news --entry <id>
 marvin platform collections preview --rules '{"tags":["news"]}'
 marvin platform incoming-webhooks mint-token shopify-orders
+
+marvin events list --connected                          # event types something reacts to
+marvin events show entry_published                      # what sends it, what happens, recent events
 ```
 
 `marvin platform --help` lists every group: entries, collections, resources, assets, entry-types,

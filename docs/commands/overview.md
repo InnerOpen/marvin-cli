@@ -86,6 +86,9 @@ marvin platform [command]
 
 **Learn more**: [Platform API Commands](workspaces.md)
 
+`marvin events` (top level, same user token) shows what sends each event type and what reacts to it:
+`marvin events list` and `marvin events show <event-type>`. See [Events](events.md).
+
 ### Admin API (`admin`)
 
 System administration commands. Requires admin privileges.
@@ -298,6 +301,7 @@ marvin platform entry create --help
 - [Forms](forms.md)
 - [API Clients](api-clients.md)
 - [Event Log](event-log.md)
+- [Events](events.md)
 - [Scheduled Tasks](scheduled-tasks.md)
 - [Workflows](workflows.md)
 - [Integrations](integrations.md)
