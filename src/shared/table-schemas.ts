@@ -32,6 +32,7 @@ import type {
   PlatformTag,
   CollectionMember,
   PlatformRecentEvent,
+  EventConnectionCounts,
 } from '@inneropen/marvin-sdk/platform'
 import type { ColumnSpec } from '../output.js'
 import {
@@ -51,6 +52,9 @@ type ColSpec<T> = Record<string, keyof T & string>
 // ---------------------------------------------------------------------------
 // Local interfaces for SDK types not publicly exported with the right shape.
 // ---------------------------------------------------------------------------
+
+/** A `marvin events list` row: the connections summary plus the type's name and category from the catalogue. */
+export type EventTypeRow = EventConnectionCounts & { name: string | null; category: string | null }
 
 /** Write-only secret metadata (value never returned). */
 interface WorkspaceSecretRead {
@@ -194,6 +198,17 @@ export const TABLE_SCHEMAS = {
     category: 'category',
     description: 'description',
   } satisfies ColSpec<EventOption>,
+
+  // ---- Events hub ----
+  'events.list': {
+    'Event type': 'eventType',
+    Name: 'name',
+    Category: 'category',
+    Senders: 'senders',
+    'Reactions (on/total)': (r: EventTypeRow) => `${r.activeReactions}/${r.reactions}`,
+    'Built-in': 'builtinReactions',
+    'Last occurred': 'lastOccurredAt',
+  } satisfies ColumnSpec<EventTypeRow>,
 
   // ---- Email Event Subscriptions ----
   'email-subscriptions.list': {

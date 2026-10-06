@@ -9,6 +9,7 @@ import { createPlatformCommand } from "./commands/platform/index.js";
 import { createSystemCommand } from "./commands/system/index.js";
 import { createAdminCommand } from "./commands/admin/index.js";
 import { createUserCommand } from "./commands/user/index.js";
+import { createEventsCommand } from "./commands/events/index.js";
 import { registerAuthCommands } from "./commands/auth.js";
 import { registerWorkspaceCommands } from "./commands/platform/workspaces.js";
 import { credentialsManager } from "./config/credentials.js";
@@ -75,6 +76,7 @@ program.addCommand(createPublishCommand(), { hidden: !hasSiteToken });
 program.addCommand(createPlatformCommand(), { hidden: !hasUserToken });
 program.addCommand(createAdminCommand(), { hidden: !hasUserToken });
 program.addCommand(createUserCommand(), { hidden: !hasUserToken });
+program.addCommand(createEventsCommand(), { hidden: !hasUserToken });
 
 // System (health, version) — always visible, no auth required
 program.addCommand(createSystemCommand());

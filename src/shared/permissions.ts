@@ -6,7 +6,7 @@
  * the route wanted; this table says it instead. It mirrors the backend's gates:
  * - ADMIN (or OWNER): workspace settings — webhooks, incoming webhooks, workflows, integrations
  *   (all but the provider catalogue), variables, scheduled tasks, email
- *   subscriptions, SMTP and test email, invites, members, API clients, AI providers, secret
+ *   subscriptions, the Events hub (`marvin events`), SMTP and test email, invites, members, API clients, AI providers, secret
  *   writes, workspace export and backups — reads included; entry-type and form writes; applying
  *   and updating blueprints.
  * - EDITOR: collection (incl. order and smart-rule preview), resource and asset-edit writes, AI
@@ -65,6 +65,7 @@ export const REQUIRED_ROLES: Readonly<Record<string, RequiredRole | null>> = {
   "platform secrets reveal": "ADMIN",
   "workspace export": "ADMIN",
   "workspace backups": "ADMIN",
+  "events": "ADMIN",
 
   // Workspace structure: ADMIN to change
   "platform entry-types create": "ADMIN",

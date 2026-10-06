@@ -12,6 +12,7 @@ import { join } from 'path'
 import { MarvinApiError, MarvinAuthError } from '@inneropen/marvin-sdk'
 import { createPlatformCommand } from '../commands/platform/index.js'
 import { createAdminCommand } from '../commands/admin/index.js'
+import { createEventsCommand } from '../commands/events/index.js'
 import { registerWorkspaceCommands } from '../commands/platform/workspaces.js'
 import { clientFactory } from '../shared/clients.js'
 import { trackCommandContext, commandPath, resetCommandContext } from '../shared/command-context.js'
@@ -50,6 +51,7 @@ function buildProgram(): Command {
   registerWorkspaceCommands(program, { hidden: false })
   program.addCommand(createPlatformCommand())
   program.addCommand(createAdminCommand())
+  program.addCommand(createEventsCommand())
   return program
 }
 
