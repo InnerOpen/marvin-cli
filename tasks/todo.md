@@ -90,3 +90,23 @@ Plan: script-safe output (batch 0), `platform workflows` (batch 1), `platform in
 - Unit: 300 tests green; `tsc` build clean; `npm pack --dry-run` OK; `mkdocs build --strict` OK.
 - Live smoke against a local rc.198 backend (+ site rebuild endpoint, + integration SDK and the Apprise plugin): workflows end to end (create → validate → preview → dry run → enable → run → executions → execution → samples), integrations (providers, plugins, create, list, get, check, errors/set/reset, resolve, run, subscriptions create/update/list, alert-routing get/set), site rebuild-status and rebuild (409 with nothing configured), paged lists, `--data @file`, `--value-stdin`.
 - Found: SDK HttpClient parses a 204 that carries `content-type: application/json` as JSON, fails, treats the parse error as a network error and retries the DELETE, which then 404s. The resource is deleted but the command reports "Resource not found" and exits 1 (workflows, secrets, integrations, subscriptions deletes). Pre-existing in SDK 4.0; fix belongs in the SDK.
+
+---
+
+# CLI 3.2 — review queue, blueprints, publishing, incoming webhooks + tags, smart collections (2026-10-05)
+
+Plan: coverage audit batches 3–7 (Marvin `tasks/todo.md` "CLI 3.2"), on SDK 4.3.0.
+
+- [x] Review queue: `entries list --status/--entry-type/--suggestions/--limit` (client-side), `entries counts`, `apply-suggestion`/`reject-suggestion` on entries/assets/resources, `entries suggested-assets list|approve|reject`, `platform dashboard`
+- [x] `platform blueprints` list/categories/get/apply (single or bulk)/update
+- [x] Publishing: `entries update --status/--publish-at/--expire-at`, `publish entries --tag/--slug/--updated-since/--expand full`, `publish asset --download`; fixed `platform assets download`
+- [x] `platform incoming-webhooks` (CRUD, mint/revoke token, signature-schemes), `platform tags` (CRUD, attach/detach)
+- [x] Smart collections: `collections preview|members|order`, `--smart-rules` on create/update
+- [x] Permissions table + help; coverage manifest (38 routes → covered), snapshot refreshed to develop rc.199 with the integration SDK
+- [x] Docs: review, blueprints, incoming-webhooks, tags, smart-collections pages; MIGRATION 3.2.0
+- [ ] Relock package-lock.json once @inneropen/marvin-sdk 4.3.0 is published (`npm install @inneropen/marvin-sdk@^4.3.0`)
+
+## Review
+- Unit: 422 tests green (built against the SDK 4.3 worktree, installed with `npm install --no-save <tarball>`); `tsc` clean; `npm pack --dry-run` OK; `mkdocs build --strict` OK.
+- Live smoke against a local develop (rc.199) backend with the integration SDK: dashboard, counts, filtered lists, update flags (set/clear), suggestions on entries/assets/resources, blueprints (list/filters/categories/get/apply single, parametrised and bulk/update), tags (create/attach/update/detach/delete), collections (preview, create/update `--smart-rules`, members, order by ids and `--data`), incoming webhooks (create, mint, list, update with a scheme, revoke, delete, signature-schemes), publish entries `--tag/--slug/--updated-since/--expand full`, `publish asset --download` (file and stdout), `platform assets download`.
+- Found (core): `POST /api/platform/tags/{tag}/assets/{asset}` and `/resources/{resource}` always 500 — `attach_tag_to_asset`/`_to_resource` read `.group_id` off `AssetRead`/`ResourceRead`, which don't have it. Entry tagging and both detaches work.
