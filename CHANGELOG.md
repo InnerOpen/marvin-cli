@@ -1,3 +1,11 @@
+# [3.2.0](https://github.com/InnerOpen/marvin-cli/compare/v3.1.0...v3.2.0) (2026-10-06)
+
+
+### Features
+
+* **publish:** entry filters, --expand full and asset downloads ([0f550b4](https://github.com/InnerOpen/marvin-cli/commit/0f550b4d5ef9010e702b5338c60a56bbcd68d1c7))
+* review queue, blueprints, incoming webhooks, tags and smart collections ([5a22515](https://github.com/InnerOpen/marvin-cli/commit/5a22515f86111a8637b457cd25442cadfbdca35b))
+
 # [3.1.0](https://github.com/InnerOpen/marvin-cli/compare/v3.0.0...v3.1.0) (2026-10-05)
 
 
