@@ -1,3 +1,17 @@
+# [3.3.0](https://github.com/InnerOpen/marvin-cli/compare/v3.2.0...v3.3.0) (2026-10-06)
+
+
+### Bug Fixes
+
+* exit quietly when stdout's reader hangs up (`| head`) ([866500a](https://github.com/InnerOpen/marvin-cli/commit/866500aad687165aacbe555387fdae110911c1cf))
+
+
+### Features
+
+* deprecate the `platform events` alias of `platform event-log` ([dafea28](https://github.com/InnerOpen/marvin-cli/commit/dafea287072288797b7a3d2491ff22cb0ab1fd4d))
+* events list names every type ([10da0bf](https://github.com/InnerOpen/marvin-cli/commit/10da0bf550cfb91e887e35bb6688f9418374f161))
+* marvin events list and show (the Events hub) ([013b6ba](https://github.com/InnerOpen/marvin-cli/commit/013b6bae7d937171899f1b10cfbf403d0247efce))
+
 # [3.2.0](https://github.com/InnerOpen/marvin-cli/compare/v3.1.0...v3.2.0) (2026-10-06)
 
 
