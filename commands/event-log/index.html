@@ -18,7 +18,7 @@
         <link rel="prev" href="../api-clients/">
       
       
-        <link rel="next" href="../scheduled-tasks/">
+        <link rel="next" href="../events/">
       
       
         
@@ -1618,6 +1618,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../scheduled-tasks/" class="md-nav__link">
         
   
@@ -3185,7 +3213,14 @@
 
 
 <h1 id="event-log">Event Log<a class="headerlink" href="#event-log" title="Permanent link">&para;</a></h1>
-<p>View workspace event log and audit trail for all system activities.</p>
+<p>View workspace event log and audit trail for all system activities. The commands are
+<code>marvin platform event-log …</code>.</p>
+<div class="admonition warning">
+<p class="admonition-title"><code>platform events</code> is deprecated</p>
+<p><code>marvin platform events …</code> is an old alias of <code>platform event-log</code>. It still works in 3.x with a
+warning on stderr and is removed in 4.0. <code>marvin events</code> is a different command: the
+<a href="../events/">Events hub</a>, what sends each event type and what reacts to it.</p>
+</div>
 <h2 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">&para;</a></h2>
 <h3 id="list-events">List Events<a class="headerlink" href="#list-events" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>marvin<span class="w"> </span>event-log<span class="w"> </span>list<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
