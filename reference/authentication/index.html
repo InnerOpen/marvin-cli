@@ -1224,6 +1224,146 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Review Queue
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/blueprints/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Blueprints
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/incoming-webhooks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Incoming Webhooks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/tags/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tags
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../commands/smart-collections/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Smart Collections
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -3508,19 +3648,19 @@ Roles rank OWNER &gt; ADMIN &gt; EDITOR &gt; AUTHOR &gt; VIEWER; a role can do e
 <tbody>
 <tr>
 <td><strong>ADMIN</strong> (or OWNER)</td>
-<td><code>platform webhooks</code> (except <code>types</code>), <code>platform variables</code>, <code>platform scheduled-tasks</code> (except <code>types</code>), <code>platform email-subscriptions</code>, <code>platform invites</code>, <code>platform workspace-members</code>, <code>platform api-clients</code>, <code>platform ai providers</code>, <code>platform email test-smtp</code>/<code>test-template</code>/<code>update-template</code>, <code>platform email-templates create</code>/<code>update</code>/<code>delete</code>/<code>test-send</code>/<code>event-connections</code>, <code>platform secrets create</code>/<code>update</code>/<code>delete</code>/<code>reveal</code>, <code>workspace export</code>, <code>workspace backups</code>, <code>platform entry-types create</code>/<code>update</code>/<code>delete</code>, <code>platform forms create</code>/<code>update</code>/<code>delete</code></td>
+<td><code>platform webhooks</code> (except <code>types</code>), <code>platform incoming-webhooks</code>, <code>platform workflows</code>, <code>platform integrations</code> (except <code>providers</code>), <code>platform blueprints apply</code>/<code>update</code>, <code>platform variables</code>, <code>platform scheduled-tasks</code> (except <code>types</code>), <code>platform email-subscriptions</code>, <code>platform invites</code>, <code>platform workspace-members</code>, <code>platform api-clients</code>, <code>platform ai providers</code>, <code>platform email test-smtp</code>/<code>test-template</code>/<code>update-template</code>, <code>platform email-templates create</code>/<code>update</code>/<code>delete</code>/<code>test-send</code>/<code>event-connections</code>, <code>platform secrets create</code>/<code>update</code>/<code>delete</code>/<code>reveal</code>, <code>workspace export</code>, <code>workspace backups</code>, <code>platform entry-types create</code>/<code>update</code>/<code>delete</code>, <code>platform forms create</code>/<code>update</code>/<code>delete</code></td>
 </tr>
 <tr>
 <td><strong>EDITOR</strong></td>
-<td><code>platform collections create</code>/<code>update</code>/<code>delete</code>/<code>reorder</code>/<code>update-entry</code>, <code>platform resources create</code>/<code>update</code>/<code>delete</code>, <code>platform assets update</code>/<code>delete</code>, <code>platform forms submissions</code>, and changing anyone's entry or approving, publishing or scheduling one</td>
+<td><code>platform collections create</code>/<code>update</code>/<code>delete</code>/<code>reorder</code>/<code>update-entry</code>/<code>order</code>/<code>preview</code>, <code>platform resources create</code>/<code>update</code>/<code>delete</code>/<code>apply-suggestion</code>/<code>reject-suggestion</code>, <code>platform assets update</code>/<code>delete</code>/<code>apply-suggestion</code>/<code>reject-suggestion</code>, <code>platform tags update</code>/<code>delete</code>, tagging an asset or a resource, <code>platform forms submissions</code>, <code>platform site</code>, and changing anyone's entry or approving, publishing or scheduling one</td>
 </tr>
 <tr>
 <td><strong>AUTHOR</strong></td>
-<td><code>platform entries create</code> (as a draft), changing or deleting your own entries until they are approved or published, <code>platform assets upload</code></td>
+<td><code>platform entries create</code> (as a draft), changing or deleting your own entries until they are approved or published (including <code>apply-suggestion</code>/<code>reject-suggestion</code>, <code>suggested-assets approve</code>/<code>reject</code> and tagging them), <code>platform tags create</code>, <code>platform assets upload</code></td>
 </tr>
 <tr>
 <td><strong>VIEWER</strong></td>
-<td>Reading: <code>list</code> and <code>get</code> on entries, collections, resources, assets, entry types and forms</td>
+<td>Reading: <code>list</code> and <code>get</code> on entries, collections, resources, assets, entry types, forms, tags and blueprints; <code>entries counts</code>, <code>collections members</code>, <code>dashboard</code></td>
 </tr>
 <tr>
 <td><strong>SUPER_ADMIN</strong> (platform role)</td>
