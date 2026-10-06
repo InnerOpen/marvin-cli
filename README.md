@@ -134,6 +134,7 @@ marvin publish site                          # workspace site configuration
 marvin publish entries                       # published entries
 marvin publish entries --entry-type page     # …of one entry type
 marvin publish entries --collection featured --limit 10
+marvin publish entries --tag news --updated-since 2026-10-01 --expand full
 marvin publish entry about                   # one entry by slug
 marvin publish collections                   # collections
 marvin publish collection featured           # one collection
@@ -143,6 +144,7 @@ marvin publish resource kuroki-s022          # one resource
 marvin publish resource-entries kuroki-s022  # entries that use it
 marvin publish assets --type image           # assets, filtered by type
 marvin publish asset hero-image              # one asset
+marvin publish asset hero-image --download --out-file hero.jpg
 marvin publish renderers                     # renderers the workspace needs
 ```
 
@@ -165,12 +167,22 @@ marvin workspace export --out-file workspace.json
 marvin platform workflows run tag-new-posts --dry-run   # what a workflow would do
 marvin platform integrations list --needs-attention     # connections with open alerts
 marvin platform site rebuild --reason "Content sync"    # queue a site rebuild
+
+marvin platform dashboard                               # what needs attention
+marvin platform entries list --status needs_review      # the review queue
+marvin platform entries apply-suggestion <id>           # accept an AI suggestion
+marvin platform entries update <id> --publish-at 2026-10-31T09:00:00Z
+marvin platform blueprints apply recently-published     # add a ready-made collection
+marvin platform tags attach news --entry <id>
+marvin platform collections preview --rules '{"tags":["news"]}'
+marvin platform incoming-webhooks mint-token shopify-orders
 ```
 
 `marvin platform --help` lists every group: entries, collections, resources, assets, entry-types,
 forms, webhooks, invites, api-clients, workspace-members, variables, secrets, email templates and
 subscriptions, scheduled tasks, the event log, workflows, integrations (connections, event
-subscriptions, error handling), site rebuilds, and AI (providers, models, operations, settings).
+subscriptions, error handling), site rebuilds, the dashboard, blueprints, incoming webhooks, tags,
+and AI (providers, models, operations, settings).
 
 ### Admin (SUPER_ADMIN)
 

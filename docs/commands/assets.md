@@ -2,10 +2,11 @@
 
 List and retrieve assets from your Marvin workspace.
 
-## Command
+## Commands
 
 ```bash
 marvin publish assets [options]
+marvin publish asset <slug> [--download [--out-file <path>]]
 ```
 
 ## Description
@@ -319,6 +320,21 @@ Output:
 <img src="https://cdn.example.com/logo.svg" alt="Company logo" />
 ```
 
+### Download a File
+
+`marvin publish asset <slug> --download` fetches the file itself through the publishing API (the
+API client token needs `read:assets`). It writes to `--out-file`, or to stdout when stdout is
+redirected or piped; it refuses to print binary to a terminal.
+
+```bash
+marvin publish asset logo --download --out-file logo.png
+marvin publish asset logo --download > logo.png
+marvin publish asset hero --download | convert - -resize 50% hero-small.jpg
+```
+
+With `--out-file` and `--json`, it prints `{"ok": true, "file": "logo.png", "bytes": 5321,
+"contentType": "image/png"}`.
+
 ### Download All Images
 
 Download all images to a local directory:
@@ -326,9 +342,9 @@ Download all images to a local directory:
 ```bash
 #!/bin/bash
 
-marvin publish assets --type image --json | jq -r '.[] | "\(.url) \(.filename)"' | while read -r url filename; do
-  curl -o "images/$filename" "$url"
-  echo "Downloaded: $filename"
+mkdir -p images
+marvin publish assets --type image --json | jq -r '.[].slug' | while read -r slug; do
+  marvin publish asset "$slug" --download --out-file "images/$slug"
 done
 ```
 

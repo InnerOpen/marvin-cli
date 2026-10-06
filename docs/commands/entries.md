@@ -28,7 +28,12 @@ Entries are the primary content type in Marvin. They represent pages, blog posts
 |--------|-------------|---------|
 | `--entry-type <slug>` | Filter by entry type (e.g., page, project) | All types |
 | `--collection <slug>` | Filter by collection | All entries |
+| `--tag <slugs>` | Entries carrying any of these tag slugs (comma-separated) | All entries |
+| `--slug <slugs>` | Only these entry slugs (comma-separated) | All entries |
+| `--updated-since <iso>` | Entries updated at or after this ISO 8601 time | All entries |
+| `--expand full` | Return each entry as the single-entry read (assets, resources, every membership) | List items |
 | `--limit <number>` | Limit number of results | All entries |
+| `--offset <number>` | Skip this many results | `0` |
 | `--json` | Output as JSON | `false` |
 | `--yaml` | Output as YAML | `false` |
 | `--csv` | Output as CSV | `false` |
@@ -174,10 +179,31 @@ marvin publish entries --limit 10
 marvin publish entries --limit 5 --entry-type page
 ```
 
+Filter by tag (any of several), by slug, or by last update:
+
+```bash
+marvin publish entries --tag news,events
+marvin publish entries --slug about,contact
+marvin publish entries --updated-since 2026-10-01T00:00:00Z
+```
+
+`--updated-since` makes an incremental sync cheap: remember when you last synced and ask only for
+what changed since.
+
 Combine filters:
 
 ```bash
 marvin publish entries --entry-type project --collection featured --limit 3
+```
+
+### Full entries in one call
+
+`--expand full` returns every entry on the page in the single-entry shape (its assets with roles,
+its resources, every collection membership), so you don't need a `marvin publish entry` call per
+item. A server that doesn't support `expand` returns the usual list items.
+
+```bash
+marvin publish entries --entry-type project --expand full --json | jq '.[] | {slug, assets: [.assets[].asset.slug]}'
 ```
 
 ## Response Fields

@@ -79,6 +79,10 @@ marvin platform [command]
 | `workflows` | Manage workflows: triggers, conditions, actions, runs |
 | `integrations` | Manage integrations, event subscriptions, error handling |
 | `site` | Request a site rebuild and check its status |
+| `dashboard` | What needs attention: inbox, drafts, review, AI suggestions, failures |
+| `blueprints` | Browse and apply ready-made collections, entry types, tasks and workflows |
+| `incoming-webhooks` | URLs outside services POST to, to trigger workflows |
+| `tags` | The shared tag vocabulary; tag entries, assets and resources |
 
 **Learn more**: [Platform API Commands](workspaces.md)
 
@@ -298,6 +302,11 @@ marvin platform entry create --help
 - [Workflows](workflows.md)
 - [Integrations](integrations.md)
 - [Site Rebuild](site-rebuild.md)
+- [Review Queue](review.md)
+- [Blueprints](blueprints.md)
+- [Incoming Webhooks](incoming-webhooks.md)
+- [Tags](tags.md)
+- [Smart Collections](smart-collections.md)
 
 ### Admin API
 

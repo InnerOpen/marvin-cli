@@ -1,5 +1,47 @@
 # Migration Guide
 
+## 3.2.0
+
+3.2.0 adds commands and removes nothing. Two existing commands behave differently.
+
+### `platform assets download` writes the file
+
+`marvin platform assets download <id>` never got the file's bytes from SDK 4.1 on (the SDK read
+the response as JSON and got nothing), so it failed. It now writes the bytes:
+
+- with `--out-file <path>`: to that file, then `✓ Wrote <n> bytes to <path>` on stderr, or
+  `{"ok": true, "file", "bytes", "contentType"}` on stdout with `--json`;
+- without it: raw to stdout, when stdout is redirected or piped (`… download <id> > logo.png`);
+- without it and with stdout on a terminal: it refuses before downloading, instead of printing
+  binary.
+
+`marvin publish asset <slug> --download` works the same way.
+
+### The 403 message for AUTHOR-level commands
+
+A 403 from `platform tags create` or `platform assets upload` now says "This needs the AUTHOR role
+in workspace '…'." instead of the entry-specific text (own drafts vs EDITOR), which only applies to
+entries. `--json` errors keep the same fields.
+
+### New
+
+- Review queue: `platform entries list --status/--entry-type/--suggestions/--limit`,
+  `platform entries counts`, `apply-suggestion`/`reject-suggestion` on entries, assets and
+  resources, `platform entries suggested-assets list|approve|reject`, and `platform dashboard`.
+  See [Review Queue](docs/commands/review.md).
+- `platform entries update --status/--publish-at/--expire-at` (no `--data` needed).
+- `marvin platform blueprints`: list, categories, get, apply (one or several), update. See
+  [Blueprints](docs/commands/blueprints.md).
+- `marvin platform incoming-webhooks`: CRUD, `mint-token`/`revoke-token`, `signature-schemes`. See
+  [Incoming Webhooks](docs/commands/incoming-webhooks.md).
+- `marvin platform tags`: CRUD and `attach`/`detach` on entries, assets and resources. See
+  [Tags](docs/commands/tags.md).
+- Smart collections: `platform collections preview|members|order` and `--smart-rules` on
+  `create`/`update`. See [Smart Collections](docs/commands/smart-collections.md).
+- `publish entries --tag/--slug/--updated-since/--expand full`, `publish asset --download`.
+
+3.2.0 depends on `@inneropen/marvin-sdk` ^4.3.0. The new commands need Marvin rc.198 or later.
+
 ## 3.1.0
 
 3.1.0 makes the CLI safe to script: data on stdout, messages on stderr, and a JSON result from

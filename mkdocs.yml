@@ -96,6 +96,11 @@ nav:
           - Workflows: commands/workflows.md
           - Integrations: commands/integrations.md
           - Site Rebuild: commands/site-rebuild.md
+          - Review Queue: commands/review.md
+          - Blueprints: commands/blueprints.md
+          - Incoming Webhooks: commands/incoming-webhooks.md
+          - Tags: commands/tags.md
+          - Smart Collections: commands/smart-collections.md
       - Admin API:
           - Users: commands/admin-users.md
           - System: commands/admin-system.md
