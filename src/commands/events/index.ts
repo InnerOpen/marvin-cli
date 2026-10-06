@@ -22,7 +22,7 @@ import { renderData, renderList } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { handleCommandError } from "../../shared/error-handler.js";
 import { validatePositiveInteger } from "../../shared/validation.js";
-import { TABLE_SCHEMAS, type EventTypeRow } from "../../shared/table-schemas.js";
+import { NO_CATEGORY, TABLE_SCHEMAS, type EventTypeRow } from "../../shared/table-schemas.js";
 
 /** The backend caps `limit` on the detail route at 50. */
 const MAX_RECENT = 50;
@@ -141,14 +141,28 @@ function printDetail(detail: EventConnections, limit: number): void {
   line(`${chalk.bold("Caused by:")} ${refs(detail.causedBy)}`);
 }
 
-/** The summary joined with the event catalogue for each type's name and category. */
+/**
+ * Name and category for each summary row: the row's own (newer backends send them), else the event
+ * catalogue's; the name falls back to the event type, the category to null (shown as "—").
+ */
 function withNames(summary: EventConnectionCounts[], catalogue: EventOption[]): EventTypeRow[] {
   const byType = new Map(catalogue.map((o) => [o.value, o]));
   return summary.map((row) => {
+    const own = row as EventConnectionCounts & { name?: string | null; category?: string | null };
     const option = byType.get(row.eventType);
-    const { eventType, ...counts } = row;
-    return { eventType, name: option?.label ?? null, category: option?.category ?? null, ...counts };
+    const { eventType, name: _name, category: _category, ...counts } = own;
+    return {
+      eventType,
+      name: own.name || option?.label || eventType,
+      category: own.category || option?.category || null,
+      ...counts,
+    };
   });
+}
+
+/** `--category` matches what the table shows, so `--category —` finds the uncategorised types. */
+function categoryMatches(row: EventTypeRow, wanted: string): boolean {
+  return (row.category ?? NO_CATEGORY).toLowerCase() === wanted.toLowerCase();
 }
 
 /** A 404 from the detail route means the type is unknown here, or a platform-scope type. */
@@ -185,10 +199,9 @@ export function createEventsCommand(): Command {
           client.events.getOptions(),
         ]);
 
-        const category = cmdOpts.category?.toLowerCase();
         const rows = withNames(summary, catalogue).filter(
           (r) =>
-            (!category || r.category?.toLowerCase() === category) &&
+            (!cmdOpts.category || categoryMatches(r, cmdOpts.category)) &&
             (!cmdOpts.connected || r.reactions > 0) &&
             (!cmdOpts.unused || r.reactions === 0),
         );

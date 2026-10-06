@@ -26,6 +26,7 @@ marvin events list
 marvin events list --connected          # types something reacts to
 marvin events list --unused             # types nothing reacts to
 marvin events list --category content   # one category (case doesn't matter)
+marvin events list --category —         # types with no category
 ```
 
 One row per workspace event type, in catalogue order:
@@ -33,7 +34,7 @@ One row per workspace event type, in catalogue order:
 | Column | Meaning |
 |--------|---------|
 | Event type | The type's key, e.g. `entry_published` |
-| Name, Category | From the event catalogue (blank for a type the catalogue doesn't list) |
+| Name, Category | The type's own, or else the event catalogue's; a type neither names shows its key as the name and `—` as the category |
 | Senders | How many things send it: Marvin itself, workflows, incoming webhooks, scheduled tasks |
 | Reactions (on/total) | Workflows, integration actions, emails and webhooks that react to it: switched on / all |
 | Built-in | Reactions Marvin always runs, such as queueing a site rebuild |
@@ -43,7 +44,8 @@ One row per workspace event type, in catalogue order:
 with only built-in reactions is `--unused`. Platform-scope event types are not listed; the admin
 Events page shows those.
 
-With `--json` each row is the API's summary row with `name` and `category` added:
+With `--json` each row is the API's summary row with `name` and `category` filled in as above
+(`category` is `null` rather than `—` when there is none):
 
 ```json
 {

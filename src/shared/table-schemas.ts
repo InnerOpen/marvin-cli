@@ -54,7 +54,10 @@ type ColSpec<T> = Record<string, keyof T & string>
 // ---------------------------------------------------------------------------
 
 /** A `marvin events list` row: the connections summary plus the type's name and category from the catalogue. */
-export type EventTypeRow = EventConnectionCounts & { name: string | null; category: string | null }
+export type EventTypeRow = EventConnectionCounts & { name: string; category: string | null }
+
+/** How `marvin events list` shows an event type without a category. */
+export const NO_CATEGORY = '—'
 
 /** Write-only secret metadata (value never returned). */
 interface WorkspaceSecretRead {
@@ -203,7 +206,7 @@ export const TABLE_SCHEMAS = {
   'events.list': {
     'Event type': 'eventType',
     Name: 'name',
-    Category: 'category',
+    Category: (r: EventTypeRow) => r.category ?? NO_CATEGORY,
     Senders: 'senders',
     'Reactions (on/total)': (r: EventTypeRow) => `${r.activeReactions}/${r.reactions}`,
     'Built-in': 'builtinReactions',

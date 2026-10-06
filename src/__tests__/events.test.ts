@@ -112,8 +112,28 @@ describe('events', () => {
         'Event type': 'entry_published', Name: 'Entry Published', Category: 'Content', Senders: 3,
         'Reactions (on/total)': '1/2', 'Built-in': 2, 'Last occurred': '2026-10-04T18:02:23.857Z',
       })
-      // A type the catalogue doesn't list still shows, without a name
-      expect(rows[3]).toMatchObject({ 'Event type': 'shop_order_paid', Name: '', Category: '' })
+      // A type the catalogue doesn't list shows its type as the name and "—" as the category
+      expect(rows[3]).toMatchObject({ 'Event type': 'shop_order_paid', Name: 'shop_order_paid', Category: '—' })
+    })
+
+    it("prefers a row's own name and category to the catalogue's", async () => {
+      events.getConnectionsSummary.mockResolvedValue([
+        { ...SUMMARY[0], name: 'Entry went live', category: 'Publishing' },
+        { ...SUMMARY[3], name: 'Order paid', category: 'Shop' },
+      ])
+      await run('list', '--json')
+      expect(JSON.parse(io.out()).map((r: any) => [r.eventType, r.name, r.category])).toEqual([
+        ['entry_published', 'Entry went live', 'Publishing'],
+        ['shop_order_paid', 'Order paid', 'Shop'],
+      ])
+      io.clear()
+      await run('list', '--category', 'shop', '--json')
+      expect(JSON.parse(io.out()).map((r: any) => r.eventType)).toEqual(['shop_order_paid'])
+    })
+
+    it('--category — finds the types with no category', async () => {
+      await run('list', '--category', '—', '--json')
+      expect(JSON.parse(io.out())).toEqual([{ ...SUMMARY[3], name: 'shop_order_paid', category: null }])
     })
 
     it('--category matches case-insensitively', async () => {
