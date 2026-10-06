@@ -81,6 +81,19 @@ export async function readJsonInput(cmdOpts: any, options?: { validateObject?: b
   return data;
 }
 
+/**
+ * Parse a JSON option that isn't the request body (`--rules`, `--smart-rules`, `--params`): inline
+ * JSON, `@path` to read a file, or `-` for stdin. `flag` names the option in error messages.
+ */
+export async function readJsonArg(value: string, flag: string): Promise<any> {
+  if (value === "-") return parseJson(await readStdin(), "stdin");
+  if (value.startsWith("@")) {
+    const path = value.slice(1);
+    return parseJson(await readFileSource(path), path === "-" ? "stdin" : path);
+  }
+  return parseJson(value, flag);
+}
+
 async function readStdin(): Promise<string> {
   const chunks: Buffer[] = [];
   for await (const chunk of process.stdin) {

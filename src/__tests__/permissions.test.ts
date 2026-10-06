@@ -78,6 +78,19 @@ describe('requiredRoleFor', () => {
     ['platform assets update', 'EDITOR'],
     ['platform entries create', 'AUTHOR'],
     ['admin users list', 'SUPER_ADMIN'],
+    ['platform incoming-webhooks list', 'ADMIN'],
+    ['platform incoming-webhooks mint-token', 'ADMIN'],
+    ['platform blueprints apply', 'ADMIN'],
+    ['platform blueprints update', 'ADMIN'],
+    ['platform collections preview', 'EDITOR'],
+    ['platform collections order', 'EDITOR'],
+    ['platform assets apply-suggestion', 'EDITOR'],
+    ['platform resources reject-suggestion', 'EDITOR'],
+    ['platform entries apply-suggestion', 'AUTHOR'],
+    ['platform entries suggested-assets approve', 'AUTHOR'],
+    ['platform tags create', 'AUTHOR'],
+    ['platform tags attach', 'AUTHOR'],
+    ['platform tags delete', 'EDITOR'],
   ])('%s needs %s', (path, role) => {
     expect(requiredRoleFor(path)).toBe(role)
   })
@@ -88,6 +101,12 @@ describe('requiredRoleFor', () => {
     'platform scheduled-tasks types',
     'platform collections list',
     'platform entries list',
+    'platform entries counts',
+    'platform entries suggested-assets list',
+    'platform dashboard',
+    'platform blueprints list',
+    'platform collections members',
+    'platform tags list',
     'workspace use',
   ])('%s has no role gate in the table', path => {
     expect(requiredRoleFor(path)).toBeUndefined()
@@ -146,6 +165,17 @@ describe('describePermissionDenied', () => {
     expect(describePermissionDenied('platform entries update', 'acme').message).toMatch(
       /AUTHOR role in workspace 'acme' for your own draft entries, or EDITOR/
     )
+  })
+
+  it('explains the AUTHOR rule for tagging', () => {
+    expect(describePermissionDenied('platform tags attach', 'acme').message).toBe(
+      "This needs the AUTHOR role in workspace 'acme' to tag your own draft entries, or EDITOR for anyone else's entry, an asset or a resource."
+    )
+  })
+
+  it('says plainly when AUTHOR is all a command needs', () => {
+    expect(describePermissionDenied('platform tags create', 'acme').message).toBe("This needs the AUTHOR role in workspace 'acme'.")
+    expect(describePermissionDenied('platform assets upload', undefined).message).toBe('This needs the AUTHOR role in the active workspace.')
   })
 
   it('still says it is a role problem for a command the table does not cover', () => {

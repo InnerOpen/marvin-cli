@@ -8,6 +8,7 @@ import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { registerSuggestionCommands } from "../../shared/review.js";
 import { say, emitDeleted, emitOk } from "../../shared/io.js";
 
 export function registerPlatformAssetCommands(parent: Command): void {
@@ -149,6 +150,8 @@ export function registerPlatformAssetCommands(parent: Command): void {
         process.exitCode = 1;
       }
     });
+
+  registerSuggestionCommands(assets, "assets");
 
   assets
     .command("delete <id>")

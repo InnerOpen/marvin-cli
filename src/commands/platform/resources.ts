@@ -6,6 +6,7 @@ import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { registerSuggestionCommands } from "../../shared/review.js";
 
 export function registerPlatformResourceCommands(parent: Command): void {
   const resources = parent
@@ -99,4 +100,6 @@ export function registerPlatformResourceCommands(parent: Command): void {
         process.exitCode = 1;
       }
     });
+
+  registerSuggestionCommands(resources, "resources");
 }

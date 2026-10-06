@@ -26,6 +26,12 @@ import type {
   IntegrationEventSubscription,
   AdminPlugin,
   AutomationDryRunSample,
+  Blueprint,
+  IncomingWebhook,
+  IncomingWebhookSignatureScheme,
+  PlatformTag,
+  CollectionMember,
+  PlatformRecentEvent,
 } from '@inneropen/marvin-sdk/platform'
 import type { ColumnSpec } from '../output.js'
 import {
@@ -70,6 +76,23 @@ interface WebhookExecutionLogRead {
   status: string
   httpStatusCode: number | null
   executedAt: string
+}
+
+/** An asset attached to an entry, as the entry read returns it (with its junction placement). */
+interface EntryAssetRow {
+  id: string
+  slug: string
+  name: string
+  mimeType: string
+  placementMetadata?: Record<string, unknown> | null
+}
+
+/** One item a smart-collection rule preview matched. */
+interface SmartRulesPreviewItem {
+  id: string
+  label: string
+  slug?: string | null
+  type: string
 }
 
 /**
@@ -206,9 +229,29 @@ export const TABLE_SCHEMAS = {
   // ---- Entries (use shared columns from columns.ts) ----
   'entries.list': platformEntryColumns,
   'entries.collections': platformCollectionColumns,
+  'entries.suggested-assets.list': {
+    ID: 'id',
+    Slug: 'slug',
+    Name: 'name',
+    Type: 'mimeType',
+    Operation: (a: EntryAssetRow) => String(a.placementMetadata?.media_op ?? ''),
+    'Derived from': (a: EntryAssetRow) => String(a.placementMetadata?.derived_from ?? ''),
+  } satisfies ColumnSpec<EntryAssetRow>,
 
   // ---- Collections ----
   'collections.list': platformCollectionColumns,
+  'collections.members': {
+    ID: 'id',
+    Type: 'type',
+    Label: 'label',
+    Slug: (m: CollectionMember) => m.slug ?? '',
+  } satisfies ColumnSpec<CollectionMember>,
+  'collections.preview': {
+    ID: 'id',
+    Type: 'type',
+    Label: 'label',
+    Slug: (m: SmartRulesPreviewItem) => m.slug ?? '',
+  } satisfies ColumnSpec<SmartRulesPreviewItem>,
   'collections.entries': {
     Order: (e: any) => (e.order !== undefined && e.order !== null ? String(e.order) : '-'),
     ID: (e: any) => e.id,
@@ -401,6 +444,53 @@ export const TABLE_SCHEMAS = {
     Action: 'action',
     Enabled: 'enabled',
   } satisfies ColumnSpec<IntegrationEventSubscription>,
+
+  // ---- Dashboard ----
+  'dashboard.activity': {
+    When: (e: PlatformRecentEvent) => e.occurredAt ?? '',
+    Event: 'eventType',
+    Message: 'message',
+    Entity: (e: PlatformRecentEvent) => (e.entityId ? `${e.entityType ?? ''} ${e.entityId}`.trim() : ''),
+  } satisfies ColumnSpec<PlatformRecentEvent>,
+
+  // ---- Blueprints ----
+  'blueprints.list': {
+    Slug: 'slug',
+    Kind: 'kind',
+    Name: 'name',
+    Category: 'category',
+    Source: 'source',
+    Applied: (b: Blueprint) => (b.applied ? (b.outdated ? 'yes (outdated)' : 'yes') : 'no'),
+    Available: (b: Blueprint) => (b.available ? 'yes' : `no: needs ${(b.missingRequirements ?? []).join(', ')}`),
+    Params: (b: Blueprint) => (b.parameters ?? []).map((p) => (p.required ? p.key : `${p.key}?`)).join(', '),
+  } satisfies ColumnSpec<Blueprint>,
+
+  // ---- Incoming webhooks ----
+  'incoming-webhooks.list': {
+    ID: 'id',
+    Slug: 'slug',
+    Name: 'name',
+    Enabled: 'enabled',
+    Token: (w: IncomingWebhook) => (w.token ? 'minted' : 'none'),
+    Signature: (w: IncomingWebhook) => w.signatureScheme ?? (w.signingSecretRef ? 'hmac-sha256' : 'none'),
+    Received: 'receivedCount',
+    'Last received': (w: IncomingWebhook) => w.lastReceivedAt ?? '',
+  } satisfies ColumnSpec<IncomingWebhook>,
+  'incoming-webhooks.signature-schemes': {
+    Name: 'name',
+    Source: 'source',
+    Notes: 'notes',
+  } satisfies ColSpec<IncomingWebhookSignatureScheme>,
+
+  // ---- Tags ----
+  'tags.list': {
+    ID: 'id',
+    Slug: 'slug',
+    Name: 'name',
+    Color: (t: PlatformTag) => t.color ?? '',
+    Entries: (t: PlatformTag) => t.entryCount ?? '',
+    Uses: (t: PlatformTag) => t.usageCount ?? '',
+  } satisfies ColumnSpec<PlatformTag>,
 
   // ---- Admin ----
   'admin.system.plugins': {

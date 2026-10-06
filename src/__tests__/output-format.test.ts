@@ -142,6 +142,33 @@ const UNIVERSAL_FIXTURE: Record<string, unknown> = {
   // Event type options (event-log types — not a list/log/logs command, not discovered)
   label: 'label-val',
   category: 'category-val',
+
+  // blueprints
+  applied: true,
+  available: true,
+  parameters: [{ key: 'entry_type', required: true }],
+  // incoming webhooks
+  lastReceivedAt: '2024-01-01T00:00:00Z',
+  // tags
+  color: '#ff5733',
+  entryCount: 2,
+  usageCount: 3,
+}
+
+/**
+ * Commands whose list comes out of a single read rather than a list call: the mock client's
+ * namespaces answer every call with `[fixture]`, so these get the one read they make.
+ */
+const READ_OVERRIDES: Record<string, (fixture: Record<string, unknown>) => Record<string, unknown>> = {
+  // the entry's assets that are still AI suggestions
+  'entries.suggested-assets.list': (fixture) => ({
+    entries: {
+      get: () => Promise.resolve({
+        ...fixture,
+        assets: [{ ...fixture, placementMetadata: { suggested: true, media_op: 'remove_background', derived_from: 'asset-0' } }],
+      }),
+    },
+  }),
 }
 
 // ---------------------------------------------------------------------------
@@ -196,12 +223,13 @@ function nestedNamespace(fixture: Record<string, unknown>): any {
   )
 }
 
-function createMockClient(fixture: Record<string, unknown>): any {
+function createMockClient(fixture: Record<string, unknown>, overrides: Record<string, unknown> = {}): any {
   return new Proxy(
     {
       workspaces: { getCurrent: () => Promise.resolve(STUB_WORKSPACE) },
       // Raw GET, used by the paginated lists (shared/pagination.ts) — a bare array passes through
       get: () => Promise.resolve([fixture]),
+      ...overrides,
     } as Record<string, unknown>,
     {
       get(target: Record<string, unknown>, namespace: string) {
@@ -298,7 +326,8 @@ describe('output format tests (fully dynamic)', () => {
         tableData = io.tables
 
         const fixture = fixtureFromSchema(schemaKey)
-        vi.mocked(clientFactory.createPlatformClient).mockResolvedValue(createMockClient(fixture))
+        const overrides = READ_OVERRIDES[schemaKey]?.(fixture)
+        vi.mocked(clientFactory.createPlatformClient).mockResolvedValue(createMockClient(fixture, overrides))
       })
 
       it('--json produces parseable JSON array', async () => {

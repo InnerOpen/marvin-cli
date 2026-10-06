@@ -104,6 +104,9 @@ const OVERRIDES: Record<string, { positional?: string[]; options?: string[] }> =
   'workspace import': { options: ['--file', binFile] },
   'platform integrations errors set': { options: ['--no-review', '--alert'] },
   'platform integrations alert-routing set': { options: ['--no-email-admins', '--reminder-hours', '24'] },
+  'platform tags attach': { options: ['--entry', ID] },
+  'platform tags detach': { options: ['--asset', ID] },
+  'platform collections order': { options: ['--data', '[{"id":"c1","sortOrder":0}]'] },
 }
 
 /** Write commands this test can't drive, and why. */
@@ -112,7 +115,7 @@ const SKIP: Record<string, string> = {
   'user password change': 'reads passwords from an interactive prompt',
 }
 
-const WRITE_VERB = /^(create|update|delete|rm|remove|revoke|rotate|run|execute|test|rerun|import|upload|add|set|reset|enable|disable|send|submit|invite|unlock|reorder|reindex|clean|cleanup|clear|optimize|resolve|check|mint)(-|$)/
+const WRITE_VERB = /^(create|update|delete|rm|remove|revoke|rotate|run|execute|test|rerun|import|upload|add|set|reset|enable|disable|send|submit|invite|unlock|reorder|reindex|clean|cleanup|clear|optimize|resolve|check|mint|apply|approve|reject|attach|detach|order)(-|$)/
 
 function buildProgram(): Command {
   const program = new Command('marvin')

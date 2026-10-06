@@ -4,13 +4,17 @@
  * The backend answers a 403 when the caller's workspace role is below a route's gate. The SDK
  * turns that into a MarvinAuthError without the response body, so the CLI can't read which role
  * the route wanted; this table says it instead. It mirrors the backend's gates:
- * - ADMIN (or OWNER): workspace settings — webhooks, workflows, integrations (all but the provider
- *   catalogue), variables, scheduled tasks, email
+ * - ADMIN (or OWNER): workspace settings — webhooks, incoming webhooks, workflows, integrations
+ *   (all but the provider catalogue), variables, scheduled tasks, email
  *   subscriptions, SMTP and test email, invites, members, API clients, AI providers, secret
- *   writes, workspace export and backups — reads included; and entry-type and form writes.
- * - EDITOR: collection, resource and asset-edit writes, reading form submissions, and site rebuilds.
- * - AUTHOR: creating entries and changing your own drafts; EDITOR for anyone else's entry or to
- *   approve, publish or schedule one.
+ *   writes, workspace export and backups — reads included; entry-type and form writes; applying
+ *   and updating blueprints.
+ * - EDITOR: collection (incl. order and smart-rule preview), resource and asset-edit writes, AI
+ *   suggestions on assets and resources, renaming/deleting tags, reading form submissions, and site
+ *   rebuilds.
+ * - AUTHOR: creating entries and changing your own drafts (including their AI suggestions, suggested
+ *   assets and tags); EDITOR for anyone else's entry or to approve, publish or schedule one.
+ *   Creating a tag and uploading an asset need AUTHOR too.
  * - SUPER_ADMIN (platform role): everything under `marvin admin`.
  *
  * The same table appends "(needs …)" to those commands' help text.
@@ -33,6 +37,9 @@ export const REQUIRED_ROLES: Readonly<Record<string, RequiredRole | null>> = {
   // Workspace settings: ADMIN, reads included
   "platform webhooks": "ADMIN",
   "platform webhooks types": null,
+  "platform incoming-webhooks": "ADMIN",
+  "platform blueprints apply": "ADMIN",
+  "platform blueprints update": "ADMIN",
   "platform workflows": "ADMIN",
   "platform integrations": "ADMIN",
   "platform integrations providers": null,
@@ -75,12 +82,23 @@ export const REQUIRED_ROLES: Readonly<Record<string, RequiredRole | null>> = {
   "platform collections delete": "EDITOR",
   "platform collections reorder": "EDITOR",
   "platform collections update-entry": "EDITOR",
+  "platform collections order": "EDITOR",
+  "platform collections preview": "EDITOR",
   "platform resources create": "EDITOR",
   "platform resources update": "EDITOR",
   "platform resources delete": "EDITOR",
   "platform assets update": "EDITOR",
   "platform assets delete": "EDITOR",
   "platform assets upload": "AUTHOR",
+  "platform assets apply-suggestion": "EDITOR",
+  "platform assets reject-suggestion": "EDITOR",
+  "platform resources apply-suggestion": "EDITOR",
+  "platform resources reject-suggestion": "EDITOR",
+  "platform tags create": "AUTHOR",
+  "platform tags update": "EDITOR",
+  "platform tags delete": "EDITOR",
+  "platform tags attach": "AUTHOR",
+  "platform tags detach": "AUTHOR",
 
   // Entries: an AUTHOR may create and change their own drafts; the rest needs EDITOR
   "platform entries create": "AUTHOR",
@@ -88,7 +106,36 @@ export const REQUIRED_ROLES: Readonly<Record<string, RequiredRole | null>> = {
   "platform entries delete": "AUTHOR",
   "platform entries add-to-collection": "AUTHOR",
   "platform entries remove-from-collection": "AUTHOR",
+  "platform entries apply-suggestion": "AUTHOR",
+  "platform entries reject-suggestion": "AUTHOR",
+  "platform entries suggested-assets approve": "AUTHOR",
+  "platform entries suggested-assets reject": "AUTHOR",
 };
+
+/**
+ * What an AUTHOR may do, for commands where AUTHOR isn't the whole story. Longest prefix wins; a
+ * command that needs AUTHOR outright (creating a tag, uploading an asset) isn't listed.
+ */
+const AUTHOR_RULES: Readonly<Record<string, (where: string) => string>> = {
+  "platform entries": (where) =>
+    `This needs the AUTHOR role in ${where} for your own draft entries, ` +
+    "or EDITOR for anyone else's or to approve, publish or schedule one.",
+  "platform tags attach": (where) =>
+    `This needs the AUTHOR role in ${where} to tag your own draft entries, ` +
+    "or EDITOR for anyone else's entry, an asset or a resource.",
+  "platform tags detach": (where) =>
+    `This needs the AUTHOR role in ${where} to untag your own draft entries, ` +
+    "or EDITOR for anyone else's entry, an asset or a resource.",
+};
+
+function authorRuleFor(path: string): ((where: string) => string) | undefined {
+  const words = path.split(" ").filter(Boolean);
+  for (let n = words.length; n > 0; n--) {
+    const rule = AUTHOR_RULES[words.slice(0, n).join(" ")];
+    if (rule) return rule;
+  }
+  return undefined;
+}
 
 /** The role `path` needs, by longest matching prefix; undefined when the table doesn't say. */
 export function requiredRoleFor(path: string): RequiredRole | undefined {
@@ -129,15 +176,9 @@ export function describePermissionDenied(path: string | undefined, workspace: st
     "Check you're in the right workspace: marvin workspace current",
   ];
 
-  if (requiredRole === "AUTHOR") {
-    return {
-      message:
-        `This needs the AUTHOR role in ${where} for your own draft entries, ` +
-        "or EDITOR for anyone else's or to approve, publish or schedule one.",
-      requiredRole,
-      workspace,
-      suggestions,
-    };
+  const authorRule = requiredRole === "AUTHOR" && path ? authorRuleFor(path) : undefined;
+  if (authorRule) {
+    return { message: authorRule(where), requiredRole, workspace, suggestions };
   }
 
   if (requiredRole) {

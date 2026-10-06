@@ -19,6 +19,10 @@ import { registerEmailEventSubscriptionCommands } from "./email-event-subscripti
 import { registerWorkflowCommands } from "./workflows.js";
 import { registerIntegrationCommands } from "./integrations.js";
 import { registerSiteCommands } from "./site.js";
+import { registerDashboardCommand } from "./dashboard.js";
+import { registerBlueprintCommands } from "./blueprints.js";
+import { registerIncomingWebhookCommands } from "./incoming-webhooks.js";
+import { registerTagCommands } from "./tags.js";
 import { createAiCommand } from "../ai/index.js";
 
 /**
@@ -53,6 +57,10 @@ export function createPlatformCommand(): Command {
   registerWorkflowCommands(platform);
   registerIntegrationCommands(platform);
   registerSiteCommands(platform);
+  registerDashboardCommand(platform);
+  registerBlueprintCommands(platform);
+  registerIncomingWebhookCommands(platform);
+  registerTagCommands(platform);
 
   // AI: providers, models, operations, executions, settings (mirrors SDK platform.ai.*)
   platform.addCommand(createAiCommand());
