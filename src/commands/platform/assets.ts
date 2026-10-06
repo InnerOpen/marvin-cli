@@ -1,6 +1,6 @@
 import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
-import { readFileSync, writeFileSync, statSync } from "fs";
+import { readFileSync, statSync } from "fs";
 import { basename } from "path";
 import { Blob } from "buffer";
 import { clientFactory } from "../../shared/clients.js";
@@ -8,8 +8,9 @@ import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
+import { say, emitDeleted } from "../../shared/io.js";
+import { requireDownloadTarget, writeDownload } from "../../shared/download.js";
 import { registerSuggestionCommands } from "../../shared/review.js";
-import { say, emitDeleted, emitOk } from "../../shared/io.js";
 
 export function registerPlatformAssetCommands(parent: Command): void {
   const assets = parent
@@ -100,36 +101,18 @@ export function registerPlatformAssetCommands(parent: Command): void {
 
   assets
     .command("download <id>")
-    .description("Download the raw file for an asset")
+    .description("Download the raw file for an asset (to --out-file, or to stdout when it is piped)")
     .option("-o, --out-file <file>", "Write the file to this path instead of stdout")
     .action(async function(this: Command, id: string, cmdOpts: { outFile?: string }) {
       try {
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
+        const mode = getOutputMode(opts);
+        requireDownloadTarget(cmdOpts.outFile);
         const client = await clientFactory.createPlatformClient(opts);
-        const data = await client.assets.getFile(id);
-
-        if (cmdOpts.outFile) {
-          let buffer: Buffer;
-          if (Buffer.isBuffer(data)) {
-            buffer = data;
-          } else if (data instanceof ArrayBuffer) {
-            buffer = Buffer.from(new Uint8Array(data));
-          } else if (typeof (data as any)?.arrayBuffer === "function") {
-            // Blob-like
-            buffer = Buffer.from(new Uint8Array(await (data as Blob).arrayBuffer()));
-          } else if (typeof data === "string") {
-            buffer = Buffer.from(data, "utf-8");
-          } else {
-            buffer = Buffer.from(JSON.stringify(data, null, 2), "utf-8");
-          }
-          writeFileSync(cmdOpts.outFile, buffer);
-          emitOk({ file: cmdOpts.outFile, bytes: buffer.length }, getOutputMode(opts), `✓ Wrote asset file to ${cmdOpts.outFile}`);
-        } else {
-          renderData(data, getOutputMode(opts));
-        }
+        const file = await client.assets.download(id);
+        writeDownload(file, cmdOpts.outFile, mode);
       } catch (error) {
         handleCommandError(error);
-        process.exitCode = 1;
       }
     });
 
