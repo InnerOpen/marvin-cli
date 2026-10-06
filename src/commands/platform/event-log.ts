@@ -5,13 +5,21 @@ import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderList, renderData } from "../../output.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
+import { warn } from "../../shared/io.js";
 
 export function registerEventLogCommands(parent: Command): void {
   const eventLog = new Command("event-log")
-    .alias("events")
+    .alias("events") // deprecated: removed in 4.0, when `marvin events` (the Events hub) is the only "events"
     .description("Event log and audit trail");
 
   parent.addCommand(eventLog);
+
+  // `parent.args` holds the operands parent was dispatched with, so [0] is the name the user typed
+  eventLog.hook("preAction", () => {
+    if (parent.args[0] === "events") {
+      warn("`platform events` is now `platform event-log`; `marvin events` shows the Events hub");
+    }
+  });
 
   // List events
   eventLog

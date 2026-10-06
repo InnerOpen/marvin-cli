@@ -2,7 +2,7 @@
  * `marvin events` — the Events hub: for each event type in the workspace, what sends it, what
  * reacts to it and when it last happened. Workspace OWNER/ADMIN (see shared/permissions.ts).
  *
- * Not to be confused with `marvin platform event-log` (alias `platform events`), which lists the
+ * Not to be confused with `marvin platform event-log` (deprecated alias `platform events`), which lists the
  * individual events that happened.
  */
 

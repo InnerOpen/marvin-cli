@@ -1,5 +1,25 @@
 # Migration Guide
 
+## 3.3.0
+
+3.3.0 adds `marvin events` and removes nothing. One alias is deprecated.
+
+### `platform events` is deprecated (removed in 4.0)
+
+`marvin platform events …` has always been an alias of `marvin platform event-log …`. It still
+works throughout 3.x but prints a one-line warning on stderr. Use `platform event-log`:
+
+```bash
+marvin platform event-log list --limit 20     # was: marvin platform events list --limit 20
+```
+
+The alias is removed in 4.0, so that "events" means one thing: `marvin events`, the Events hub.
+
+### New
+
+- `marvin events list` and `marvin events show <event-type>`: what sends each event type and what
+  reacts to it (workspace ADMIN). See [docs/commands/events.md](docs/commands/events.md).
+
 ## 3.2.0
 
 3.2.0 adds commands and removes nothing. Two existing commands behave differently.

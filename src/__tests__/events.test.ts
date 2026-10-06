@@ -7,6 +7,7 @@ import { stripVTControlCharacters } from 'node:util'
 import { Command } from 'commander'
 import { MarvinAuthError, MarvinNotFoundError } from '@inneropen/marvin-sdk'
 import { createEventsCommand } from '../commands/events/index.js'
+import { createPlatformCommand } from '../commands/platform/index.js'
 import { clientFactory } from '../shared/clients.js'
 import { resetCommandContext, trackCommandContext } from '../shared/command-context.js'
 import { annotateRequiredRoles } from '../shared/permissions.js'
@@ -243,5 +244,45 @@ describe('events', () => {
   it('help says the group needs workspace ADMIN', () => {
     const events = buildProgram().commands.find(c => c.name() === 'events')!
     expect(events.description()).toContain('(needs workspace ADMIN)')
+  })
+})
+
+describe('platform events (deprecated alias of platform event-log)', () => {
+  let io: Captured
+  let eventLog: any
+  const WARNING = '`platform events` is now `platform event-log`; `marvin events` shows the Events hub'
+
+  beforeEach(() => {
+    resetCommandContext()
+    io = captureOutput()
+    eventLog = { list: vi.fn().mockResolvedValue([]) }
+    vi.mocked(clientFactory.createPlatformClient).mockResolvedValue({ eventLog } as any)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    process.exitCode = 0
+  })
+
+  async function runPlatform(...args: string[]): Promise<void> {
+    const program = new Command('marvin').exitOverride().option('--json', 'JSON output', false)
+    trackCommandContext(program)
+    program.addCommand(createPlatformCommand())
+    await program.parseAsync(['node', 'marvin', 'platform', ...args])
+  }
+
+  it('still works, with a one-line warning on stderr', async () => {
+    await runPlatform('events', 'list', '--json')
+    expect(eventLog.list).toHaveBeenCalled()
+    expect(JSON.parse(io.out())).toEqual([])
+    const err = stripVTControlCharacters(io.err())
+    expect(err).toContain(WARNING)
+    expect(err.split('\n')).toHaveLength(1)
+  })
+
+  it('says nothing for platform event-log', async () => {
+    await runPlatform('event-log', 'list', '--json')
+    expect(eventLog.list).toHaveBeenCalled()
+    expect(io.err()).toBe('')
   })
 })

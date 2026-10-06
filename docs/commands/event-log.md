@@ -1,6 +1,12 @@
 # Event Log
 
-View workspace event log and audit trail for all system activities.
+View workspace event log and audit trail for all system activities. The commands are
+`marvin platform event-log …`.
+
+!!! warning "`platform events` is deprecated"
+    `marvin platform events …` is an old alias of `platform event-log`. It still works in 3.x with a
+    warning on stderr and is removed in 4.0. `marvin events` is a different command: the
+    [Events hub](events.md), what sends each event type and what reacts to it.
 
 ## Commands
 

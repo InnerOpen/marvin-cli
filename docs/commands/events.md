@@ -4,7 +4,8 @@ The Events hub answers two questions about every event type in a workspace: what
 happens when it does. It is the CLI side of the admin app's Events page.
 
 `marvin events` is about event *types*. To read the individual events that happened, use
-[`marvin platform event-log`](event-log.md) (alias `platform events`).
+[`marvin platform event-log`](event-log.md). Its old alias `platform events` is deprecated and
+removed in 4.0.
 
 ## Commands
 
