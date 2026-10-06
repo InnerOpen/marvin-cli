@@ -17,6 +17,10 @@ import { env } from "./config/environment.js";
 import { trackCommandContext } from "./shared/command-context.js";
 import { annotateRequiredRoles } from "./shared/permissions.js";
 import { rewriteDeprecatedJsonPayload } from "./shared/json-input.js";
+import { exitQuietlyOnBrokenPipe } from "./shared/io.js";
+
+// `marvin … | head` closes stdout early; stop there instead of crashing with EPIPE
+exitQuietlyOnBrokenPipe(process.stdout);
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const packageJson = JSON.parse(readFileSync(join(__dirname, "../package.json"), "utf-8"));

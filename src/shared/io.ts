@@ -42,3 +42,17 @@ export function emitOk(details: object | null | undefined, mode: OutputMode, ...
   }
   renderData({ ok: true, ...(details ?? {}) }, mode);
 }
+
+/**
+ * Exit quietly when whoever reads `stream` stops reading (`marvin … --csv | head`). Writing to the
+ * closed pipe fails with EPIPE, which Node raises as an unhandled 'error' event and a stack trace;
+ * for a CLI it just means the reader has what it wanted. Any other stream error is still thrown.
+ */
+export function exitQuietlyOnBrokenPipe(stream: NodeJS.WritableStream = process.stdout): void {
+  stream.on("error", (error: NodeJS.ErrnoException) => {
+    if (error.code === "EPIPE") {
+      process.exit(process.exitCode ?? 0);
+    }
+    throw error;
+  });
+}
