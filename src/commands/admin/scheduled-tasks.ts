@@ -104,14 +104,15 @@ export function registerAdminScheduledTaskCommands(parent: Command): void {
 
   // Run task
   tasks
-    .command("run <id>")
-    .description("Manually trigger a scheduled task execution")
-    .action(async function(this: Command, id: string) {
+    .command("run <id-or-slug>")
+    .description("Manually trigger a scheduled task execution (e.g. `run optimize_database`)")
+    .action(async function(this: Command, idOrSlug: string) {
       try {
         const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
+        const id = await resolveTaskId(client, idOrSlug);
         await client.adminScheduledTasks.execute(id);
 
-        emitOk({ taskId: id }, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Executed task ${id}`);
+        emitOk({ taskId: id }, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ Executed task ${idOrSlug}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;
@@ -206,4 +207,23 @@ export function registerAdminScheduledTaskCommands(parent: Command): void {
         process.exitCode = 1;
       }
     });
+}
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The admin API runs tasks by id; system tasks are better known by slug (`cleanup_temp_files`, `optimize_database`). */
+async function resolveTaskId(
+  client: Awaited<ReturnType<typeof clientFactory.createPlatformClient>>,
+  idOrSlug: string,
+): Promise<string> {
+  if (UUID_PATTERN.test(idOrSlug)) return idOrSlug;
+  const tasks = await client.adminScheduledTasks.list();
+  const matches = tasks.filter((task) => task.slug === idOrSlug);
+  const [only] = matches;
+  if (only && matches.length === 1) return only.id;
+  throw new Error(
+    matches.length
+      ? `More than one task has the slug "${idOrSlug}" — run it by id (see \`admin scheduled-tasks list\`)`
+      : `No scheduled task with id or slug "${idOrSlug}"`,
+  );
 }

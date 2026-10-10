@@ -292,9 +292,10 @@ The Admin API provides system-level operations.
 
 | Command | HTTP Method | Endpoint |
 |---------|-------------|----------|
-| `marvin admin maintenance mode-on` | `POST` | `/admin/maintenance/enable` |
-| `marvin admin maintenance mode-off` | `POST` | `/admin/maintenance/disable` |
-| `marvin admin maintenance cache-clear` | `POST` | `/admin/maintenance/cache/clear` |
+| `marvin admin maintenance summary` | `GET` | `/admin/maintenance` |
+| `marvin admin maintenance stats` | `GET` | `/admin/maintenance/stats` |
+| `marvin admin maintenance storage` | `GET` | `/admin/maintenance/storage` |
+| `marvin admin scheduled-tasks run <id-or-slug>` | `POST` | `/admin/scheduled-tasks/{task_id}/execute` |
 
 ## Authentication Headers
 
