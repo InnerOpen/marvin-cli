@@ -44,9 +44,7 @@ A workflow is `{name, slug?, enabled?, definition}`. The definition has four par
 | `conditions` | Optional. `{field, op, value}` checks (ops: `eq`, `neq`, `contains`, `in`, `starts_with`, `exists`, `changed`, `changed_from`, `changed_to`), combinable with `all` / `any` / `not` |
 | `actions` | The steps, in order. `kind` is one of the registered executors (`operation`, `integration`, `webhook`, `entry`, `emit_event`, `handler`) |
 
-`marvin platform workflows options` prints the full vocabulary the server accepts — trigger types,
-condition fields per trigger, action kinds, AI operations, webhooks — and the definition's JSON
-schema.
+[`options`](#options) prints the full vocabulary the server accepts.
 
 Example, `tag-new-posts.json`:
 
@@ -62,6 +60,16 @@ Example, `tag-new-posts.json`:
 }
 ```
 
+## Options
+
+```bash
+marvin platform workflows options --json | jq '.triggerTypes'
+```
+
+Prints the full vocabulary the server accepts when building a definition: trigger types, condition
+fields per trigger, action kinds, AI operations, webhooks, and the definition's JSON schema. The
+output is structured data, so it is most useful with `--json` or `--yaml`. It takes no options.
+
 ## List and get
 
 ```bash
@@ -74,7 +82,7 @@ Columns: ID, Slug, Name, Enabled, Trigger (type and event/schedule), Steps (numb
 marvin platform workflows get tag-new-posts --json
 ```
 
-Prints the workflow with its full definition.
+Prints the workflow with its full definition. `<workflow>` is the workflow's id or slug.
 
 ## Create, update, delete
 
@@ -83,6 +91,16 @@ marvin platform workflows create --data @tag-new-posts.json
 marvin platform workflows update tag-new-posts --data '{"name":"Tag published posts"}'
 marvin platform workflows delete tag-new-posts --yes
 ```
+
+| Command | Argument | Description |
+|---------|----------|-------------|
+| `update`, `delete` | `<workflow>` | Workflow id or slug |
+
+| Option | Applies to | Description | Default |
+|--------|------------|-------------|---------|
+| `--data <json\|@file\|->` | `create`, `update` | The workflow (`create`) or the fields to change (`update`) as JSON, `@path` to read a file, or `-` for stdin | |
+| `--file <path>` | `create`, `update` | JSON file with the same (same as `--data @path`) | |
+| `--yes` | `delete` | Confirm the delete; the command refuses to run without it | |
 
 A workflow is **created disabled** unless the body sets `"enabled": true`; the ✓ line on stderr says
 so. `update` takes any of `name`, `enabled` and `definition`. `delete` needs `--yes` and prints
@@ -105,6 +123,12 @@ marvin platform workflows validate tag-new-posts            # the saved definiti
 marvin platform workflows validate --data @definition.json  # a definition, or a workflow body with one
 ```
 
+| Argument / option | Description | Default |
+|-------------------|-------------|---------|
+| `[workflow]` | Workflow id or slug whose saved definition to check; omit it when passing `--data` | |
+| `--data <json\|@file\|->` | A definition (or a workflow body with one) as JSON, `@path` to read a file, or `-` for stdin | |
+| `--file <path>` | JSON file with a definition (same as `--data @path`) | |
+
 An advisory check for steps that use data the trigger doesn't provide, such as `entry.*` conditions
 under a webhook trigger. The server never rejects the definition; it returns `issues`, each with a
 `level` (`warning` or `error`), `where` (`trigger`, `condition`, `action`), `index` and `message`.
@@ -122,6 +146,13 @@ marvin platform workflows preview nightly-cleanup
 marvin platform workflows preview --data @definition.json --payload '{"slug":"hello"}'
 ```
 
+| Argument / option | Description | Default |
+|-------------------|-------------|---------|
+| `[workflow]` | Workflow id or slug whose saved definition to preview; omit it when passing `--data` | |
+| `--data <json\|@file\|->` | A definition (or a workflow body with one) as JSON, `@path` to read a file, or `-` for stdin | |
+| `--file <path>` | JSON file with a definition (same as `--data @path`) | |
+| `--payload <json>` | Test payload for the target query, as JSON | |
+
 Resolves the definition's target query (with an optional test payload for `$event.*` values) and
 shows which entities it would act on, without running anything. The result has `total` (the full
 match count), `capped` (the run is limited to the first 250), and `matches` (the capped set that
@@ -135,6 +166,13 @@ marvin platform workflows run tag-new-posts --dry-run            # what it would
 marvin platform workflows run tag-new-posts --dry-run --entry-id <entry-id>
 marvin platform workflows run tag-new-posts --dry-run --event-id <event-id>
 ```
+
+| Argument / option | Description | Default |
+|-------------------|-------------|---------|
+| `<workflow>` | Workflow id or slug | |
+| `--dry-run` | Resolve every step's inputs but execute and record nothing (works on a disabled workflow) | |
+| `--entry-id <id>` | With `--dry-run`: test against this entry's latest event | |
+| `--event-id <id>` | With `--dry-run`: test against this event | |
 
 A real run is the Manual trigger: it skips the trigger and the conditions and runs the actions now.
 It prints `{"ok": ..., "status": "ran", "ran": <targets>, "result": {...}}` in JSON mode and
@@ -157,6 +195,11 @@ trigger matched, whether the conditions pass, and whether a real run would fire.
 marvin platform workflows samples tag-new-posts --limit 5
 ```
 
+| Argument / option | Description | Default |
+|-------------------|-------------|---------|
+| `<workflow>` | Workflow id or slug | |
+| `--limit <number>` | How many samples | `10` |
+
 The events (and, for entry triggers, recent entries no event covers) a dry run can test against,
 newest first, with whether each passes the conditions. Pass an id from here to
 `run --dry-run --event-id` or `--entry-id`.
@@ -168,6 +211,12 @@ marvin platform workflows executions tag-new-posts                 # alias: runs
 marvin platform workflows executions tag-new-posts --status failed --limit 50
 ```
 
+| Argument / option | Description | Default |
+|-------------------|-------------|---------|
+| `<workflow>` | Workflow id or slug | |
+| `--status <status>` | Only runs with this status: `running`, `success`, `partial`, `failed` or `handled` | |
+| `--limit <number>` | How many recent runs to fetch | `20` |
+
 Recent runs, newest first: status, trigger, start time, duration, targets run/matched, steps ok/total,
 error. `--limit` (default 20) is how many runs to fetch; `--status` filters those: `running`,
 `success`, `partial`, `failed`, or `handled` (runs whose failures the integration error policy took
@@ -177,7 +226,8 @@ care of). The API has no status filter, so `--limit` counts before filtering.
 marvin platform workflows execution tag-new-posts <execution-id>   # alias: run-detail
 ```
 
-One run in full. In table mode: a summary (status, trigger, timing, targets, step counts, the run it
+Takes the workflow (id or slug) and the run's id (the ID column of `executions`); no options. One
+run in full. In table mode: a summary (status, trigger, timing, targets, step counts, the run it
 retried, the error), a table of per-step records with how the error policy handled each failure, the
 retry chain (earlier runs this one retries), and any integration retries still queued. `--json`
 prints the API's record, including `actions`, `retryChain`, `retries` and `definitionSnapshot`.

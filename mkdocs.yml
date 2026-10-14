@@ -84,8 +84,14 @@ nav:
           - Collections: commands/collections.md
           - Resources: commands/resources.md
           - Assets: commands/assets.md
+          - Renderers: commands/renderers.md
       - Platform API:
           - Workspaces: commands/workspaces.md
+          - Workspace Members & Invites: commands/workspace-members.md
+          - Platform Entries: commands/platform-entries.md
+          - Platform Collections: commands/platform-collections.md
+          - Platform Resources: commands/platform-resources.md
+          - Platform Assets: commands/platform-assets.md
           - Entry Types: commands/entry-types.md
           - Email Templates: commands/email-templates.md
           - Webhooks: commands/webhooks.md
@@ -102,10 +108,20 @@ nav:
           - Incoming Webhooks: commands/incoming-webhooks.md
           - Tags: commands/tags.md
           - Smart Collections: commands/smart-collections.md
+          - Email: commands/email.md
+          - Secrets & Variables: commands/secrets-variables.md
+          - AI: commands/ai.md
       - Admin API:
           - Users: commands/admin-users.md
           - System: commands/admin-system.md
-          - Maintenance: commands/admin-maintenance.md
+          - Maintenance & Scheduled Tasks: commands/admin-maintenance.md
+          - Backups: commands/admin-backups.md
+          - Email: commands/admin-email.md
+          - Groups & Members: commands/admin-groups.md
+      - User API:
+          - User Account: commands/user.md
+      - System:
+          - Health & Version: commands/system.md
       - Authentication: commands/auth.md
       - Output Formats: commands/output-formats.md
   - Usage Guides:

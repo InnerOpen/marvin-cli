@@ -30,8 +30,8 @@ Entries are the primary content type in Marvin. They represent pages, blog posts
 | `--collection <slug>` | Filter by collection | All entries |
 | `--tag <slugs>` | Entries carrying any of these tag slugs (comma-separated) | All entries |
 | `--slug <slugs>` | Only these entry slugs (comma-separated) | All entries |
-| `--updated-since <iso>` | Entries updated at or after this ISO 8601 time | All entries |
-| `--expand full` | Return each entry as the single-entry read (assets, resources, every membership) | List items |
+| `--updated-since <iso>` | Entries updated at or after this ISO 8601 date or time (rejected if unparseable) | All entries |
+| `--expand <mode>` | `full` is the only accepted value: return each entry as the single-entry read (assets, resources, every membership) | List items |
 | `--limit <number>` | Limit number of results | All entries |
 | `--offset <number>` | Skip this many results | `0` |
 | `--json` | Output as JSON | `false` |
@@ -45,7 +45,8 @@ Entries are the primary content type in Marvin. They represent pages, blog posts
 |--------|-------------|---------|
 | `--json` | Output as JSON | `false` |
 | `--yaml` | Output as YAML | `false` |
-| `--output <format>` | Output format: table, json | `table` |
+| `--csv` | Output as CSV | `false` |
+| `--output <format>` | Output format: table, json, yaml, csv | `table` |
 
 ## Examples
 
@@ -75,20 +76,18 @@ Get a single entry:
 marvin publish entry about
 ```
 
-Output:
+Output (one row, same columns as the list):
 
 ```
-┌─────────────┬──────────────────────────────────────┐
-│ Field       │ Value                                │
-├─────────────┼──────────────────────────────────────┤
-│ Title       │ About Us                             │
-│ Slug        │ about                                │
-│ Type        │ page                                 │
-│ Status      │ published                            │
-│ Published   │ 2026-07-01T12:00:00Z                 │
-│ Description │ Learn about our company              │
-└─────────────┴──────────────────────────────────────┘
+┌──────────┬───────┬──────┬───────────┬────────────┐
+│ Title    │ Slug  │ Type │ Status    │ Published  │
+├──────────┼───────┼──────┼───────────┼────────────┤
+│ About Us │ about │ page │ published │ 2026-07-01 │
+└──────────┴───────┴──────┴───────────┴────────────┘
 ```
+
+Use `--json` to see the full entry (content, metadata, assets, resources). An unknown slug prints
+an empty result rather than an error.
 
 ### JSON Output
 
@@ -123,36 +122,38 @@ marvin publish entries --json
 ]
 ```
 
-Get single entry as JSON:
+Get a single entry as JSON (an array with one element, or `[]` when the slug is unknown):
 
 ```bash
 marvin publish entry about --json
 ```
 
 ```json
-{
-  "slug": "about",
-  "title": "About Us",
-  "entryType": "page",
-  "status": "published",
-  "publishedAt": "2026-07-01T12:00:00Z",
-  "description": "Learn about our company",
-  "content": {
-    "blocks": [
-      {
-        "type": "paragraph",
-        "content": "We are a company that builds amazing products..."
-      }
-    ]
-  },
-  "metadata": {
-    "seoTitle": "About Us - My Company",
-    "seoDescription": "Learn about our company"
-  },
-  "collections": ["featured"],
-  "resources": [],
-  "assets": []
-}
+[
+  {
+    "slug": "about",
+    "title": "About Us",
+    "entryType": "page",
+    "status": "published",
+    "publishedAt": "2026-07-01T12:00:00Z",
+    "description": "Learn about our company",
+    "content": {
+      "blocks": [
+        {
+          "type": "paragraph",
+          "content": "We are a company that builds amazing products..."
+        }
+      ]
+    },
+    "metadata": {
+      "seoTitle": "About Us - My Company",
+      "seoDescription": "Learn about our company"
+    },
+    "collections": ["featured"],
+    "resources": [],
+    "assets": []
+  }
+]
 ```
 
 ### Filtering
@@ -268,13 +269,14 @@ Homepage
 
 ### Check if Entry Exists
 
-Verify an entry exists before deployment:
+`marvin publish entry` prints an empty result (`[]` with `--json`) for an unknown slug, so test the
+length:
 
 ```bash
-if marvin publish entry about --json > /dev/null 2>&1; then
-  echo "✓ About page exists"
+if [ "$(marvin publish entry about --json | jq 'length')" -gt 0 ]; then
+  echo "About page exists"
 else
-  echo "✗ About page not found"
+  echo "About page not found"
 fi
 ```
 
@@ -283,7 +285,7 @@ fi
 Get entry content for processing:
 
 ```bash
-marvin publish entry about --json | jq -r '.content.blocks[0].content'
+marvin publish entry about --json | jq -r '.[0].content.blocks[0].content'
 ```
 
 ### Build Site Map
@@ -338,7 +340,7 @@ console.log(`Projects: ${projects.length}`);
 
 // Get single entry
 const aboutOutput = execSync('marvin publish entry about --json', { encoding: 'utf-8' });
-const about = JSON.parse(aboutOutput);
+const [about] = JSON.parse(aboutOutput);
 
 console.log(`Title: ${about.title}`);
 console.log(`Published: ${about.publishedAt}`);
@@ -378,7 +380,7 @@ result = subprocess.run(
     text=True
 )
 
-about = json.loads(result.stdout)
+about = json.loads(result.stdout)[0]
 print(f"About page title: {about['title']}")
 ```
 
@@ -440,9 +442,9 @@ Site client token is invalid or missing:
 export MARVIN_SITE_CLIENT_TOKEN=marvin_sk_your_token
 ```
 
-### 404 Not Found (Single Entry)
+### Unknown slug (single entry)
 
-Entry with the given slug doesn't exist:
+An unknown slug is not an error: the command prints an empty result. Verify the slug:
 
 ```bash
 # List all entries to verify slug
@@ -482,13 +484,11 @@ marvin publish collections --json | jq -r '.[].slug'
 This command calls:
 
 ```
-GET /api/{workspace}/entries
-GET /api/{workspace}/entries/{slug}
+GET /api/publish/{workspace}/entries
+GET /api/publish/{workspace}/entries/{slug}
 ```
 
-Query parameters for list endpoint:
-- `entry_type` - Filter by entry type slug
-- `collection` - Filter by collection slug
-- `limit` - Limit results
+Query parameters for the list endpoint include `entry_type`, `collection`, `tag`, `slug`,
+`updated_since`, `expand`, `limit` and `offset`.
 
 See [API Mapping](../reference/api-mapping.md) for more details.

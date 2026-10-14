@@ -1,496 +1,121 @@
 # Entry Types
 
-View entry type definitions and schemas for your workspace.
-
-!!! note "Required role"
-    Listing and reading entry types is open to any workspace member. Creating, updating or deleting one needs the workspace **ADMIN** (or OWNER) role. Without it the command fails with `Permission denied (403)` and names the role it needs. See [Workspace roles](../reference/authentication.md#workspace-roles).
+Entry types define the kinds of content in a workspace (pages, posts, products, ...): their schema,
+how they render, what they can do, and their authoring recipe. List and inspect them, or create,
+change and delete your own.
 
 ## Commands
 
-### List Entry Types
-
 ```bash
-marvin entry-types list
+marvin platform entry-types list
+marvin platform entry-types get <id>
+marvin platform entry-types create (--data <json|@file|-> | --file <path>)
+marvin platform entry-types update <id> (--data <json|@file|-> | --file <path>)
+marvin platform entry-types delete <id> --yes
 ```
 
-### Get Entry Type
+`--data` takes inline JSON, `@path` to read a file, or `-` to read stdin; `--file <path>` is the same
+as `--data @path`. With neither, `create` and `update` read piped stdin.
+
+!!! note "Required role"
+    Listing and reading entry types is open to any workspace member. Creating, updating or deleting
+    one needs the workspace **ADMIN** (or OWNER) role. Without it the command fails with
+    `Permission denied (403)` and names the role it needs. See
+    [Workspace roles](../reference/authentication.md#workspace-roles).
+
+## list
+
+List the workspace's entry types.
 
 ```bash
-marvin entry-types get <id>
+marvin platform entry-types list
+marvin platform entry-types list --json | jq -r '.[].slug'
 ```
 
-## Description
+Columns: ID, Name, Slug, System, Renderer, Package, Publishable (`yes`/`no`), Routable
+(`yes`/`no`). Renderer and Package come from the type's `renderingJson`, Publishable and Routable
+from its `capabilitiesJson`; a type with no capabilities shows them blank.
 
-Entry types define the structure and schema for different kinds of content in your workspace. Common entry types include pages, blog posts, projects, and products. Each entry type has a unique schema that defines what fields are available when creating or editing entries of that type.
+## get
 
-Entry types are read-only through the CLI and API. They are managed through workspace configuration files, not via API commands.
-
-## Authentication
-
-Requires user authentication via `marvin login` and an active workspace.
+Print one entry type with its full definition.
 
 ```bash
-marvin login
-marvin workspace use <workspace>
+marvin platform entry-types get 01234567-89ab-cdef-0123-456789abcdef --json | jq '.schemaJson'
 ```
 
-## Options
+| Argument | Description |
+|----------|-------------|
+| `<id>` | Entry type ID |
 
-### `marvin entry-types list`
+The record carries `name`, `slug`, `description`, `icon`, `color`, `sortOrder`, `isSystem`,
+`isRendered`, and the JSON blocks `schemaJson` (field definitions), `renderingJson`,
+`capabilitiesJson` and `recipeJson`.
+
+## create
+
+Create an entry type from a JSON body. `name` is required; `slug`, `description`, `icon`, `color`,
+`sortOrder`, `isRendered`, `schemaJson`, `renderingJson`, `capabilitiesJson` and `recipeJson` are
+optional.
+
+```bash
+marvin platform entry-types create --data '{"name": "Lookbook", "slug": "lookbook"}'
+marvin platform entry-types create --file lookbook.json
+```
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--json` | Output as JSON | `false` |
-| `--yaml` | Output as YAML | `false` |
-| `--csv` | Output as CSV | `false` |
-| `--output <format>` | Output format: table, json, yaml, csv | `table` |
+| `--data <json\|@file\|->` | Entry type data as JSON, `@path` to read a file, or `-` for stdin | |
+| `--file <path>` | JSON file with the entry type data (same as `--data @path`) | |
 
-### `marvin entry-types get <id>`
+Prints `✓ Created entry type: <id>` on stderr and the new entry type on stdout.
+
+## update
+
+Change an entry type. The body holds only the fields to change.
+
+```bash
+marvin platform entry-types update 01234567-89ab-cdef-0123-456789abcdef --data '{"description": "Seasonal lookbooks"}'
+```
+
+| Argument | Description |
+|----------|-------------|
+| `<id>` | Entry type ID |
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `<id>` | Entry type ID (required) | - |
-| `--json` | Output as JSON | `false` |
-| `--yaml` | Output as YAML | `false` |
-| `--output <format>` | Output format: table, json | `table` |
+| `--data <json\|@file\|->` | Entry type data as JSON, `@path` to read a file, or `-` for stdin | |
+| `--file <path>` | JSON file with the entry type data (same as `--data @path`) | |
 
-## Examples
+## delete
 
-### Basic Usage
-
-List all entry types:
+Delete an entry type.
 
 ```bash
-marvin entry-types list
+marvin platform entry-types delete 01234567-89ab-cdef-0123-456789abcdef --yes
 ```
 
-Output:
+| Argument | Description |
+|----------|-------------|
+| `<id>` | Entry type ID |
 
-```
-┌──────────────────────────────┬────────────┬───────┐
-│ ID                           │ Name       │ Slug  │
-├──────────────────────────────┼────────────┼───────┤
-│ 01234567-89ab-cdef-0123-4567 │ Page       │ page  │
-│ 89abcdef-0123-4567-89ab-cdef │ Project    │ project│
-│ cdef0123-4567-89ab-cdef-0123 │ Blog Post  │ blog  │
-└──────────────────────────────┴────────────┴───────┘
-```
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--yes` | Confirm the deletion; the command refuses to run without it | |
 
-Get a specific entry type:
+In `--json` mode the result is `{"deleted": "<id>"}`.
+
+## Scripting
 
 ```bash
-marvin entry-types get 01234567-89ab-cdef-0123-4567
+# Slug and name of every entry type
+marvin platform entry-types list --json | jq -r '.[] | "\(.slug)\t\(.name)"'
+
+# Entry types that can't be published
+marvin platform entry-types list --json | jq -r '.[] | select(.capabilitiesJson.publishable == false) | .slug'
 ```
 
-Output:
+## See Also
 
-```
-┌─────────────┬──────────────────────────────────────┐
-│ Field       │ Value                                │
-├─────────────┼──────────────────────────────────────┤
-│ ID          │ 01234567-89ab-cdef-0123-4567         │
-│ Name        │ Page                                 │
-│ Slug        │ page                                 │
-│ Description │ Standard page content                │
-└─────────────┴──────────────────────────────────────┘
-```
-
-### JSON Output
-
-List entry types as JSON:
-
-```bash
-marvin entry-types list --json
-```
-
-```json
-[
-  {
-    "id": "01234567-89ab-cdef-0123-4567",
-    "name": "Page",
-    "slug": "page",
-    "description": "Standard page content",
-    "schema": {
-      "fields": [
-        {
-          "name": "title",
-          "type": "text",
-          "required": true
-        },
-        {
-          "name": "body",
-          "type": "richtext",
-          "required": true
-        },
-        {
-          "name": "seoTitle",
-          "type": "text",
-          "required": false
-        }
-      ]
-    },
-    "createdAt": "2026-01-15T10:00:00Z",
-    "updatedAt": "2026-06-10T14:30:00Z"
-  },
-  {
-    "id": "89abcdef-0123-4567-89ab-cdef",
-    "name": "Project",
-    "slug": "project",
-    "description": "Portfolio project",
-    "schema": {
-      "fields": [
-        {
-          "name": "title",
-          "type": "text",
-          "required": true
-        },
-        {
-          "name": "description",
-          "type": "textarea",
-          "required": true
-        },
-        {
-          "name": "images",
-          "type": "assets",
-          "required": false
-        }
-      ]
-    }
-  }
-]
-```
-
-Get single entry type as JSON:
-
-```bash
-marvin entry-types get 01234567-89ab-cdef-0123-4567 --json
-```
-
-```json
-{
-  "id": "01234567-89ab-cdef-0123-4567",
-  "name": "Page",
-  "slug": "page",
-  "description": "Standard page content",
-  "schema": {
-    "fields": [
-      {
-        "name": "title",
-        "type": "text",
-        "required": true,
-        "validations": {
-          "maxLength": 200
-        }
-      },
-      {
-        "name": "body",
-        "type": "richtext",
-        "required": true
-      },
-      {
-        "name": "seoTitle",
-        "type": "text",
-        "required": false
-      },
-      {
-        "name": "seoDescription",
-        "type": "textarea",
-        "required": false,
-        "validations": {
-          "maxLength": 300
-        }
-      }
-    ]
-  },
-  "createdAt": "2026-01-15T10:00:00Z",
-  "updatedAt": "2026-06-10T14:30:00Z"
-}
-```
-
-## Response Fields
-
-### Entry Type List
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique entry type ID (UUID) |
-| `name` | string | Human-readable name |
-| `slug` | string | URL-friendly identifier |
-| `description` | string | Entry type description |
-| `schema` | object | Field definitions and validations |
-| `createdAt` | string | ISO 8601 timestamp of creation |
-| `updatedAt` | string | ISO 8601 timestamp of last update |
-
-### Entry Type Schema
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `fields` | array | Array of field definitions |
-| `fields[].name` | string | Field identifier |
-| `fields[].type` | string | Field type (text, richtext, textarea, number, etc.) |
-| `fields[].required` | boolean | Whether field is required |
-| `fields[].validations` | object | Field validation rules |
-
-## Use Cases
-
-### List Available Entry Types
-
-See what content types are available before creating entries:
-
-```bash
-marvin entry-types list --json | jq -r '.[].slug'
-```
-
-Output:
-
-```
-page
-project
-blog
-product
-```
-
-### Inspect Entry Type Schema
-
-View field definitions before creating an entry:
-
-```bash
-marvin entry-types get 01234567-89ab-cdef-0123-4567 --json | jq '.schema.fields'
-```
-
-Output:
-
-```json
-[
-  {
-    "name": "title",
-    "type": "text",
-    "required": true,
-    "validations": {
-      "maxLength": 200
-    }
-  },
-  {
-    "name": "body",
-    "type": "richtext",
-    "required": true
-  }
-]
-```
-
-### Find Entry Type by Slug
-
-```bash
-marvin entry-types list --json | jq '.[] | select(.slug == "page")'
-```
-
-### Count Entry Types
-
-```bash
-marvin entry-types list --json | jq 'length'
-```
-
-Output:
-
-```
-4
-```
-
-### Extract Required Fields
-
-```bash
-marvin entry-types get <id> --json | jq '.schema.fields[] | select(.required == true) | .name'
-```
-
-Output:
-
-```
-"title"
-"body"
-```
-
-## Scripting Examples
-
-### Bash Script
-
-```bash
-#!/bin/bash
-
-# List all entry types and their slugs
-echo "Available Entry Types:"
-marvin entry-types list --json | jq -r '.[] | "\(.slug) - \(.name)"'
-
-# Get detailed info for each type
-echo -e "\nDetailed Schemas:"
-marvin entry-types list --json | jq -r '.[].id' | while read -r id; do
-  marvin entry-types get "$id" --json | jq '{
-    slug: .slug,
-    fields: [.schema.fields[].name]
-  }'
-done
-```
-
-### Node.js
-
-```javascript
-const { execSync } = require('child_process');
-
-// Get all entry types
-const entryTypes = JSON.parse(
-  execSync('marvin entry-types list --json', { encoding: 'utf-8' })
-);
-
-console.log(`Found ${entryTypes.length} entry types:\n`);
-
-// Process each entry type
-entryTypes.forEach(type => {
-  console.log(`${type.name} (${type.slug})`);
-  console.log(`  ID: ${type.id}`);
-  
-  // Get detailed schema
-  const detail = JSON.parse(
-    execSync(`marvin entry-types get ${type.id} --json`, { 
-      encoding: 'utf-8' 
-    })
-  );
-  
-  const requiredFields = detail.schema.fields
-    .filter(f => f.required)
-    .map(f => f.name);
-  
-  console.log(`  Required fields: ${requiredFields.join(', ')}`);
-  console.log('');
-});
-```
-
-### Python
-
-```python
-import subprocess
-import json
-
-# Get all entry types
-result = subprocess.run(
-    ['marvin', 'entry-types', 'list', '--json'],
-    capture_output=True,
-    text=True
-)
-
-entry_types = json.loads(result.stdout)
-
-# Build a mapping of slug to schema
-schemas = {}
-
-for entry_type in entry_types:
-    # Get detailed schema
-    result = subprocess.run(
-        ['marvin', 'entry-types', 'get', entry_type['id'], '--json'],
-        capture_output=True,
-        text=True
-    )
-    
-    detail = json.loads(result.stdout)
-    schemas[entry_type['slug']] = detail['schema']
-
-# Print field counts by type
-for slug, schema in schemas.items():
-    field_count = len(schema['fields'])
-    print(f"{slug}: {field_count} fields")
-```
-
-### Generate Type Documentation
-
-```javascript
-// scripts/document-types.js
-const { execSync } = require('child_process');
-const fs = require('fs');
-
-const entryTypes = JSON.parse(
-  execSync('marvin entry-types list --json', { encoding: 'utf-8' })
-);
-
-let markdown = '# Entry Types\n\n';
-
-entryTypes.forEach(type => {
-  const detail = JSON.parse(
-    execSync(`marvin entry-types get ${type.id} --json`, { 
-      encoding: 'utf-8' 
-    })
-  );
-  
-  markdown += `## ${type.name}\n\n`;
-  markdown += `**Slug:** \`${type.slug}\`\n\n`;
-  if (type.description) {
-    markdown += `${type.description}\n\n`;
-  }
-  
-  markdown += '### Fields\n\n';
-  markdown += '| Name | Type | Required |\n';
-  markdown += '|------|------|----------|\n';
-  
-  detail.schema.fields.forEach(field => {
-    markdown += `| ${field.name} | ${field.type} | ${field.required ? 'Yes' : 'No'} |\n`;
-  });
-  
-  markdown += '\n';
-});
-
-fs.writeFileSync('ENTRY_TYPES.md', markdown);
-console.log('Documentation generated: ENTRY_TYPES.md');
-```
-
-## Error Handling
-
-### 401 Unauthorized
-
-Not authenticated or no active workspace:
-
-```bash
-marvin login
-marvin workspace use <workspace>
-```
-
-### 404 Not Found
-
-Entry type with the given ID doesn't exist:
-
-```bash
-# List all entry types to find valid IDs
-marvin entry-types list --json | jq -r '.[].id'
-```
-
-### Empty Results
-
-No entry types defined in workspace:
-
-```bash
-marvin entry-types list
-# Returns: empty table or []
-```
-
-This is unusual and may indicate a configuration issue. Entry types are typically defined during workspace setup.
-
-## Related Commands
-
-- [`marvin workspace use`](workspaces.md) - Set active workspace
-- [`marvin entries list`](entries.md) - List entries (can filter by entry type)
-- [`marvin publish entries`](entries.md) - Publish API entries
-
-## Notes
-
-- Entry types are **read-only** via the CLI and API
-- They are managed through workspace configuration files
-- Changes to entry types require workspace reconfiguration
-- Deleting or modifying entry types may affect existing entries
-- The schema defines validation rules enforced when creating/updating entries
-
-## API Reference
-
-This command calls:
-
-```
-GET /api/platform/workspaces/{workspace_id}/entry-types
-GET /api/platform/workspaces/{workspace_id}/entry-types/{id}
-```
-
-See [API Mapping](../reference/api-mapping.md) for more details.
+- [Renderers](renderers.md) - the renderer packages an entry type's `renderingJson` points at
+- [Platform entries](platform-entries.md) - creating entries of a given type

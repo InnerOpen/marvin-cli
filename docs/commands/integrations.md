@@ -38,12 +38,12 @@ marvin platform integrations alert-routing
 marvin platform integrations alert-routing set [--email-admins|--no-email-admins] [--targets <ids>] [--reminder-hours <n>]
 
 marvin platform integrations subscriptions list [--event <type>]
-marvin platform integrations subscriptions create (--data <json> | --integration <id> --event <type> --action <key> [--args <json>])
-marvin platform integrations subscriptions update <id> [--enable|--disable] [--args <json>] [--data <json>]
+marvin platform integrations subscriptions create (--data <json|@file|-> | --integration <id> --event <type> --action <key> [--args <json>])
+marvin platform integrations subscriptions update <id> [--enable|--disable] [--args <json>] [--data <json|@file|->]
 marvin platform integrations subscriptions delete <id> --yes
 ```
 
-`subscriptions` also answers to `subs`. `--data` takes inline JSON, `@path` to read a file, or `-`
+`subscriptions` also answers to `subs` (the examples below use both). `--data` takes inline JSON, `@path` to read a file, or `-`
 to read stdin; `--file <path>` is the same as `--data @path`.
 
 ## List and get
@@ -56,13 +56,17 @@ marvin platform integrations list --needs-attention --json
 Columns: ID, Slug, Name, Provider, Enabled, Status (`ok`, `error`, `unconfigured`), and Attention:
 the integration's open alerts, e.g. `⚠ 3 (rate_limited)` — how many failures and which error codes.
 When any integration needs attention, table mode adds a line on stderr pointing at `get` and
-`resolve`. `--needs-attention` keeps only those integrations.
+`resolve`.
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--needs-attention` | Only integrations with open alerts | |
 
 ```bash
 marvin platform integrations get team-slack --json
 ```
 
-Prints the integration: config, whether it has a credential, status, last check, open alerts
+`<integration>` is the integration's id or slug. Prints the integration: config, whether it has a credential, status, last check, open alerts
 (`attention`, with sample failures) and `errorOverrides`.
 
 ## Providers and plugins
@@ -72,12 +76,12 @@ marvin platform integrations providers
 marvin platform integrations plugins
 ```
 
-`providers` lists what can be connected: slug, name, category, the provider's actions and events,
-and its logo. In JSON mode each provider also has a `logoUrl` — the public logo route, built by the
+`providers` lists what can be connected. Columns: Slug, Name, Category, Actions (their keys), Emits
+(how many events it emits), Logo. In JSON mode each provider also has a `logoUrl` — the public logo route, built by the
 client — when the provider ships a logo (`hasLogo`), otherwise `null` (use `icon`).
 
 `plugins` lists the plugin packages that supply providers, whether each loaded (and why not), the
-provider slugs it adds, and its version. Platform admins can see every installed plugin, integration
+provider slugs it adds, and its version (columns: Name, Source, Loaded, Providers, Version). Both take no options. Platform admins can see every installed plugin, integration
 and AI, with `marvin admin system plugins`.
 
 ## Create, update, delete
@@ -91,7 +95,15 @@ pass show slack/bot-token-2 | marvin platform integrations update team-slack --c
 marvin platform integrations delete team-slack --yes
 ```
 
-The create body is `{provider, name, slug?, config?, credential?}`; update takes any of `name`,
+| Argument / option | Applies to | Description | Default |
+|-------------------|------------|-------------|---------|
+| `<integration>` | `update`, `delete` | Integration id or slug | |
+| `--data <json\|@file\|->` | `create`, `update` | The integration (`create`) or the fields to change (`update`) as JSON, `@path` to read a file, or `-` for stdin | |
+| `--file <path>` | `create`, `update` | JSON file with the same (same as `--data @path`) | |
+| `--credential-stdin` | `create`, `update` | Read the provider credential (API key, token) from stdin | |
+| `--yes` | `delete` | Confirm the delete; the command refuses to run without it | |
+
+`create` needs a body; `update` needs `--data`/`--file` and/or `--credential-stdin`. The create body is `{provider, name, slug?, config?, credential?}`; update takes any of `name`,
 `enabled`, `config`, `credential`. Pass the credential (API key, token) with `--credential-stdin`
 rather than in `--data`, so it stays out of your shell history; it is merged into the body as
 `credential`. `--credential-stdin` can't be combined with `--data -` (both read stdin).
@@ -101,36 +113,56 @@ JSON mode.
 
 ## Check, resolve, run
 
+### check
+
 ```bash
 marvin platform integrations check team-slack
 ```
 
-Tests the connection now and prints `{"ok": <status is ok>, "status": ..., "lastError": ...}` in
+Takes `<integration>` (id or slug); no options. Tests the connection now and prints `{"ok": <status is ok>, "status": ..., "lastError": ...}` in
 JSON mode. **Exits 1 unless the status comes back `ok`.**
+
+### resolve
 
 ```bash
 marvin platform integrations resolve team-slack
 marvin platform integrations resolve team-slack --alert-id <alert-id>
 ```
 
+| Argument / option | Description | Default |
+|-------------------|-------------|---------|
+| `<integration>` | Integration id or slug | |
+| `--alert-id <id>` | Resolve just this alert | all open alerts |
+
 Marks the integration's open alerts resolved ("I fixed it"), or one alert with `--alert-id`. The
 resolution is announced through the channels that delivered each alert, and retries parked behind
 the alert run again. Prints `{"ok": true, "resolved": <count>}` in JSON mode.
+
+### run
 
 ```bash
 marvin platform integrations run team-slack post_message --data '{"channel":"C123","text":"Hello"}'
 ```
 
+| Argument / option | Description | Default |
+|-------------------|-------------|---------|
+| `<integration>` | Integration id or slug | |
+| `<action>` | The provider's action key (see `providers`) | |
+| `--data <json\|@file\|->` | The action's arguments as JSON, `@path` to read a file, or `-` for stdin | `{}` |
+| `--file <path>` | JSON file with the arguments (same as `--data @path`) | |
+
 Runs one of the provider's actions now with the given arguments (`{{SLUG}}` placeholders are
 resolved from workspace secrets). The integration must be enabled. Prints `{"ok": ..., "result": {...}}`
 and exits 1 when the action reports failure.
+
+### options
 
 ```bash
 marvin platform integrations options team-slack post_message channel
 ```
 
-Lists the choices for an action input that offers them (here, the Slack channels), as value/label
-pairs.
+Takes `<integration>`, `<action>` and `<input>` (the action input's name); no options. Lists the choices for an action input that offers them (here, the Slack channels), as Value and Label
+columns.
 
 ## Error handling
 
@@ -142,7 +174,7 @@ the entry to review, alert the workspace admins, or treat it as a success.
 marvin platform integrations errors team-slack
 ```
 
-Prints the policy table for this connection:
+Takes `<integration>` (id or slug); no options. Prints the policy table for this connection:
 
 | Column | Meaning |
 |--------|---------|
@@ -169,9 +201,19 @@ marvin platform integrations errors reset team-slack rate_limited
 marvin platform integrations errors reset team-slack
 ```
 
+| Command | Argument / option | Description |
+|---------|-------------------|-------------|
+| `errors set` | `<integration>` | Integration id or slug |
+| | `<code>` | The error code, or `*` for every code |
+| | `--review` / `--no-review` | Send the entry to review when this error happens / don't |
+| | `--alert` / `--no-alert` | Alert the workspace admins / don't |
+| `errors reset` | `<integration>` | Integration id or slug |
+| | `[code]` | The code whose override to drop; omit to drop every override |
+
 `errors set` merges into the connection's existing overrides and needs at least one of
 `--review/--no-review`, `--alert/--no-alert`. The server rejects a code the provider doesn't
-declare. Both `set` and `reset` print the connection's overrides afterwards.
+declare. Both `set` and `reset` print the connection's overrides afterwards. `reset <integration> <code>`
+fails if there is no override for that code.
 
 ## Alert routing
 
@@ -181,8 +223,16 @@ marvin platform integrations alert-routing set --no-email-admins --targets <id>,
 ```
 
 Where integration alerts go: email to the workspace admins, and/or notify-capable integrations
-(targets). `--targets` replaces the list of integration ids (`--targets ''` clears it);
-`--reminder-hours` re-alerts an unresolved problem every n hours.
+(targets). Bare `alert-routing` shows the current routing (in table mode: whether admins are
+emailed, the reminder interval, and a table of the target integrations); it takes no options.
+
+`alert-routing set` needs at least one option:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--email-admins` / `--no-email-admins` | Email the workspace admins / don't | |
+| `--targets <ids>` | Comma-separated integration ids to alert through; replaces the list (`''` for none) | |
+| `--reminder-hours <n>` | Re-alert an unresolved problem every n hours | |
 
 ## Event subscriptions
 
@@ -201,6 +251,22 @@ marvin platform integrations subs update <id> --disable
 marvin platform integrations subs update <id> --args '{"text":"Published: {{entry.title}}"}'
 marvin platform integrations subs delete <id> --yes
 ```
+
+Subscription list columns: ID, Event, Integration, Action, Enabled.
+
+| Command | Option | Description | Default |
+|---------|--------|-------------|---------|
+| `list` | `--event <type>` | Only subscriptions to this event type | |
+| `create` | `--integration <id>` | Integration id or slug | |
+| | `--event <type>` | Event type (see `platform event-log types`) | |
+| | `--action <key>` | Provider action to run | |
+| | `--args <json>` | Action arguments as JSON (templated: `{{entry.title}}`, `{{SECRET}}`) | |
+| | `--data <json\|@file\|->` | `{integrationId, eventType, action, args?}` as JSON, `@path` or `-`; instead of the three flags | |
+| | `--file <path>` | JSON file with the same (same as `--data @path`) | |
+| `update <id>` | `--enable` / `--disable` | Turn it on / off (not both) | |
+| | `--args <json>` | Replace the action arguments | |
+| | `--data <json\|@file\|->`, `--file <path>` | `{enabled?, args?}` as JSON, `@path` or `-` | |
+| `delete <id>` | `--yes` | Confirm the delete; the command refuses to run without it | |
 
 `create` takes either the three flags (`--integration` accepts an id or slug) or a
 `{integrationId, eventType, action, args?}` body with `--data`. `update` takes `--enable`,

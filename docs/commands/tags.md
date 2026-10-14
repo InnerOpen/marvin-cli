@@ -8,8 +8,8 @@ rules and the publishing API's `--tag` filter match on their slugs.
 ```bash
 marvin platform tags list
 marvin platform tags get <tag>
-marvin platform tags create (--name <name> [--slug <slug>] [--color <color>] | --data <json|@file|->)
-marvin platform tags update <tag> (--name <name> | --color <color> | --data <json|@file|->)
+marvin platform tags create (--name <name> [--slug <slug>] [--color <color>] | --data <json|@file|-> | --file <path>)
+marvin platform tags update <tag> (--name <name> | --color <color> | --data <json|@file|-> | --file <path>)
 marvin platform tags delete <tag> --yes
 marvin platform tags attach <tag> (--entry <id> | --asset <id> | --resource <id>)
 marvin platform tags detach <tag> (--entry <id> | --asset <id> | --resource <id>)
@@ -33,6 +33,10 @@ resources together).
 
 ## Create, rename, delete
 
+`--data` takes `{name, slug?, color?}` (`{name?, color?}` for `update`) as inline JSON, `@path` or `-`
+for stdin; `--file <path>` is the same as `--data @path`. Without `--data`/`--file`, `create` needs
+`--name` and `update` needs `--name` or `--color`. `delete` refuses without `--yes`.
+
 ```bash
 marvin platform tags create --name "Chore Coat"            # slug: chore-coat
 marvin platform tags create --name "News" --color "#FF5733"
@@ -52,10 +56,9 @@ marvin platform tags attach news --asset 2b7e…
 marvin platform tags detach news --resource 9a40…
 ```
 
-Name exactly one target. Attaching is idempotent. With `--json` the result is
+Name exactly one target (`--entry`, `--asset` or `--resource`); naming none or several is an error. Attaching is idempotent. With `--json` the result is
 `{"ok": true, "tagId": "…", "entryId": "…", "attached": true}` (or `assetId`/`resourceId`,
-`detached`). Detaching a tag the item doesn't carry is a not-found error. Tagging an entry
-re-evaluates the smart collections it could belong to.
+`detached`).
 
 Tag everything a query finds:
 

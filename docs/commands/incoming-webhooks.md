@@ -10,21 +10,22 @@ can rotate or revoke it. A webhook can also verify each delivery's signature.
 ```bash
 marvin platform incoming-webhooks list
 marvin platform incoming-webhooks get <webhook>
-marvin platform incoming-webhooks create --data <json|@file|->
-marvin platform incoming-webhooks update <webhook> --data <json|@file|->
+marvin platform incoming-webhooks create (--data <json|@file|-> | --file <path>)
+marvin platform incoming-webhooks update <webhook> (--data <json|@file|-> | --file <path>)
 marvin platform incoming-webhooks delete <webhook> --yes
 marvin platform incoming-webhooks mint-token <webhook>
 marvin platform incoming-webhooks revoke-token <webhook>
 marvin platform incoming-webhooks signature-schemes
 ```
 
-Every command that takes `<webhook>` accepts its id or its slug.
+Every command that takes `<webhook>` accepts its id or its slug. `--data` takes inline JSON, `@path`
+to read a file, or `-` to read stdin; `--file <path>` is the same as `--data @path`.
 
 !!! note "Required role"
     Every incoming-webhook command, reads included, needs the workspace **ADMIN** (or OWNER) role:
     the token is a credential. See [Workspace roles](../reference/authentication.md#workspace-roles).
 
-## Create and get a URL
+## create and mint-token
 
 A new webhook has no token, so nothing can call it yet. Mint one to get the URL:
 
@@ -37,6 +38,15 @@ marvin platform incoming-webhooks mint-token shopify-orders
 The URL goes to stderr; stdout carries the webhook (with its `token`), so
 `mint-token … --json | jq -r .token` works in a script. Minting again rotates the token: the old URL
 stops working at once. `revoke-token` leaves the webhook without a token until you mint a new one.
+
+| Command | Argument / option | Description |
+|---------|-------------------|-------------|
+| `create` | `--data <json\|@file\|->` | The webhook as JSON, `@path` to read a file, or `-` for stdin |
+| | `--file <path>` | JSON file with the webhook (same as `--data @path`) |
+| `update` | `<webhook>` | Webhook id or slug |
+| | `--data <json\|@file\|->`, `--file <path>` | The fields to change, as for `create` |
+| `mint-token` | `<webhook>` | Webhook id or slug; no options |
+| `revoke-token` | `<webhook>` | Webhook id or slug; no options |
 
 The body for `create`/`update`:
 
@@ -52,14 +62,21 @@ The body for `create`/`update`:
 | `signatureUrl` | The URL the sender signs, for schemes that sign it (when it differs from the receiver's) |
 | `signatureConfig` | The construction, for `custom` |
 
-## Verify the sender
+`revoke-token` makes the receiver reject every request until a new token is minted:
 
 ```bash
+marvin platform incoming-webhooks revoke-token shopify-orders
+```
+
+## update and signature-schemes
+
+```bash
+marvin platform incoming-webhooks update shopify-orders --data '{"enabled": true}'
 marvin platform incoming-webhooks signature-schemes
 ```
 
-Lists the schemes: core presets (GitHub-style HMAC, Slack, Stripe, Standard Webhooks, a static
-token, …), presets that installed integrations contribute, and `custom`. Source says where each comes
+`signature-schemes` takes no options. It lists the schemes: core presets (GitHub-style HMAC, Slack,
+Stripe, Standard Webhooks, a static token, …), presets that installed integrations contribute, and `custom`. Source says where each comes
 from. Store the sender's key as a workspace secret, then point the webhook at it:
 
 ```bash
@@ -71,19 +88,27 @@ marvin platform incoming-webhooks update stripe-events \
 The server refuses a scheme it can't verify with (unknown, or a `custom` config that doesn't
 describe a usable construction) with a 422 that says why.
 
-## List
+## list and get
 
 ```bash
 marvin platform incoming-webhooks list
+marvin platform incoming-webhooks get shopify-orders --json | jq -r .token
 ```
+
+`get` takes `<webhook>` and no options; it prints the webhook including its token.
 
 Columns: ID, Slug, Name, Enabled, Token (`minted` or `none`; the value is only shown by `get`),
 Signature (the scheme, `hmac-sha256` for the default check, or `none`), Received, Last received.
 
-## Delete
+## delete
 
 ```bash
 marvin platform incoming-webhooks delete shopify-orders --yes
 ```
 
-Prints `{"deleted": "<id>"}` with `--json`.
+| Argument / option | Description | Default |
+|-------------------|-------------|---------|
+| `<webhook>` | Webhook id or slug | |
+| `--yes` | Confirm the delete; the command refuses to run without it | |
+
+The URL stops working. Prints `{"deleted": "<id>"}` with `--json`.

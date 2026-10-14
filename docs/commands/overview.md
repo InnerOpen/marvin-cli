@@ -1,6 +1,6 @@
 # Commands Overview
 
-The Marvin CLI provides three main command groups that map to different Marvin APIs.
+The Marvin CLI is organised into a handful of command groups that map to different Marvin APIs, plus a few top-level commands for signing in.
 
 ## Command Structure
 
@@ -25,103 +25,130 @@ Available on all commands:
 
 ## Command Groups
 
-### Publishing API (`publish`)
+| Group | Purpose | Credential |
+|-------|---------|------------|
+| `login`, `logout`, `register`, `forgot-password`, `reset-password` | Sign in, sign out, create an account, reset a password | None (they save or clear credentials) |
+| `workspace` | Switch workspace, site tokens, export, import, backups, preferences, stats | User token |
+| `publish` | Read-only Publishing API | Site client token |
+| `platform` | Workspace content and configuration (create, read, update, delete) | User token |
+| `admin` | Instance administration | User token of a SUPER_ADMIN |
+| `user` | Your own profile and personal API tokens | User token |
+| `events` | What sends each event type and what reacts to it | User token |
+| `system` | Health and version of the server | None |
 
-Read-only commands for accessing published content. Uses site client tokens.
+`publish` is hidden from `marvin --help` until a site token is available, and `workspace`, `platform`,
+`admin`, `user` and `events` are hidden until a user token is available; hidden commands still run.
+See [Authentication](auth.md) for how tokens are saved and resolved.
 
-**Authentication**: Site client token (`MARVIN_SITE_CLIENT_TOKEN`)
+### Sign in (top level)
 
 ```bash
-marvin publish [command]
+marvin login                      # prompts for a user token
+marvin login --site-token <token> --workspace <slug>
+marvin logout [--site-token | --all]
+marvin register
+marvin forgot-password <email>
+marvin reset-password --token <token> --password <newPassword>
 ```
+
+There is no `marvin auth` group and no `whoami`; use `marvin user profile show`.
+
+**Learn more**: [Authentication Commands](auth.md)
+
+### Workspace (`workspace`)
+
+```bash
+marvin workspace current | use <workspace> | list
+marvin workspace token | token:remove
+marvin workspace export | import
+marvin workspace preferences [update] | stats
+marvin workspace backups list | create | download <filename>
+```
+
+**Learn more**: [Workspaces](workspaces.md)
+
+### Publishing API (`publish`)
+
+Read-only commands for accessing published content. Uses a site client token (`--site-token`,
+a token saved with `marvin workspace token`, or `MARVIN_SITE_CLIENT_TOKEN`).
 
 | Command | Description |
 |---------|-------------|
 | `site` | Get workspace site configuration |
-| `entries` | List all published entries |
+| `entries` | List published entries |
 | `entry <slug>` | Get a single entry |
-| `collections` | List all collections |
+| `collections` | List collections |
 | `collection <slug>` | Get a collection |
 | `collection-entries <slug>` | List entries in a collection |
-| `resources` | List all resources |
+| `resources` | List resources |
 | `resource <slug>` | Get a resource |
-| `resource-entries <slug>` | List entries using a resource |
-| `assets` | List all assets |
+| `resource-entries <slug>` | List entry slugs that use a resource |
+| `assets` | List assets |
+| `asset <slug>` | Get an asset, or download its file with `--download` |
+| `renderers` | List the renderers the workspace needs |
 
-**Learn more**: [Publishing API Commands](site.md)
+**Learn more**: [Site](site.md), [Entries](entries.md), [Collections](collections.md),
+[Resources](resources.md), [Assets](assets.md), [Renderers](renderers.md)
 
 ### Platform API (`platform`)
 
-Full CRUD operations for workspace management. Requires user authentication.
+Full CRUD for workspace content and configuration. Uses a user token (`MARVIN_USER_TOKEN` or
+`marvin login`) and the active workspace.
 
-**Authentication**: User login (`marvin auth login`) or API client credentials
+| Group | Description | Page |
+|-------|-------------|------|
+| `entries` | Manage entries (all statuses) | [Platform Entries](platform-entries.md) |
+| `collections` | Manage collections (including smart collections) | [Platform Collections](platform-collections.md), [Smart Collections](smart-collections.md) |
+| `resources` | Manage resources | [Platform Resources](platform-resources.md) |
+| `assets` | Manage assets | [Platform Assets](platform-assets.md) |
+| `entry-types` | Manage entry types | [Entry Types](entry-types.md) |
+| `tags` | The shared tag vocabulary | [Tags](tags.md) |
+| `forms` | Form definitions and submissions | [Forms](forms.md) |
+| `webhooks` | Outgoing webhooks | [Webhooks](webhooks.md) |
+| `incoming-webhooks` | URLs outside services POST to, to trigger workflows | [Incoming Webhooks](incoming-webhooks.md) |
+| `workflows` | Triggers, conditions, actions and runs | [Workflows](workflows.md) |
+| `integrations` | Provider connections, event subscriptions, error handling | [Integrations](integrations.md) |
+| `scheduled-tasks` | Scheduled task automation | [Scheduled Tasks](scheduled-tasks.md) |
+| `api-clients` | Publishing API tokens | [API Clients](api-clients.md) |
+| `workspace-members`, `invites` | Members, roles and invitation tokens | [Workspace Members & Invites](workspace-members.md) |
+| `email-templates` | Workspace email templates | [Email Templates](email-templates.md) |
+| `email`, `email-subscriptions` | Email settings, SMTP and event subscriptions | [Email](email.md) |
+| `secrets`, `variables` | Write-only secrets and plain-text variables | [Secrets & Variables](secrets-variables.md) |
+| `event-log` | Event log and audit trail | [Event Log](event-log.md) |
+| `site` | Request a site rebuild and check its status | [Site Rebuild](site-rebuild.md) |
+| `blueprints` | Ready-made collections, entry types, tasks and workflows | [Blueprints](blueprints.md) |
+| `ai` | Providers, models, operations, executions and AI settings | [AI](ai.md) |
+| `dashboard` | What needs attention: inbox, drafts, review, AI suggestions, failures | [Review Queue](review.md) |
 
-```bash
-marvin platform [command]
-```
+Workspace-level commands (`marvin workspace ...`) are on the [Workspaces](workspaces.md) page.
 
-| Command | Description |
-|---------|-------------|
-| `workspaces` | Manage workspaces |
-| `entries` | Manage entries (all statuses) |
-| `entry-types` | Manage entry types |
-| `collections` | Manage collections |
-| `resources` | Manage resources |
-| `assets` | Manage assets |
-| `email-templates` | Manage email templates |
-| `webhooks` | Manage webhooks |
-| `forms` | Manage forms |
-| `api-clients` | Manage API clients |
-| `event-log` | View event log |
-| `scheduled-tasks` | Manage scheduled tasks |
-| `workspace-members` | Manage workspace members |
-| `invites` | Manage workspace invites |
-| `workflows` | Manage workflows: triggers, conditions, actions, runs |
-| `integrations` | Manage integrations, event subscriptions, error handling |
-| `site` | Request a site rebuild and check its status |
-| `dashboard` | What needs attention: inbox, drafts, review, AI suggestions, failures |
-| `blueprints` | Browse and apply ready-made collections, entry types, tasks and workflows |
-| `incoming-webhooks` | URLs outside services POST to, to trigger workflows |
-| `tags` | The shared tag vocabulary; tag entries, assets and resources |
+### Events (`events`)
 
-**Learn more**: [Platform API Commands](workspaces.md)
-
-`marvin events` (top level, same user token) shows what sends each event type and what reacts to it:
-`marvin events list` and `marvin events show <event-type>`. See [Events](events.md).
+`marvin events list` and `marvin events show <event-type>` show what sends each event type and what
+reacts to it. See [Events](events.md).
 
 ### Admin API (`admin`)
 
-System administration commands. Requires admin privileges.
+Instance administration. Requires a user token belonging to a **SUPER_ADMIN**.
 
-**Authentication**: Admin token (`MARVIN_ADMIN_TOKEN`)
+| Group | Description | Page |
+|-------|-------------|------|
+| `users` | Manage users | [Users](admin-users.md) |
+| `system` | System information and settings | [System](admin-system.md) |
+| `maintenance`, `scheduled-tasks` | Maintenance information and system-wide scheduled tasks | [Maintenance & Scheduled Tasks](admin-maintenance.md) |
+| `backups` | System backups | [Backups](admin-backups.md) |
+| `email` | System email settings and templates | [Admin Email](admin-email.md) |
+| `groups`, `workspace-members` | Workspaces and their memberships | [Groups & Members](admin-groups.md) |
 
-```bash
-marvin admin [command]
-```
+### User (`user`)
 
-| Command | Description |
-|---------|-------------|
-| `users` | Manage users |
-| `system` | System information and settings |
-| `maintenance` | Maintenance operations |
+Self-service commands for the signed-in user: `user profile`, `user tokens` and `user change-password`.
+See [User Account](user.md).
 
-**Learn more**: [Admin API Commands](admin-users.md)
+### System (`system`)
 
-### Authentication (`auth`)
-
-User authentication commands.
-
-```bash
-marvin auth [command]
-```
-
-| Command | Description |
-|---------|-------------|
-| `login` | Log in with email/password |
-| `logout` | Log out |
-| `whoami` | Show current user |
-
-**Learn more**: [Authentication Commands](auth.md)
+`marvin system health` and `marvin system version` need no credentials. See
+[Health & Version](system.md).
 
 ## Quick Reference
 
@@ -144,10 +171,10 @@ marvin publish entries --collection featured
 marvin publish assets --type image
 
 # Platform operations
-marvin auth login
+marvin login
 marvin workspace list
-marvin platform entries
-marvin platform entry create
+marvin platform entries list
+marvin platform entries create --data @entry.json
 ```
 
 ### By Use Case
@@ -164,10 +191,10 @@ marvin publish assets            # Assets
 #### Content Management
 
 ```bash
-marvin platform entries          # All entries (any status)
-marvin platform entry create     # Create entry
-marvin platform entry update     # Update entry
-marvin platform entry publish    # Publish entry
+marvin platform entries list              # All entries (any status)
+marvin platform entries create --data @entry.json
+marvin platform entries update <id> --data @changes.json
+marvin platform site rebuild              # Rebuild the static site
 ```
 
 #### Data Export
@@ -181,10 +208,10 @@ marvin publish resources --yaml  # YAML export
 #### Workspace Administration
 
 ```bash
-marvin workspace list            # List workspaces
-marvin workspace info            # Current workspace
-marvin workspace members         # Members
-marvin workspace invites         # Invitations
+marvin workspace list                        # List workspaces
+marvin workspace current                     # Active workspace
+marvin platform workspace-members list <workspace-id>   # Members
+marvin platform invites list                 # Invitations
 ```
 
 ## Output Formats
@@ -272,7 +299,7 @@ marvin platform --help
 
 # Specific command help
 marvin publish entries --help
-marvin platform entry create --help
+marvin platform entries create --help
 ```
 
 ## Next Steps
@@ -284,6 +311,11 @@ marvin platform entry create --help
 
 ## Command Index
 
+### Sign in and workspaces
+
+- [Authentication](auth.md)
+- [Workspaces](workspaces.md)
+
 ### Publishing API
 
 - [Site Configuration](site.md)
@@ -291,34 +323,46 @@ marvin platform entry create --help
 - [Collections](collections.md)
 - [Resources](resources.md)
 - [Assets](assets.md)
+- [Renderers](renderers.md)
 
 ### Platform API
 
-- [Workspaces](workspaces.md)
+- [Platform Entries](platform-entries.md)
+- [Platform Collections](platform-collections.md)
+- [Platform Resources](platform-resources.md)
+- [Platform Assets](platform-assets.md)
 - [Entry Types](entry-types.md)
-- [Email Templates](email-templates.md)
-- [Webhooks](webhooks.md)
+- [Tags](tags.md)
+- [Smart Collections](smart-collections.md)
 - [Forms](forms.md)
-- [API Clients](api-clients.md)
-- [Event Log](event-log.md)
-- [Events](events.md)
-- [Scheduled Tasks](scheduled-tasks.md)
+- [Webhooks](webhooks.md)
+- [Incoming Webhooks](incoming-webhooks.md)
 - [Workflows](workflows.md)
 - [Integrations](integrations.md)
+- [Scheduled Tasks](scheduled-tasks.md)
+- [API Clients](api-clients.md)
+- [Workspace Members & Invites](workspace-members.md)
+- [Email Templates](email-templates.md)
+- [Email](email.md)
+- [Secrets & Variables](secrets-variables.md)
+- [Event Log](event-log.md)
+- [Events](events.md)
 - [Site Rebuild](site-rebuild.md)
 - [Review Queue](review.md)
 - [Blueprints](blueprints.md)
-- [Incoming Webhooks](incoming-webhooks.md)
-- [Tags](tags.md)
-- [Smart Collections](smart-collections.md)
+- [AI](ai.md)
 
-### Admin API
+### Admin, user and system
 
-- [Users](admin-users.md)
-- [System](admin-system.md)
-- [Maintenance](admin-maintenance.md)
+- [Admin Users](admin-users.md)
+- [Admin System](admin-system.md)
+- [Admin Maintenance & Scheduled Tasks](admin-maintenance.md)
+- [Admin Backups](admin-backups.md)
+- [Admin Email](admin-email.md)
+- [Admin Groups & Members](admin-groups.md)
+- [User Account](user.md)
+- [Health & Version](system.md)
 
 ### Other
 
-- [Authentication](auth.md)
 - [Output Formats](output-formats.md)

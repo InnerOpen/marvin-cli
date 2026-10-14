@@ -32,6 +32,8 @@ Collections are curated groups of entries in Marvin. They allow you to organize 
 
 | Option | Description | Default |
 |--------|-------------|---------|
+| `--limit <number>` | Accepted, but currently not sent to the API (all collections are returned) | none |
+| `--offset <number>` | Accepted, but currently not sent to the API | none |
 | `--json` | Output as JSON | `false` |
 | `--yaml` | Output as YAML | `false` |
 | `--csv` | Output as CSV | `false` |
@@ -43,7 +45,8 @@ Collections are curated groups of entries in Marvin. They allow you to organize 
 |--------|-------------|---------|
 | `--json` | Output as JSON | `false` |
 | `--yaml` | Output as YAML | `false` |
-| `--output <format>` | Output format: table, json | `table` |
+| `--csv` | Output as CSV | `false` |
+| `--output <format>` | Output format: table, json, yaml, csv | `table` |
 
 ### `marvin publish collection-entries <slug>`
 
@@ -64,16 +67,16 @@ List all collections:
 marvin publish collections
 ```
 
-Output:
+Output (columns: Name, Slug, Description, the description cut to 50 characters):
 
 ```
-┌──────────┬───────────────────┬──────────────────────┬──────────────┐
-│ Slug     │ Name              │ Description          │ Entry Count  │
-├──────────┼───────────────────┼──────────────────────┼──────────────┤
-│ featured │ Featured Projects │ Our best work        │ 5            │
-│ archived │ Archive           │ Older content        │ 12           │
-│ blog     │ Blog Posts        │ Latest articles      │ 24           │
-└──────────┴───────────────────┴──────────────────────┴──────────────┘
+┌───────────────────┬──────────┬─────────────────┐
+│ Name              │ Slug     │ Description     │
+├───────────────────┼──────────┼─────────────────┤
+│ Featured Projects │ featured │ Our best work   │
+│ Archive           │ archived │ Older content   │
+│ Blog Posts        │ blog     │ Latest articles │
+└───────────────────┴──────────┴─────────────────┘
 ```
 
 Get a single collection:
@@ -82,18 +85,14 @@ Get a single collection:
 marvin publish collection featured
 ```
 
-Output:
+Output (same columns as the list; use `--json` to see `entryCount` and the nested `entries`):
 
 ```
-┌─────────────┬──────────────────────────────────────┐
-│ Field       │ Value                                │
-├─────────────┼──────────────────────────────────────┤
-│ Name        │ Featured Projects                    │
-│ Slug        │ featured                             │
-│ Description │ Our best work                        │
-│ Entry Count │ 5                                    │
-│ Created     │ 2026-06-01T10:00:00Z                 │
-└─────────────┴──────────────────────────────────────┘
+┌───────────────────┬──────────┬───────────────┐
+│ Name              │ Slug     │ Description   │
+├───────────────────┼──────────┼───────────────┤
+│ Featured Projects │ featured │ Our best work │
+└───────────────────┴──────────┴───────────────┘
 ```
 
 List entries in a collection:
@@ -105,13 +104,13 @@ marvin publish collection-entries featured
 Output:
 
 ```
-┌──────────────────┬──────────┬─────────┬───────────┬────────────┐
-│ Title            │ Slug     │ Type    │ Status    │ Published  │
-├──────────────────┼──────────┼─────────┼───────────┼────────────┤
-│ Denim Project 01 │ denim-01 │ project │ published │ 2026-07-01 │
-│ Denim Project 02 │ denim-02 │ project │ published │ 2026-07-02 │
-│ Jacket Project   │ jacket-1 │ project │ published │ 2026-07-03 │
-└──────────────────┴──────────┴─────────┴───────────┴────────────┘
+┌───────┬──────────────────┬──────────┬─────────┬───────────┬────────────┐
+│ Order │ Title            │ Slug     │ Type    │ Status    │ Published  │
+├───────┼──────────────────┼──────────┼─────────┼───────────┼────────────┤
+│ 1     │ Denim Project 01 │ denim-01 │ project │ published │ 2026-07-01 │
+│ 2     │ Denim Project 02 │ denim-02 │ project │ published │ 2026-07-02 │
+│ 3     │ Jacket Project   │ jacket-1 │ project │ published │ 2026-07-03 │
+└───────┴──────────────────┴──────────┴─────────┴───────────┴────────────┘
 ```
 
 ### JSON Output
@@ -128,17 +127,15 @@ marvin publish collections --json
     "slug": "featured",
     "name": "Featured Projects",
     "description": "Our best work",
-    "entryCount": 5,
-    "createdAt": "2026-06-01T10:00:00Z",
-    "updatedAt": "2026-07-01T15:30:00Z"
+    "metadataJson": { "displayStyle": "grid" },
+    "sortOrder": 0
   },
   {
     "slug": "archived",
     "name": "Archive",
     "description": "Older content",
-    "entryCount": 12,
-    "createdAt": "2026-05-15T08:00:00Z",
-    "updatedAt": "2026-06-20T12:00:00Z"
+    "metadataJson": null,
+    "sortOrder": 1
   }
 ]
 ```
@@ -154,15 +151,16 @@ marvin publish collection featured --json
   "slug": "featured",
   "name": "Featured Projects",
   "description": "Our best work",
+  "metadataJson": { "displayStyle": "grid" },
+  "isSmart": false,
+  "smartRules": null,
   "entryCount": 5,
-  "createdAt": "2026-06-01T10:00:00Z",
-  "updatedAt": "2026-07-01T15:30:00Z",
-  "metadata": {
-    "order": "manual",
-    "displayStyle": "grid"
-  }
+  "entries": [ { "slug": "denim-01", "title": "Denim Project 01" } ]
 }
 ```
+
+An unknown slug prints `[]` with `--json` / `--yaml` (or `Collection not found: <slug>` on stderr in
+other modes) and exits with status 1.
 
 List collection entries as JSON:
 
@@ -205,15 +203,14 @@ marvin publish collections --yaml
 - slug: featured
   name: Featured Projects
   description: Our best work
-  entryCount: 5
-  createdAt: 2026-06-01T10:00:00Z
-  updatedAt: 2026-07-01T15:30:00Z
+  metadataJson:
+    displayStyle: grid
+  sortOrder: 0
 - slug: archived
   name: Archive
   description: Older content
-  entryCount: 12
-  createdAt: 2026-05-15T08:00:00Z
-  updatedAt: 2026-06-20T12:00:00Z
+  metadataJson: null
+  sortOrder: 1
 ```
 
 ## Response Fields
@@ -225,9 +222,8 @@ marvin publish collections --yaml
 | `slug` | string | Unique URL-friendly identifier |
 | `name` | string | Collection display name |
 | `description` | string | Collection description |
-| `entryCount` | number | Number of entries in collection |
-| `createdAt` | string | ISO 8601 timestamp of creation |
-| `updatedAt` | string | ISO 8601 timestamp of last update |
+| `metadataJson` | object | Custom collection metadata |
+| `sortOrder` | number | Position of the collection in the workspace |
 
 ### Single Collection
 
@@ -236,12 +232,15 @@ marvin publish collections --yaml
 | `slug` | string | Unique URL-friendly identifier |
 | `name` | string | Collection display name |
 | `description` | string | Collection description |
-| `entryCount` | number | Number of entries in collection |
-| `metadata` | object | Custom collection metadata |
-| `createdAt` | string | ISO 8601 timestamp of creation |
-| `updatedAt` | string | ISO 8601 timestamp of last update |
+| `metadataJson` | object | Custom collection metadata |
+| `isSmart` | boolean | Whether membership is computed from rules |
+| `smartRules` | object | The rules of a smart collection, otherwise null |
+| `entryCount` | number | Number of entries in the collection |
+| `entries` | array | The collection's published entries, in order |
 
 ### Collection Entries
+
+Table mode adds an `Order` column in front of the usual entry columns. In `--json` each entry also carries its role, position and junction metadata for this collection.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -277,39 +276,20 @@ Output:
 3
 ```
 
-### Find Largest Collection
-
-Find the collection with the most entries:
-
-```bash
-marvin publish collections --json | jq 'sort_by(.entryCount) | reverse | .[0]'
-```
-
-Output:
-
-```json
-{
-  "slug": "blog",
-  "name": "Blog Posts",
-  "description": "Latest articles",
-  "entryCount": 24
-}
-```
-
 ### Build Collection Index
 
 Generate an index page for all collections:
 
 ```bash
-marvin publish collections --json | jq -r '.[] | "- [\(.name)](\(.slug)) - \(.entryCount) entries"'
+marvin publish collections --json | jq -r '.[] | "- [\(.name)](\(.slug))"'
 ```
 
 Output:
 
 ```markdown
-- [Featured Projects](featured) - 5 entries
-- [Archive](archived) - 12 entries
-- [Blog Posts](blog) - 24 entries
+- [Featured Projects](featured)
+- [Archive](archived)
+- [Blog Posts](blog)
 ```
 
 ### Verify Collection Exists
@@ -317,7 +297,7 @@ Output:
 Check if a collection exists before querying:
 
 ```bash
-if marvin publish collection featured --json > /dev/null 2>&1; then
+if marvin publish collection featured --json > /dev/null 2>&1; then  # exit status 1 when the slug is unknown
   echo "✓ Featured collection exists"
 else
   echo "✗ Featured collection not found"
@@ -354,7 +334,7 @@ COLLECTIONS=$(marvin publish collections --json)
 echo "$COLLECTIONS" | jq -c '.[]' | while read -r collection; do
   SLUG=$(echo "$collection" | jq -r '.slug')
   NAME=$(echo "$collection" | jq -r '.name')
-  COUNT=$(echo "$collection" | jq -r '.entryCount')
+  COUNT=$(marvin publish collection "$SLUG" --json | jq -r '.entryCount')
   
   echo "Collection: $NAME ($SLUG)"
   echo "Entries: $COUNT"
@@ -381,7 +361,6 @@ console.log(`Total collections: ${collections.length}\n`);
 // Process each collection
 collections.forEach(collection => {
   console.log(`${collection.name} (${collection.slug})`);
-  console.log(`  Entries: ${collection.entryCount}`);
   console.log(`  Description: ${collection.description}`);
   
   // Get collection entries
@@ -421,25 +400,8 @@ collections = json.loads(result.stdout)
 
 print(f"Total collections: {len(collections)}\n")
 
-# Group by entry count
-by_size = {
-    'small': [],  # 0-5 entries
-    'medium': [], # 6-15 entries
-    'large': []   # 16+ entries
-}
-
 for collection in collections:
-    count = collection['entryCount']
-    if count <= 5:
-        by_size['small'].append(collection)
-    elif count <= 15:
-        by_size['medium'].append(collection)
-    else:
-        by_size['large'].append(collection)
-
-print("Collections by size:")
-for size, items in by_size.items():
-    print(f"  {size}: {len(items)}")
+    print(f"  {collection['slug']}: {collection['name']}")
 
 # Get entries from a specific collection
 result = subprocess.run(
@@ -524,9 +486,9 @@ Site client token is invalid or missing:
 export MARVIN_SITE_CLIENT_TOKEN=marvin_sk_your_token
 ```
 
-### 404 Not Found
+### Unknown slug
 
-Collection with the given slug doesn't exist:
+The command exits with status 1 (and prints `[]` in JSON/YAML mode) when the collection doesn't exist:
 
 ```bash
 # List all collections to verify slug
@@ -557,12 +519,11 @@ marvin publish collection empty-collection --json | jq -r '.entryCount'
 
 ## API Reference
 
-This command calls:
+These commands call (`collection-entries` reads the entries from the single-collection response):
 
 ```
-GET /api/{workspace}/collections
-GET /api/{workspace}/collections/{slug}
-GET /api/{workspace}/collections/{slug}/entries
+GET /api/publish/{workspace}/collections
+GET /api/publish/{workspace}/collections/{slug}
 ```
 
 See [API Mapping](../reference/api-mapping.md) for more details.

@@ -29,7 +29,13 @@ marvin events list --category content   # one category (case doesn't matter)
 marvin events list --category —         # types with no category
 ```
 
-One row per workspace event type, in catalogue order:
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--category <name>` | Only event types in this category (e.g. `Content`) | |
+| `--connected` | Only event types something reacts to (built-ins don't count) | |
+| `--unused` | Only event types nothing reacts to (built-ins don't count) | |
+
+`--connected` and `--unused` can't be combined. One row per workspace event type, in catalogue order:
 
 | Column | Meaning |
 |--------|---------|
@@ -71,6 +77,11 @@ marvin events list --unused --json | jq -r '.[].eventType'
 marvin events show entry_published
 marvin events show entry_published --limit 25
 ```
+
+| Argument / option | Description | Default |
+|-------------------|-------------|---------|
+| `<event-type>` | The event type's key, e.g. `entry_published` | |
+| `--limit <n>` | How many recent events to show (at most 50) | `10` |
 
 In a terminal it prints a page:
 
