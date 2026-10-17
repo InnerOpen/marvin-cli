@@ -56,7 +56,8 @@ program
   .version(packageJson.version)
   .option("--api-url <url>", "Marvin API URL, overrides MARVIN_API_URL")
   .option("--workspace <slug>", "Workspace slug, overrides MARVIN_WORKSPACE_SLUG")
-  .option("--output <format>", "Output format: table, json, yaml, csv", "table")
+  // No commander default: getOutputMode falls back to MARVIN_OUTPUT_FORMAT, then table
+  .option("--output <format>", "Output format: table, json, yaml, csv (default: table, or MARVIN_OUTPUT_FORMAT)")
   .option("--json", "Shortcut for --output json", false)
   .option("--yaml", "Shortcut for --output yaml", false)
   .option("--csv", "Shortcut for --output csv", false);

@@ -334,14 +334,14 @@ Debug output includes:
 Validate your configuration:
 
 ```bash
-# Check environment variables
-marvin config check
+# Check who you are (validates the user token)
+marvin user profile show
 
-# Show current configuration
-marvin config show
+# Show the active workspace
+marvin workspace current
 
 # Test connection
-marvin publish site
+marvin system health
 ```
 
 ## Example Configurations
@@ -404,11 +404,11 @@ If authentication fails:
 echo $MARVIN_SITE_CLIENT_TOKEN
 
 # Re-login for platform API
-marvin auth logout
-marvin auth login
+marvin logout
+marvin login
 
 # Check token expiration
-marvin auth whoami
+marvin user profile show
 ```
 
 ### Wrong Workspace

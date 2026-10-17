@@ -1,7 +1,7 @@
 # Email Templates
 
 Workspace email templates customise the emails Marvin sends. A template has a type (the kind of email
-it replaces or adds), a subject, and either structured text (header, message, button) or custom HTML.
+it replaces or adds), a subject, and either a Markdown body (rendered in the default layout) or custom HTML.
 These commands manage the current workspace's templates. System-level templates and SMTP are in
 [Email](email.md); sending an email on an event is set up with
 [email subscriptions](email.md#email-subscriptions).
@@ -44,7 +44,7 @@ for the built-in defaults). `get` prints the full template.
 ```bash
 marvin platform email-templates create \
   --type welcome --name "Welcome" --subject "Welcome to Marvin" \
-  --header "Welcome aboard" --message-top "Your account is ready." --button-text "Open Marvin"
+  --body "Your account is ready."
 ```
 
 | Option | Description | Default |
@@ -53,14 +53,11 @@ marvin platform email-templates create \
 | `--name <name>` | Template name (required) | |
 | `--subject <subject>` | Email subject (required) | |
 | `--description <desc>` | Template description | none |
-| `--header <text>` | Header text (structured mode) | none |
-| `--message-top <text>` | Text above the button (structured mode) | none |
-| `--message-bottom <text>` | Text below the button (structured mode) | none |
-| `--button-text <text>` | Button text (structured mode) | none |
-| `--custom-html <html>` | Custom HTML; overrides the structured fields | none |
+| `--body <markdown>` | Markdown body, rendered in the default layout (sent as `bodyMarkdown`) | none |
+| `--custom-html <html>` | Custom HTML; overrides `--body` | none |
 | `--disabled` | Create the template disabled | enabled |
 
-The structured flags are sent as `headerText`, `messageTop`, `messageBottom` and `buttonText`. The
+The API has no separate header, message or button fields, so use `--body` (or `--custom-html`). The
 variables available for a template type are shown by
 [`marvin platform email template-vars --type <type>`](email.md#template-variables). The created
 template is printed on stdout and `Created email template: <name>` on stderr.
@@ -77,11 +74,8 @@ marvin platform email-templates update 9b3e41d7-5c28-4a60-8f17-0d2c6e4a7b93 --cu
 | `--name <name>` | Template name |
 | `--subject <subject>` | Email subject |
 | `--description <desc>` | Template description |
-| `--header <text>` | Header text |
-| `--message-top <text>` | Message top |
-| `--message-bottom <text>` | Message bottom |
-| `--button-text <text>` | Button text |
-| `--custom-html <html>` | Custom HTML template |
+| `--body <markdown>` | Markdown body, rendered in the default layout |
+| `--custom-html <html>` | Custom HTML template (overrides `--body`) |
 | `--enable` | Enable the template |
 | `--disable` | Disable the template |
 

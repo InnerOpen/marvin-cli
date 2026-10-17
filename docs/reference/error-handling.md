@@ -78,11 +78,11 @@ export MARVIN_SITE_CLIENT_TOKEN=marvin_sk_new_token
 For Platform API:
 ```bash
 # Log out and log back in
-marvin auth logout
-marvin auth login
+marvin logout
+marvin login
 
 # Verify authentication
-marvin auth whoami
+marvin user profile show
 ```
 
 #### 403 Forbidden

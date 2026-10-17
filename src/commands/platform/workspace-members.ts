@@ -6,6 +6,31 @@ import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
 import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
+import { WORKSPACE_ROLES } from "../../shared/permissions.js";
+
+const ROLE_LIST = WORKSPACE_ROLES.join(", ");
+
+/**
+ * Body for the SDK (camelCase, as the API documents it). --data/--file bodies may still use the
+ * snake_case keys earlier releases documented; the role is upper-cased and checked against the
+ * backend's WorkspaceRole enum. Returns undefined (after printing why) for an unknown role.
+ */
+function memberBody(raw: any): { userId?: string; workspaceRole?: string } | undefined {
+  const { user_id, workspace_role, ...rest } = raw ?? {};
+  const body: any = { ...rest };
+  if (user_id !== undefined && body.userId === undefined) body.userId = user_id;
+  const role = body.workspaceRole ?? workspace_role;
+  if (role !== undefined) {
+    const upper = String(role).toUpperCase();
+    if (!(WORKSPACE_ROLES as readonly string[]).includes(upper)) {
+      console.error(`Error: Invalid role. Must be one of: ${ROLE_LIST}`);
+      process.exitCode = 1;
+      return undefined;
+    }
+    body.workspaceRole = upper;
+  }
+  return body;
+}
 
 export function registerWorkspaceMemberCommands(parent: Command): void {
   const members = parent
@@ -51,25 +76,18 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
     .command("add <workspace-id>")
     .description("Add a user to a workspace with a specific role"), "member data")
     .option("--user-id <id>", "User ID to add")
-    .option("--role <role>", "Workspace role: OWNER, ADMIN, MEMBER, or VIEWER")
+    .option("--role <role>", `Workspace role: ${ROLE_LIST}`)
     .action(async function(this: Command, workspaceId: string, cmdOpts) {
       try {
         // Quick add via flags; otherwise a full body from --data/--file/stdin
-        const data: any = cmdOpts.userId && cmdOpts.role && cmdOpts.data === undefined && !cmdOpts.file
-          ? { user_id: cmdOpts.userId, workspace_role: cmdOpts.role.toUpperCase() }
-          : await readJsonInput(cmdOpts);
-
-        // Validate role
-        const validRoles = ['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'];
-        if (data.workspace_role && !validRoles.includes(data.workspace_role)) {
-          console.error(`Error: Invalid role. Must be one of: ${validRoles.join(', ')}`);
-          process.exitCode = 1;
-          return;
-        }
+        const data = memberBody(cmdOpts.userId && cmdOpts.role && cmdOpts.data === undefined && !cmdOpts.file
+          ? { userId: cmdOpts.userId, workspaceRole: cmdOpts.role }
+          : await readJsonInput(cmdOpts));
+        if (!data) return;
 
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
-        const member = await client.workspaceMembers.add(workspaceId, data);
+        const member = await client.workspaceMembers.add(workspaceId, data as any);
 
         say(`✓ Added user to workspace with role: ${member.workspaceRole}`);
         renderData(member, getOutputMode(opts));
@@ -83,25 +101,18 @@ export function registerWorkspaceMemberCommands(parent: Command): void {
   addDataOptions(members
     .command("update-role <workspace-id> <user-id>")
     .description("Update a workspace member's role"), "member data")
-    .option("--role <role>", "New workspace role: OWNER, ADMIN, MEMBER, or VIEWER")
+    .option("--role <role>", `New workspace role: ${ROLE_LIST}`)
     .action(async function(this: Command, workspaceId: string, userId: string, cmdOpts) {
       try {
         // Quick update via --role; otherwise a full body from --data/--file/stdin
-        const data: any = cmdOpts.role && cmdOpts.data === undefined && !cmdOpts.file
-          ? { workspace_role: cmdOpts.role.toUpperCase() }
-          : await readJsonInput(cmdOpts);
-
-        // Validate role
-        const validRoles = ['OWNER', 'ADMIN', 'MEMBER', 'VIEWER'];
-        if (data.workspace_role && !validRoles.includes(data.workspace_role)) {
-          console.error(`Error: Invalid role. Must be one of: ${validRoles.join(', ')}`);
-          process.exitCode = 1;
-          return;
-        }
+        const data = memberBody(cmdOpts.role && cmdOpts.data === undefined && !cmdOpts.file
+          ? { workspaceRole: cmdOpts.role }
+          : await readJsonInput(cmdOpts));
+        if (!data) return;
 
         const opts = this.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
-        const member = await client.workspaceMembers.updateRole(workspaceId, userId, data);
+        const member = await client.workspaceMembers.updateRole(workspaceId, userId, data as any);
 
         say(`✓ Updated member role to: ${member.workspaceRole}`);
         renderData(member, getOutputMode(opts));

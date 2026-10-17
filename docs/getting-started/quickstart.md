@@ -31,13 +31,13 @@ Get a site client token from your Marvin instance:
 
 ### For Platform API (Full Access)
 
-Log in with your user credentials:
+Log in with a user token (create one in the Marvin UI or with `marvin user tokens create`):
 
 ```bash
-marvin auth login
+marvin login
 ```
 
-Enter your email and password when prompted.
+Paste the user token when prompted, or pass it with `--user-token`.
 
 ## Step 3: Configure Environment
 
@@ -243,12 +243,12 @@ marvin publish assets            # List assets
 ### Platform API Commands
 
 ```bash
-marvin auth login                # Log in
-marvin auth logout               # Log out
-marvin auth whoami               # Show current user
+marvin login                     # Save your tokens
+marvin logout                    # Clear your user token
+marvin user profile show         # Show current user
 marvin workspace list            # List workspaces
-marvin workspace info            # Current workspace info
-marvin platform entries          # Platform entries API
+marvin workspace current         # Active workspace
+marvin platform entries list     # Platform entries API
 ```
 
 ## Next Steps
@@ -288,7 +288,7 @@ Or create a `.env` file.
 Check your credentials:
 
 - For Publishing API: Verify your site client token
-- For Platform API: Run `marvin auth login`
+- For Platform API: Run `marvin login`
 
 ### "404 Not Found"
 

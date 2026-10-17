@@ -30,7 +30,7 @@ export function registerTokenCommands(parent: Command): void {
           description: 'description',
           createdAt: 'createdAt',
           lastUsedAt: 'lastUsedAt',
-          expiresAt: 'expiresAt',
+          enabled: 'enabled',
         } as any;
         renderList(tokenList as any, columns, getOutputMode(opts));
       } catch (error) {
@@ -43,7 +43,6 @@ export function registerTokenCommands(parent: Command): void {
     .description('Create a new API token')
     .requiredOption('-n, --name <name>', 'Token name')
     .option('-d, --description <description>', 'Token description')
-    .option('-e, --expires <date>', 'Expiration date (ISO 8601)')
     .action(async (options) => {
       try {
         const opts = parent.optsWithGlobals<PlatformCommandOptions>();

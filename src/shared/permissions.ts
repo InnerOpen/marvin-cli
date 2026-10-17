@@ -23,7 +23,9 @@
 import type { Command } from "commander";
 import { commandPath } from "./command-context.js";
 
-export type WorkspaceRole = "OWNER" | "ADMIN" | "EDITOR" | "AUTHOR" | "VIEWER";
+/** The backend's WorkspaceRole enum, highest first. */
+export const WORKSPACE_ROLES = ["OWNER", "ADMIN", "EDITOR", "AUTHOR", "VIEWER"] as const;
+export type WorkspaceRole = (typeof WORKSPACE_ROLES)[number];
 export type RequiredRole = Exclude<WorkspaceRole, "VIEWER"> | "SUPER_ADMIN";
 
 /**

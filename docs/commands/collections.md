@@ -32,8 +32,8 @@ Collections are curated groups of entries in Marvin. They allow you to organize 
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--limit <number>` | Accepted, but currently not sent to the API (all collections are returned) | none |
-| `--offset <number>` | Accepted, but currently not sent to the API | none |
+| `--limit <number>` | Show at most this many collections (applied by the CLI after the list is fetched) | all fetched |
+| `--offset <number>` | Skip this many collections first (applied by the CLI) | `0` |
 | `--json` | Output as JSON | `false` |
 | `--yaml` | Output as YAML | `false` |
 | `--csv` | Output as CSV | `false` |

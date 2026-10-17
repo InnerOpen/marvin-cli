@@ -40,9 +40,9 @@ if ! command -v marvin &> /dev/null; then
 fi
 
 # Check authentication
-if ! marvin auth whoami >/dev/null 2>&1; then
+if ! marvin user profile show >/dev/null 2>&1; then
     echo "Not authenticated, logging in..."
-    marvin auth login
+    marvin login
 fi
 
 # Fetch entries

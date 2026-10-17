@@ -119,16 +119,16 @@ The Platform API provides full CRUD operations for workspace management.
 
 | Command | HTTP Method | Endpoint | Body |
 |---------|-------------|----------|------|
-| `marvin auth login` | `POST` | `/platform/auth/login` | `{email, password}` |
-| `marvin auth logout` | `POST` | `/platform/auth/logout` | - |
-| `marvin auth whoami` | `GET` | `/platform/auth/me` | - |
+| `marvin login` | `GET` | `/api/self` (validates the token, then saves it locally) | - |
+| `marvin logout` | none | clears saved credentials locally | - |
+| `marvin user profile show` | `GET` | `/api/self` | - |
 
 ### Workspaces
 
 | Command | HTTP Method | Endpoint |
 |---------|-------------|----------|
 | `marvin workspace list` | `GET` | `/platform/workspaces` |
-| `marvin workspace info` | `GET` | `/platform/workspaces/{slug}` |
+| `marvin workspace current` | `GET` | `/platform/workspaces/{slug}` |
 | `marvin workspace create` | `POST` | `/platform/workspaces` |
 | `marvin workspace update` | `PATCH` | `/platform/workspaces/{slug}` |
 | `marvin workspace delete` | `DELETE` | `/platform/workspaces/{slug}` |
@@ -324,12 +324,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 - Platform API calls
 - Admin API calls (if user is admin)
 
-**Obtained from:** `marvin auth login`
+**Obtained from:** `marvin login`
 
 **Example:**
 ```bash
 # Login returns session token (stored automatically)
-marvin auth login
+marvin login
 
 # Token used in subsequent requests
 curl -H "Authorization: Bearer $SESSION_TOKEN" \

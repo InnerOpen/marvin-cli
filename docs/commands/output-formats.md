@@ -273,9 +273,10 @@ marvin publish entries --csv
 
 ### Precedence
 
-There is no environment variable for the default format. If more than one is given, `--json` wins,
-then `--yaml`, then `--csv`, then `--output <format>`; with none of them the format is `table`. An
-unsupported `--output` value is an error.
+If more than one is given, `--json` wins, then `--yaml`, then `--csv`, then `--output <format>`;
+with none of them the default comes from the `MARVIN_OUTPUT_FORMAT` environment variable
+(`table`, `json`, `yaml` or `csv`), and without that the format is `table`. A flag always beats the
+variable. An unsupported `--output` or `MARVIN_OUTPUT_FORMAT` value is an error.
 
 ## Use Case Examples
 

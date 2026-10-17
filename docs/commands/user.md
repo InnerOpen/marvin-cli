@@ -8,9 +8,9 @@ change your password. They act on your own account only; to manage other people'
 
 ```bash
 marvin user profile show
-marvin user profile update (--name <name> | --email <email>)
+marvin user profile update (--full-name <name> | --username <username> | --email <email>)
 marvin user tokens list
-marvin user tokens create --name <name> [--description <text>] [--expires <date>]
+marvin user tokens create --name <name> [--description <text>]
 marvin user tokens get <token-id>
 marvin user tokens update <token-id> (--data <json|@file|-> | --file <path>)
 marvin user tokens revoke <token-id>
@@ -25,7 +25,8 @@ These need a signed-in user (`marvin login`) but no particular role.
 
 ```bash
 marvin user profile show
-marvin user profile update --name "Sam Rivera"
+marvin user profile update --full-name "Sam Rivera"
+marvin user profile update --username sam
 marvin user profile update --email sam@example.com
 ```
 
@@ -34,11 +35,13 @@ marvin user profile update --email sam@example.com
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--name <name>` | New display name | unchanged |
+| `--full-name <name>` | New display name (sent as `fullName`) | unchanged |
+| `--name <name>` | Alias for `--full-name` | unchanged |
+| `--username <username>` | New username | unchanged |
 | `--email <email>` | New email address | unchanged |
 
-`update` needs at least one option; with neither it exits 1 with `Provide at least one of --name or
---email`. It prints `Profile updated`, or `{"ok": true, "updated": {...}}` with `--json`.
+`update` needs at least one option; with neither it exits 1 with `Provide at least one of --full-name,
+--username or --email`. It prints `Profile updated`, or `{"ok": true, "updated": {...}}` with `--json`.
 
 ## Personal API tokens
 
@@ -57,7 +60,7 @@ marvin user tokens list
 marvin user tokens get 8c4e1f09-3b72-4d65-a1f8-0e9d7c2b5a36
 ```
 
-`list` columns: `id`, `name`, `description`, `createdAt`, `lastUsedAt`, `expiresAt`. `get` prints one
+`list` columns: `id`, `name`, `description`, `createdAt`, `lastUsedAt`, `enabled`. `get` prints one
 token record: `id`, `userId`, `name`, `description`, `enabled`, `lastUsedAt`, `revokedAt`, `integrationId`
 and timestamps.
 
@@ -72,10 +75,10 @@ marvin user tokens create --name ci-deploy --json | jq -r '.token'
 |--------|-------------|---------|
 | `-n, --name <name>` | Token name (required) | |
 | `-d, --description <description>` | Token description | none |
-| `-e, --expires <date>` | Expiration date (ISO 8601) | none |
 
-The output is the new token record, including `token` (the secret value). `--expires` is accepted but the
-current CLI does not send it to the API, so a token created this way does not expire on that date.
+The output is the new token record, including `token` (the secret value). Personal API tokens have no
+expiry in the Marvin API, so there is no `--expires` option; revoke a token with `user tokens revoke`
+when it is no longer needed.
 
 ### Update
 

@@ -3,6 +3,7 @@
  */
 
 import { Command } from 'commander';
+import type { UserProfileUpdate } from '@inneropen/marvin-sdk/platform';
 import { clientFactory } from '../../shared/clients.js';
 import { renderData } from '../../output.js';
 import { getOutputMode, type PlatformCommandOptions } from '../../shared/types.js';
@@ -31,15 +32,20 @@ export function registerProfileCommands(parent: Command): void {
   profile
     .command('update')
     .description('Update current user profile')
-    .option('--name <name>', 'New display name')
+    .option('--full-name <name>', 'New display name')
+    .option('--name <name>', 'Alias for --full-name')
+    .option('--username <username>', 'New username')
     .option('--email <email>', 'New email address')
     .action(async function(this: Command, cmdOpts) {
       try {
-        const data: any = {};
-        if (cmdOpts.name) data.name = cmdOpts.name;
+        // The API's UserProfileUpdate takes fullName / username / email
+        const data: UserProfileUpdate = {};
+        const fullName = cmdOpts.fullName ?? cmdOpts.name;
+        if (fullName) data.fullName = fullName;
+        if (cmdOpts.username) data.username = cmdOpts.username;
         if (cmdOpts.email) data.email = cmdOpts.email;
         if (Object.keys(data).length === 0) {
-          console.error('Error: Provide at least one of --name or --email');
+          console.error('Error: Provide at least one of --full-name, --username or --email');
           process.exitCode = 1;
           return;
         }

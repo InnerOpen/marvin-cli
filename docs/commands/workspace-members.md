@@ -110,20 +110,21 @@ marvin platform workspace-members get 5a8f0c3e-7d12-4b94-a6e1-92c4d0b7f358 c19d3
 
 ```bash
 marvin platform workspace-members add 5a8f0c3e-7d12-4b94-a6e1-92c4d0b7f358 --user-id c19d3f70-8a24-4e6b-b0d5-7f2e91a4c638 --role ADMIN
-marvin platform workspace-members add 5a8f0c3e-7d12-4b94-a6e1-92c4d0b7f358 --data '{"user_id": "c19d3f70-8a24-4e6b-b0d5-7f2e91a4c638", "workspace_role": "VIEWER"}'
+marvin platform workspace-members add 5a8f0c3e-7d12-4b94-a6e1-92c4d0b7f358 --data '{"userId": "c19d3f70-8a24-4e6b-b0d5-7f2e91a4c638", "workspaceRole": "VIEWER"}'
 ```
 
 | Option | Description |
 |--------|-------------|
 | `--user-id <id>` | User ID to add |
-| `--role <role>` | Workspace role: `OWNER`, `ADMIN`, `MEMBER` or `VIEWER` (case-insensitive) |
+| `--role <role>` | Workspace role: `OWNER`, `ADMIN`, `EDITOR`, `AUTHOR` or `VIEWER` (case-insensitive) |
 | `--data <json\|@file\|->` | Full body as inline JSON, `@path`, or `-` for stdin |
 | `--file <path>` | Path to a JSON file (same as `--data @path`) |
 
 The flags form is used only when **both** `--user-id` and `--role` are given and there is no
 `--data`/`--file`; otherwise the body is read from `--data`, `--file` or piped stdin, with keys
-`user_id` and `workspace_role`. A `workspace_role` outside the four values above is rejected before
-anything is sent (`Invalid role. Must be one of: OWNER, ADMIN, MEMBER, VIEWER`). Prints
+`userId` and `workspaceRole` (the older `user_id` / `workspace_role` spellings are still accepted).
+A role outside the five values above is rejected before anything is sent (`Invalid role. Must be
+one of: OWNER, ADMIN, EDITOR, AUTHOR, VIEWER`). Prints
 `Added user to workspace with role: <role>` on stderr and the member on stdout.
 
 ### Update role
@@ -132,8 +133,8 @@ anything is sent (`Invalid role. Must be one of: OWNER, ADMIN, MEMBER, VIEWER`).
 marvin platform workspace-members update-role 5a8f0c3e-7d12-4b94-a6e1-92c4d0b7f358 c19d3f70-8a24-4e6b-b0d5-7f2e91a4c638 --role VIEWER
 ```
 
-Takes `--role <role>` (new role, same four values, case-insensitive) or a body via `--data` /
-`--file` / stdin (`{"workspace_role": "ADMIN"}`); the same role check applies. Prints
+Takes `--role <role>` (new role, same five values, case-insensitive) or a body via `--data` /
+`--file` / stdin (`{"workspaceRole": "ADMIN"}`); the same role check applies. Prints
 `Updated member role to: <role>` and the member.
 
 ### Remove

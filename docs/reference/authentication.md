@@ -104,31 +104,29 @@ User login provides full access to Platform and Admin APIs based on your user ro
 ### Interactive Login
 
 ```bash
-marvin auth login
+marvin login
 ```
 
-Prompts for:
-- Email address
-- Password
+Prompts for a user token (hidden input). Create one in the Marvin UI or with
+`marvin user tokens create`.
 
 ### Non-Interactive Login
 
-Using command-line flags:
+Using a command-line flag:
 
 ```bash
-marvin auth login --email user@example.com --password mypassword
+marvin login --user-token "$MARVIN_USER_TOKEN" --workspace my-workspace
 ```
 
-Using environment variables:
+Using an environment variable:
 
 ```bash
-export MARVIN_EMAIL=user@example.com
-export MARVIN_PASSWORD=mypassword
-marvin auth login
+export MARVIN_USER_TOKEN=<your-user-token>
+marvin login
 ```
 
 !!! danger "Security Warning"
-    Never pass passwords on command line in production. Use interactive login or API client credentials instead.
+    Tokens passed on the command line end up in shell history. Prefer the interactive prompt or `MARVIN_USER_TOKEN`.
 
 ### Session Storage
 
@@ -154,10 +152,10 @@ Sessions expire after:
 
 ```bash
 # Check if logged in
-marvin auth whoami
+marvin user profile show
 
 # In scripts
-if marvin auth whoami >/dev/null 2>&1; then
+if marvin user profile show >/dev/null 2>&1; then
     echo "Logged in"
 else
     echo "Not logged in"
@@ -167,7 +165,7 @@ fi
 ### Logging Out
 
 ```bash
-marvin auth logout
+marvin logout
 ```
 
 Clears:
@@ -258,7 +256,7 @@ When credentials are set, they're used automatically:
 ```bash
 # No login needed
 marvin platform entries
-marvin platform entry create
+marvin platform entries create
 ```
 
 ### Permissions
@@ -332,7 +330,7 @@ Admin tokens have full system access:
 ### Platform API Flow (User Login)
 
 ```
-1. Run: marvin auth login
+1. Run: marvin login
 2. Enter email/password
 3. Token stored in keychain
 4. Run platform commands
@@ -378,7 +376,7 @@ Admin tokens have full system access:
 **Development:**
 ```bash
 # User login is fine
-marvin auth login
+marvin login
 
 # Or site token in .env
 MARVIN_SITE_CLIENT_TOKEN=marvin_sk_dev_token
@@ -448,11 +446,11 @@ export MARVIN_SITE_CLIENT_TOKEN=marvin_sk_new_token
 **Solutions:**
 ```bash
 # Log out and back in
-marvin auth logout
-marvin auth login
+marvin logout
+marvin login
 
 # Check session
-marvin auth whoami
+marvin user profile show
 ```
 
 ### Permission Denied
@@ -462,7 +460,7 @@ marvin auth whoami
 **Solutions:**
 ```bash
 # Check user role
-marvin auth whoami --json | jq -r '.role'
+marvin user profile show --json | jq '.workspaceMemberships'
 
 # Verify required permissions in Marvin UI
 # Contact workspace admin if needed
