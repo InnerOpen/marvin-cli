@@ -51,7 +51,7 @@ export function registerTokenCommands(parent: Command): void {
         const data = {
           name: options.name,
           description: options.description,
-          integrationId: options.name,
+          integrationId: 'generic', // the API's default; a personal token belongs to no particular integration
         };
 
         const token = await client.user.createApiToken(data);

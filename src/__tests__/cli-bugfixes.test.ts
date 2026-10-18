@@ -58,9 +58,9 @@ describe('CLI bug fixes', () => {
       vi.mocked(clientFactory.createPlatformClient).mockResolvedValue({ user } as any)
     })
 
-    it('sends name and description (the API has no expiry field)', async () => {
+    it('sends name and description, with the API default integrationId (the API has no expiry field)', async () => {
       await run('user', 'tokens', 'create', '--name', 'ci', '--description', 'nightly', '--json')
-      expect(user.createApiToken).toHaveBeenCalledWith({ name: 'ci', description: 'nightly', integrationId: 'ci' })
+      expect(user.createApiToken).toHaveBeenCalledWith({ name: 'ci', description: 'nightly', integrationId: 'generic' })
     })
 
     it('rejects --expires instead of silently dropping it', async () => {
