@@ -1,6 +1,6 @@
 /**
  * Regression tests against a mocked SDK: `user tokens create`, `user profile update`,
- * `platform workspace-members add|update-role`, `collections --limit/--offset`, email-template
+ * `platform workspace-members add|update-role`, `collections --limit/--offset` (forwarded to the SDK), email-template
  * body flags, and MARVIN_OUTPUT_FORMAT as the default output format.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
@@ -163,33 +163,47 @@ describe('CLI bug fixes', () => {
 
   describe('collections --limit/--offset', () => {
     let list: any
-    const rows = ['a', 'b', 'c', 'd', 'e'].map((slug) => ({ slug, title: slug.toUpperCase() }))
+    const rows = [{ slug: 'a', title: 'A' }, { slug: 'b', title: 'B' }]
     beforeEach(() => {
       list = vi.fn().mockResolvedValue(rows)
       vi.mocked(clientFactory.createPublishClient).mockReturnValue({ collections: { list } } as any)
     })
 
-    const slugs = () => (JSON.parse(io.out()) as any[]).map((r) => r.slug)
-
-    it('without options lists everything', async () => {
+    it('without options asks for the server default page and prints what comes back', async () => {
       await run('publish', 'collections', '--json')
-      expect(slugs()).toEqual(['a', 'b', 'c', 'd', 'e'])
+      expect(list).toHaveBeenCalledWith({ limit: undefined, offset: undefined })
+      expect((JSON.parse(io.out()) as any[]).map((r) => r.slug)).toEqual(['a', 'b'])
     })
 
-    it('--limit caps the list', async () => {
-      await run('publish', 'collections', '--limit', '2', '--json')
-      expect(slugs()).toEqual(['a', 'b'])
+    it('forwards --limit and --offset to the SDK and does not slice the result', async () => {
+      await run('publish', 'collections', '--offset', '40', '--limit', '30', '--json')
+      expect(list).toHaveBeenCalledWith({ limit: 30, offset: 40 })
+      expect((JSON.parse(io.out()) as any[]).map((r) => r.slug)).toEqual(['a', 'b'])
     })
 
-    it('--offset skips and --limit applies after it', async () => {
-      await run('publish', 'collections', '--offset', '1', '--limit', '2', '--json')
-      expect(slugs()).toEqual(['b', 'c'])
+    it('forwards --offset 0', async () => {
+      await run('publish', 'collections', '--offset', '0', '--json')
+      expect(list).toHaveBeenCalledWith({ limit: undefined, offset: 0 })
     })
 
     it('rejects a non-numeric --limit', async () => {
       await run('publish', 'collections', '--limit', 'lots')
       expect(process.exitCode).toBe(1)
       expect(io.err()).toContain('--limit must be a number')
+      expect(list).not.toHaveBeenCalled()
+    })
+
+    it('rejects a --limit above the server maximum', async () => {
+      await run('publish', 'collections', '--limit', '101')
+      expect(process.exitCode).toBe(1)
+      expect(io.err()).toContain('--limit can be at most 100')
+      expect(list).not.toHaveBeenCalled()
+    })
+
+    it('rejects a negative --offset', async () => {
+      await run('publish', 'collections', '--offset', '-1')
+      expect(process.exitCode).toBe(1)
+      expect(list).not.toHaveBeenCalled()
     })
   })
 

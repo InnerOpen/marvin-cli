@@ -32,8 +32,8 @@ Collections are curated groups of entries in Marvin. They allow you to organize 
 
 | Option | Description | Default |
 |--------|-------------|---------|
-| `--limit <number>` | Show at most this many collections (applied by the CLI after the list is fetched) | all fetched |
-| `--offset <number>` | Skip this many collections first (applied by the CLI) | `0` |
+| `--limit <number>` | Show at most this many collections (1 to 100) | server default (20) |
+| `--offset <number>` | Skip this many collections first | `0` |
 | `--json` | Output as JSON | `false` |
 | `--yaml` | Output as YAML | `false` |
 | `--csv` | Output as CSV | `false` |
@@ -61,10 +61,17 @@ Collections are curated groups of entries in Marvin. They allow you to organize 
 
 ### Basic Usage
 
-List all collections:
+List collections (the server returns 20 at a time unless you ask for more):
 
 ```bash
 marvin publish collections
+```
+
+Page through a larger workspace, 100 at a time:
+
+```bash
+marvin publish collections --limit 100
+marvin publish collections --limit 100 --offset 100
 ```
 
 Output (columns: Name, Slug, Description, the description cut to 50 characters):
