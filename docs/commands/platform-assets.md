@@ -1,8 +1,8 @@
 # Platform assets
 
 Upload, download, edit and delete the workspace's assets (images, documents and other files)
-through the Platform API. For reading published assets use the
-[Publishing API assets](assets.md) instead.
+through the Platform API. The Publishing API has no asset routes; published entries carry their
+assets, with public URLs, inline (`marvin publish entry <slug> --json | jq .assets`).
 
 ## Commands
 

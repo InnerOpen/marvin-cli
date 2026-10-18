@@ -162,12 +162,6 @@ marvin publish entry about                   # one entry by slug
 marvin publish collections                   # collections
 marvin publish collection featured           # one collection
 marvin publish collection-entries featured   # its entries, in order
-marvin publish resources                     # resources
-marvin publish resource kuroki-s022          # one resource
-marvin publish resource-entries kuroki-s022  # entries that use it
-marvin publish assets --type image           # assets, filtered by type
-marvin publish asset hero-image              # one asset
-marvin publish asset hero-image --download --out-file hero.jpg
 marvin publish renderers                     # renderers the workspace needs
 ```
 
@@ -238,7 +232,7 @@ Table is the default.
 marvin publish entries                   # table
 marvin publish entries --json            # JSON
 marvin publish collections --yaml        # YAML
-marvin publish resources --csv > resources.csv
+marvin publish collections --csv > collections.csv
 ```
 
 **stdout carries data only.** Confirmations ("✓ Created…"), progress and warnings go to stderr, so
@@ -281,8 +275,8 @@ marvin publish entries --json | jq 'length'
 # Does an entry exist?
 if marvin publish entry about --json > /dev/null 2>&1; then echo "exists"; fi
 
-# Names of all image assets
-marvin publish assets --type image --json | jq -r '.[].name'
+# Names of one entry's assets
+marvin publish entry hero --json | jq -r '.assets[].name'
 
 # Every webhook, across all pages
 marvin platform webhooks list --all --json | jq -r '.[].name'

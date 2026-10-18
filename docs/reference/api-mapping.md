@@ -77,34 +77,6 @@ GET https://api.example.com/api/my-workspace/collections/featured
 GET https://api.example.com/api/my-workspace/collections/featured/entries
 ```
 
-### Resources
-
-| Command | HTTP Method | Endpoint |
-|---------|-------------|----------|
-| `marvin publish resources` | `GET` | `/api/{workspace}/resources` |
-| `marvin publish resource <slug>` | `GET` | `/api/{workspace}/resources/{slug}` |
-| `marvin publish resource-entries <slug>` | `GET` | `/api/{workspace}/resources/{slug}/entries` |
-
-**Examples:**
-```bash
-GET https://api.example.com/api/my-workspace/resources
-GET https://api.example.com/api/my-workspace/resources/kuroki-s022
-GET https://api.example.com/api/my-workspace/resources/kuroki-s022/entries
-```
-
-### Assets
-
-| Command | HTTP Method | Endpoint | Query Params |
-|---------|-------------|----------|--------------|
-| `marvin publish assets` | `GET` | `/api/{workspace}/assets` | `type`, `limit` |
-
-**Examples:**
-```bash
-GET https://api.example.com/api/my-workspace/assets
-GET https://api.example.com/api/my-workspace/assets?type=image
-GET https://api.example.com/api/my-workspace/assets?limit=50
-```
-
 ## Platform API
 
 The Platform API provides full CRUD operations for workspace management.

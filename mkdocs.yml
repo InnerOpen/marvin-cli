@@ -82,8 +82,6 @@ nav:
           - Site: commands/site.md
           - Entries: commands/entries.md
           - Collections: commands/collections.md
-          - Resources: commands/resources.md
-          - Assets: commands/assets.md
           - Renderers: commands/renderers.md
       - Platform API:
           - Workspaces: commands/workspaces.md

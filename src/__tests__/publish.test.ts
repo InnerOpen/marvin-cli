@@ -1,6 +1,6 @@
 /**
  * Publishing ergonomics against a mocked SDK: `publish entries --tag/--slug/--updated-since/--expand`,
- * `publish asset --download` and `platform assets download`.
+ * and `platform assets download`.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Command } from 'commander'
@@ -49,7 +49,6 @@ describe('publishing', () => {
     io = captureOutput()
     publish = {
       entries: { list: vi.fn().mockResolvedValue([{ title: 'Hello', slug: 'hello', entryType: 'post', status: 'published', publishedAt: null }]) },
-      assets: { download: vi.fn().mockResolvedValue(PNG), get: vi.fn() },
     }
     vi.mocked(clientFactory.createPublishClient).mockReturnValue(publish)
   })
@@ -88,41 +87,6 @@ describe('publishing', () => {
     expect(process.exitCode).toBe(1)
     expect(io.err()).toContain(message)
     expect(publish.entries.list).not.toHaveBeenCalled()
-  })
-
-  it('publish asset --download --out-file writes the file and reports it', async () => {
-    const out = join(dir, 'logo.png')
-    await run('publish', 'asset', 'logo', '--download', '--out-file', out, '--json')
-    expect(publish.assets.download).toHaveBeenCalledWith('logo')
-    expect(Array.from(readFileSync(out))).toEqual([137, 80, 78, 71])
-    expect(JSON.parse(io.out())).toEqual({ ok: true, file: out, bytes: 4, contentType: 'image/png' })
-  })
-
-  it('publish asset --download with stdout piped writes the bytes to stdout', async () => {
-    const writes: unknown[] = []
-    vi.mocked(process.stdout.write).mockImplementation(((chunk: unknown) => { writes.push(chunk); return true }) as any)
-    await run('publish', 'asset', 'logo', '--download')
-    expect(writes).toHaveLength(1)
-    expect(Array.from(writes[0] as Buffer)).toEqual([137, 80, 78, 71])
-  })
-
-  it('publish asset --download refuses to write binary to a terminal', async () => {
-    const tty = process.stdout.isTTY
-    process.stdout.isTTY = true
-    try {
-      await run('publish', 'asset', 'logo', '--download')
-    } finally {
-      process.stdout.isTTY = tty
-    }
-    expect(process.exitCode).toBe(1)
-    expect(io.err()).toContain('Pass --out-file <path>')
-    expect(publish.assets.download).not.toHaveBeenCalled()
-  })
-
-  it('--out-file without --download is an error', async () => {
-    await run('publish', 'asset', 'logo', '--out-file', join(dir, 'x'))
-    expect(process.exitCode).toBe(1)
-    expect(io.err()).toContain('--out-file goes with --download')
   })
 
   it('platform assets download writes the bytes to --out-file', async () => {

@@ -1,8 +1,8 @@
 # Platform resources
 
 Create, edit and delete the workspace's resources (links, files and other external references that
-entries point to) through the Platform API. For reading published resources use the
-[Publishing API resources](resources.md) instead.
+entries point to) through the Platform API. The Publishing API has no resource routes; published
+entries carry their resources inline (`marvin publish entry <slug> --json | jq .resources`).
 
 ## Commands
 

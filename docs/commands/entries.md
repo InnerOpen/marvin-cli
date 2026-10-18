@@ -476,8 +476,6 @@ marvin publish collections --json | jq -r '.[].slug'
 
 - [`marvin publish collections`](collections.md) - List collections
 - [`marvin publish collection-entries <slug>`](collections.md#collection-entries) - List entries in a collection
-- [`marvin publish resources`](resources.md) - List resources
-- [`marvin publish assets`](assets.md) - List assets
 
 ## API Reference
 

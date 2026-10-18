@@ -159,16 +159,14 @@ See [User Account](user.md).
 marvin publish entries
 marvin publish entry homepage
 marvin publish collections
-marvin publish assets
 
 # Export data
 marvin publish entries --json > entries.json
-marvin publish assets --csv > assets.csv
+marvin publish collections --csv > collections.csv
 
 # Filter results
 marvin publish entries --entry-type page
 marvin publish entries --collection featured
-marvin publish assets --type image
 
 # Platform operations
 marvin login
@@ -185,7 +183,6 @@ marvin platform entries create --data @entry.json
 marvin publish site              # Site config
 marvin publish entries           # Published entries
 marvin publish collections       # Collections
-marvin publish assets            # Assets
 ```
 
 #### Content Management
@@ -201,8 +198,8 @@ marvin platform site rebuild              # Rebuild the static site
 
 ```bash
 marvin publish entries --json    # JSON export
-marvin publish assets --csv      # CSV export
-marvin publish resources --yaml  # YAML export
+marvin publish collections --csv # CSV export
+marvin publish entries --yaml    # YAML export
 ```
 
 #### Workspace Administration
