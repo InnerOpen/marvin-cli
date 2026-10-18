@@ -65,8 +65,6 @@ marvin publish site --site-token marvin_sk_your_token
 marvin publish site
 marvin publish entries
 marvin publish collections
-marvin publish assets
-marvin publish resources
 ```
 
 ### Permissions

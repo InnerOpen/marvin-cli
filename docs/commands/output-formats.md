@@ -297,7 +297,7 @@ marvin publish entry homepage --json | jq .
 marvin publish entries --json > entries.json
 
 # Export assets to CSV for tracking
-marvin publish assets --csv > assets-$(date +%Y%m%d).csv
+marvin platform assets list --csv > assets-$(date +%Y%m%d).csv
 
 # Export site config to YAML
 marvin publish site --yaml > site-config.yaml
@@ -316,7 +316,7 @@ if [ "$(marvin publish entry homepage --json | jq 'length')" -gt 0 ]; then
 fi
 
 # Get all image assets
-marvin publish assets --type image --json | jq -r '.[].publicUrl'
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]' | jq -r '.[].publicUrl'
 ```
 
 ### Reporting
@@ -327,7 +327,7 @@ echo "Content Report - Week $(date +%W)"
 echo "================================"
 echo "Total Entries: $(marvin publish entries --json | jq 'length')"
 echo "Total Collections: $(marvin publish collections --json | jq 'length')"
-echo "Total Assets: $(marvin publish assets --json | jq 'length')"
+echo "Total Assets: $(marvin platform assets list --json | jq 'length')"
 
 # Export to CSV for analysis
 marvin publish entries --csv > report-$(date +%Y%m%d).csv

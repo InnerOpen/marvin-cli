@@ -80,15 +80,12 @@ a token saved with `marvin workspace token`, or `MARVIN_SITE_CLIENT_TOKEN`).
 | `collections` | List collections |
 | `collection <slug>` | Get a collection |
 | `collection-entries <slug>` | List entries in a collection |
-| `resources` | List resources |
-| `resource <slug>` | Get a resource |
-| `resource-entries <slug>` | List entry slugs that use a resource |
-| `assets` | List assets |
-| `asset <slug>` | Get an asset, or download its file with `--download` |
 | `renderers` | List the renderers the workspace needs |
 
 **Learn more**: [Site](site.md), [Entries](entries.md), [Collections](collections.md),
-[Resources](resources.md), [Assets](assets.md), [Renderers](renderers.md)
+[Renderers](renderers.md). Assets and resources are carried inline on each entry
+(`publish entry <slug>`); the libraries are under [Platform Assets](platform-assets.md) and
+[Platform Resources](platform-resources.md).
 
 ### Platform API (`platform`)
 
@@ -318,8 +315,6 @@ marvin platform entries create --help
 - [Site Configuration](site.md)
 - [Entries](entries.md)
 - [Collections](collections.md)
-- [Resources](resources.md)
-- [Assets](assets.md)
 - [Renderers](renderers.md)
 
 ### Platform API

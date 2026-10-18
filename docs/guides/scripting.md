@@ -228,12 +228,12 @@ REPORT_FILE="content-report-$(date +%Y%m%d).txt"
     
     echo ""
     echo "Assets:"
-    ASSET_COUNT=$(marvin publish assets --json | jq 'length')
+    ASSET_COUNT=$(marvin platform assets list --json | jq 'length')
     echo "  Total: $ASSET_COUNT"
     
     echo ""
     echo "Storage:"
-    TOTAL_SIZE=$(marvin publish assets --json | jq 'map(.size) | add')
+    TOTAL_SIZE=$(marvin platform assets list --json | jq 'map(.fileSize) | add')
     echo "  Total: $(numfmt --to=iec-i --suffix=B $TOTAL_SIZE)"
     
 } > "$REPORT_FILE"
@@ -263,11 +263,12 @@ marvin publish collections --json > "$BACKUP_DIR/collections-$DATE.json"
 
 # Backup assets list
 echo "Backing up assets..."
-marvin publish assets --json > "$BACKUP_DIR/assets-$DATE.json"
+marvin platform assets list --json > "$BACKUP_DIR/assets-$DATE.json"
 
 # Backup resources
+# Resources and assets come from the libraries, which need a user token (MARVIN_USER_TOKEN)
 echo "Backing up resources..."
-marvin publish resources --json > "$BACKUP_DIR/resources-$DATE.json"
+marvin platform resources list --json > "$BACKUP_DIR/resources-$DATE.json"
 
 # Backup site config
 echo "Backing up site config..."

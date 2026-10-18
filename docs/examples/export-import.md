@@ -28,10 +28,10 @@ echo "  - Collections"
 marvin publish collections --json > "$EXPORT_DIR/collections.json"
 
 echo "  - Resources"
-marvin publish resources --json > "$EXPORT_DIR/resources.json"
+marvin platform resources list --json > "$EXPORT_DIR/resources.json"
 
 echo "  - Assets"
-marvin publish assets --json > "$EXPORT_DIR/assets.json"
+marvin platform assets list --json > "$EXPORT_DIR/assets.json"
 
 # Create manifest
 jq -n \
@@ -81,7 +81,7 @@ marvin publish entries --entry-type article --json > exports/articles.json
 echo "Exported $(jq 'length' exports/articles.json) articles"
 
 # Images only
-marvin publish assets --type image --json > exports/images.json
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]' > exports/images.json
 echo "Exported $(jq 'length' exports/images.json) images"
 ```
 
@@ -430,13 +430,13 @@ marvin publish entries --json | \
 #!/bin/bash
 # Export asset information
 
-marvin publish assets --json | \
+marvin platform assets list --json | \
   jq '.[] | {
     filename: .filename,
-    url: .url,
+    url: .publicUrl,
     mimeType: .mimeType,
-    size: .size,
-    sizeInMB: (.size / 1048576 | round * 100 / 100),
+    size: .fileSize,
+    sizeInMB: (.fileSize / 1048576 | round * 100 / 100),
     alt: .metadata.alt,
     title: .metadata.title,
     uploadedAt: .uploadedAt
@@ -454,8 +454,8 @@ echo "Asset metadata exported"
 ASSET_DIR="downloaded-assets"
 mkdir -p "$ASSET_DIR"
 
-marvin publish assets --json | jq -c '.[]' | while read -r asset; do
-  URL=$(echo "$asset" | jq -r '.url')
+marvin platform assets list --json | jq -c '.[]' | while read -r asset; do
+  URL=$(echo "$asset" | jq -r '.publicUrl')
   FILENAME=$(echo "$asset" | jq -r '.filename')
   
   echo "Downloading: $FILENAME"
@@ -475,8 +475,8 @@ echo "✓ Downloaded $(ls "$ASSET_DIR" | wc -l) assets"
 IMAGE_DIR="images"
 mkdir -p "$IMAGE_DIR"
 
-marvin publish assets --type image --json | jq -c '.[]' | while read -r asset; do
-  URL=$(echo "$asset" | jq -r '.url')
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]' | jq -c '.[]' | while read -r asset; do
+  URL=$(echo "$asset" | jq -r '.publicUrl')
   FILENAME=$(echo "$asset" | jq -r '.filename')
   
   echo "Downloading: $FILENAME"
@@ -496,11 +496,11 @@ cat > asset-inventory.csv <<EOF
 Filename,Type,Size (MB),URL,Alt Text,Uploaded
 EOF
 
-marvin publish assets --json | jq -r '.[] | [
+marvin platform assets list --json | jq -r '.[] | [
   .filename,
   .mimeType,
-  (.size / 1048576 | round * 100 / 100 | tostring),
-  .url,
+  (.fileSize / 1048576 | round * 100 / 100 | tostring),
+  .publicUrl,
   .metadata.alt // "",
   .uploadedAt
 ] | @csv' >> asset-inventory.csv
@@ -620,7 +620,7 @@ for workspace in "${WORKSPACES[@]}"; do
   # Export with workspace context
   marvin --workspace "$workspace" publish entries --json > "$WS_DIR/entries.json"
   marvin --workspace "$workspace" publish collections --json > "$WS_DIR/collections.json"
-  marvin --workspace "$workspace" publish assets --json > "$WS_DIR/assets.json"
+  marvin --workspace "$workspace" platform assets list --json > "$WS_DIR/assets.json"
   
   COUNT=$(jq 'length' "$WS_DIR/entries.json")
   echo "  → $COUNT entries"
@@ -685,8 +685,8 @@ echo "Creating backup: $DATE"
 marvin publish site --json > "$BACKUP_DIR/site.json"
 marvin publish entries --json > "$BACKUP_DIR/entries.json"
 marvin publish collections --json > "$BACKUP_DIR/collections.json"
-marvin publish resources --json > "$BACKUP_DIR/resources.json"
-marvin publish assets --json > "$BACKUP_DIR/assets.json"
+marvin platform resources list --json > "$BACKUP_DIR/resources.json"
+marvin platform assets list --json > "$BACKUP_DIR/assets.json"
 
 # Create manifest with checksums
 {

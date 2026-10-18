@@ -136,7 +136,7 @@ Every command, with its arguments, options and an example, is documented under
 |---|---|
 | `login`, `logout`, `register`, `forgot-password`, `reset-password` | [Authentication](docs/commands/auth.md) |
 | `workspace` (use, list, token, export, import, preferences, stats, backups) | [Workspaces](docs/commands/workspaces.md) |
-| `publish` (site, entries, collections, resources, assets, renderers) | [Site](docs/commands/site.md), [Entries](docs/commands/entries.md), [Collections](docs/commands/collections.md), [Resources](docs/commands/resources.md), [Assets](docs/commands/assets.md), [Renderers](docs/commands/renderers.md) |
+| `publish` (site, entries, collections, renderers) | [Site](docs/commands/site.md), [Entries](docs/commands/entries.md), [Collections](docs/commands/collections.md), [Renderers](docs/commands/renderers.md) |
 | `platform entries`, `collections`, `resources`, `assets` | [Entries](docs/commands/platform-entries.md), [Collections](docs/commands/platform-collections.md), [Smart collections](docs/commands/smart-collections.md), [Resources](docs/commands/platform-resources.md), [Assets](docs/commands/platform-assets.md), [Review queue](docs/commands/review.md), [Tags](docs/commands/tags.md) |
 | `platform entry-types`, `forms`, `blueprints` | [Entry types](docs/commands/entry-types.md), [Forms](docs/commands/forms.md), [Blueprints](docs/commands/blueprints.md) |
 | `platform webhooks`, `incoming-webhooks`, `api-clients`, `integrations` | [Webhooks](docs/commands/webhooks.md), [Incoming webhooks](docs/commands/incoming-webhooks.md), [API clients](docs/commands/api-clients.md), [Integrations](docs/commands/integrations.md) |

@@ -10,8 +10,8 @@ Practical examples for everyday tasks with the Marvin CLI.
 # Get overview of all content
 marvin publish entries
 marvin publish collections
-marvin publish assets
-marvin publish resources
+marvin platform assets list       # the asset library (user token)
+marvin platform resources list    # the resource library (user token)
 ```
 
 ### Find Specific Entry
@@ -91,43 +91,46 @@ marvin publish entries --entry-type page --collection featured
 ### Find Assets
 
 ```bash
-# All assets
-marvin publish assets
+# All assets (the library needs a user token; see `marvin login`)
+marvin platform assets list
 
 # Just images
-marvin publish assets --type image
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]'
 
 # Just videos
-marvin publish assets --type video
+marvin platform assets list --json | jq '[.[] | select(.assetType == "video")]'
 
 # PDFs
-marvin publish assets --type application/pdf
+marvin platform assets list --json | jq '[.[] | select(.mimeType == "application/pdf")]'
+
+# The assets one entry uses (the entry carries them inline)
+marvin publish entry about --json | jq '.assets'
 ```
 
 ### Get Asset Details
 
 ```bash
 # All asset URLs
-marvin publish assets --json | jq -r '.[].url'
+marvin platform assets list --json | jq -r '.[].publicUrl'
 
 # Image URLs only
-marvin publish assets --type image --json | jq -r '.[].url'
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]' | jq -r '.[].publicUrl'
 
 # Asset filenames
-marvin publish assets --json | jq -r '.[].filename'
+marvin platform assets list --json | jq -r '.[].filename'
 ```
 
 ### Calculate Storage
 
 ```bash
 # Total asset size
-marvin publish assets --json | \
-  jq 'map(.size) | add' | \
+marvin platform assets list --json | \
+  jq 'map(.fileSize) | add' | \
   numfmt --to=iec-i --suffix=B
 
 # Image storage only
-marvin publish assets --type image --json | \
-  jq 'map(.size) | add' | \
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]' | \
+  jq 'map(.fileSize) | add' | \
   numfmt --to=iec-i --suffix=B
 ```
 
@@ -135,14 +138,14 @@ marvin publish assets --type image --json | \
 
 ```bash
 # Assets over 1MB
-marvin publish assets --json | \
-  jq '.[] | select(.size > 1048576) | 
-      {filename, size: (.size / 1048576 | round | tostring + "MB")}'
+marvin platform assets list --json | \
+  jq '.[] | select(.fileSize > 1048576) | 
+      {filename, size: (.fileSize / 1048576 | round | tostring + "MB")}'
 
 # Top 10 largest assets
-marvin publish assets --json | \
-  jq 'sort_by(.size) | reverse | .[0:10] | 
-      .[] | {filename, size}'
+marvin platform assets list --json | \
+  jq 'sort_by(.fileSize) | reverse | .[0:10] | 
+      .[] | {filename, fileSize}'
 ```
 
 ## Content Analysis
@@ -170,8 +173,8 @@ echo "Content Summary"
 echo "==============="
 echo "Entries: $(marvin publish entries --json | jq 'length')"
 echo "Collections: $(marvin publish collections --json | jq 'length')"
-echo "Assets: $(marvin publish assets --json | jq 'length')"
-echo "Resources: $(marvin publish resources --json | jq 'length')"
+echo "Assets: $(marvin platform assets list --json | jq 'length')"
+echo "Resources: $(marvin platform resources list --json | jq 'length')"
 ```
 
 ### Detailed Report
@@ -208,9 +211,9 @@ echo ""
 # Asset stats
 echo "ASSETS"
 echo "------"
-ASSETS=$(marvin publish assets --json)
+ASSETS=$(marvin platform assets list --json)
 TOTAL_ASSETS=$(echo "$ASSETS" | jq 'length')
-TOTAL_SIZE=$(echo "$ASSETS" | jq 'map(.size) | add')
+TOTAL_SIZE=$(echo "$ASSETS" | jq 'map(.fileSize) | add')
 
 echo "Total: $TOTAL_ASSETS"
 echo "Storage: $(echo $TOTAL_SIZE | numfmt --to=iec-i --suffix=B)"
@@ -233,8 +236,8 @@ DATE=$(date +%Y%m%d)
 # Export all data
 marvin publish entries --json > "export/entries-$DATE.json"
 marvin publish collections --json > "export/collections-$DATE.json"
-marvin publish assets --json > "export/assets-$DATE.json"
-marvin publish resources --json > "export/resources-$DATE.json"
+marvin platform assets list --json > "export/assets-$DATE.json"
+marvin platform resources list --json > "export/resources-$DATE.json"
 marvin publish site --json > "export/site-$DATE.json"
 
 # Compress
@@ -251,7 +254,7 @@ marvin publish entries --entry-type page --json > pages.json
 marvin publish entries --entry-type project --json > projects.json
 
 # Export images
-marvin publish assets --type image --json > images.json
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]' > images.json
 ```
 
 ### Export to CSV
@@ -267,8 +270,8 @@ marvin publish assets --type image --json > images.json
 # Assets to CSV
 {
   echo "Filename,URL,Type,Size"
-  marvin publish assets --json | \
-    jq -r '.[] | [.filename, .url, .mimeType, .size] | @csv'
+  marvin platform assets list --json | \
+    jq -r '.[] | [.filename, .publicUrl, .mimeType, .fileSize] | @csv'
 } > assets.csv
 ```
 
@@ -345,14 +348,14 @@ fi
 ### Find Broken References
 
 ```bash
-# Find entries referencing missing resources
-marvin publish entries --json | jq -c '.[] | select(.resources | length > 0)' | \
+# Find entries referencing resources that are not in the library
+# (full entries carry their resources inline; the library needs a user token)
+KNOWN=$(marvin platform resources list --json | jq -r '.[].slug')
+marvin publish entries --expand full --json | jq -c '.[] | select(.resources | length > 0)' | \
 while read -r entry; do
   SLUG=$(echo "$entry" | jq -r '.slug')
-  RESOURCES=$(echo "$entry" | jq -r '.resources[]')
-  
-  for resource in $RESOURCES; do
-    if ! marvin publish resource "$resource" --json >/dev/null 2>&1; then
+  for resource in $(echo "$entry" | jq -r '.resources[].slug'); do
+    if ! grep -qx "$resource" <<< "$KNOWN"; then
       echo "⚠ Entry '$SLUG' references missing resource: $resource"
     fi
   done
@@ -456,11 +459,11 @@ marvin publish collections --json > "$OUTPUT_DIR/collections.json"
 
 # Resources
 echo "  - Resources"
-marvin publish resources --json > "$OUTPUT_DIR/resources.json"
+marvin platform resources list --json > "$OUTPUT_DIR/resources.json"
 
 # Assets
 echo "  - Assets"
-marvin publish assets --json > "$OUTPUT_DIR/assets.json"
+marvin platform assets list --json > "$OUTPUT_DIR/assets.json"
 
 # Individual entry files
 echo "  - Individual entries"

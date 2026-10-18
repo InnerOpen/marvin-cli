@@ -20,8 +20,8 @@ echo "Starting daily backup - $(date)"
 # Backup all content
 marvin publish entries --json > "$BACKUP_DIR/entries-$DATE.json"
 marvin publish collections --json > "$BACKUP_DIR/collections-$DATE.json"
-marvin publish assets --json > "$BACKUP_DIR/assets-$DATE.json"
-marvin publish resources --json > "$BACKUP_DIR/resources-$DATE.json"
+marvin platform assets list --json > "$BACKUP_DIR/assets-$DATE.json"
+marvin platform resources list --json > "$BACKUP_DIR/resources-$DATE.json"
 marvin publish site --json > "$BACKUP_DIR/site-$DATE.json"
 
 # Compress
@@ -114,7 +114,7 @@ echo "Fetching content from Marvin..."
 marvin publish site --json > "$OUTPUT_DIR/site.json"
 marvin publish entries --json > "$OUTPUT_DIR/entries.json"
 marvin publish collections --json > "$OUTPUT_DIR/collections.json"
-marvin publish resources --json > "$OUTPUT_DIR/resources.json"
+marvin platform resources list --json > "$OUTPUT_DIR/resources.json"
 
 # Verify we got data
 ENTRY_COUNT=$(jq 'length' "$OUTPUT_DIR/entries.json")
@@ -254,8 +254,8 @@ mkdir -p "$ASSET_DIR"
 
 echo "Mirroring assets..."
 
-marvin publish assets --json | jq -c '.[]' | while read -r asset; do
-  URL=$(echo "$asset" | jq -r '.url')
+marvin platform assets list --json | jq -c '.[]' | while read -r asset; do
+  URL=$(echo "$asset" | jq -r '.publicUrl')
   FILENAME=$(echo "$asset" | jq -r '.filename')
   
   # Skip if already downloaded
@@ -288,7 +288,7 @@ $(date)
 
 Total Entries: $(marvin publish entries --json | jq 'length')
 Total Collections: $(marvin publish collections --json | jq 'length')
-Total Assets: $(marvin publish assets --json | jq 'length')
+Total Assets: $(marvin platform assets list --json | jq 'length')
 
 Published Today:
 $(marvin publish entries --json | \
@@ -325,7 +325,7 @@ mkdir -p analytics
 jq -n \
   --arg week "$WEEK_START" \
   --argjson entries "$(marvin publish entries --json)" \
-  --argjson assets "$(marvin publish assets --json)" \
+  --argjson assets "$(marvin platform assets list --json)" \
   '{
     week: $week,
     totalEntries: ($entries | length),
@@ -334,7 +334,7 @@ jq -n \
       map({type: .[0].entryType, count: length})),
     newThisWeek: ($entries | 
       [.[] | select(.publishedAt >= $week)] | length),
-    storage: ($assets | map(.size) | add)
+    storage: ($assets | map(.fileSize) | add)
   }' > "$ANALYTICS_FILE"
 
 echo "Analytics saved: $ANALYTICS_FILE"
@@ -351,10 +351,10 @@ echo "Analytics saved: $ANALYTICS_FILE"
 IMAGE_DIR="optimized-images"
 mkdir -p "$IMAGE_DIR"
 
-marvin publish assets --type image --json | jq -c '.[]' | while read -r image; do
-  URL=$(echo "$image" | jq -r '.url')
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]' | jq -c '.[]' | while read -r image; do
+  URL=$(echo "$image" | jq -r '.publicUrl')
   FILENAME=$(echo "$image" | jq -r '.filename')
-  SIZE=$(echo "$image" | jq -r '.size')
+  SIZE=$(echo "$image" | jq -r '.fileSize')
   
   # Skip small images
   if [ "$SIZE" -lt 1048576 ]; then

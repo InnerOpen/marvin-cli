@@ -19,8 +19,8 @@ OVERVIEW
 --------
 Entries:     $(marvin publish entries --json | jq 'length')
 Collections: $(marvin publish collections --json | jq 'length')
-Assets:      $(marvin publish assets --json | jq 'length')
-Resources:   $(marvin publish resources --json | jq 'length')
+Assets:      $(marvin platform assets list --json | jq 'length')
+Resources:   $(marvin platform resources list --json | jq 'length')
 EOF
 ```
 
@@ -109,9 +109,9 @@ echo "Overall Quality Score: $QUALITY_SCORE%"
 #!/bin/bash
 # Comprehensive asset inventory
 
-ASSETS=$(marvin publish assets --json)
+ASSETS=$(marvin platform assets list --json)
 TOTAL=$(echo "$ASSETS" | jq 'length')
-TOTAL_SIZE=$(echo "$ASSETS" | jq 'map(.size) | add')
+TOTAL_SIZE=$(echo "$ASSETS" | jq 'map(.fileSize) | add')
 
 echo "Asset Inventory Report"
 echo "$(date)"
@@ -127,8 +127,8 @@ echo "$ASSETS" | jq -r 'group_by(.mimeType | split("/")[0]) |
 
 echo ""
 echo "Top 10 Largest Assets:"
-echo "$ASSETS" | jq -r 'sort_by(.size) | reverse | .[0:10] | 
-  .[] | "  - \(.filename): \(.size / 1048576 | round)MB"'
+echo "$ASSETS" | jq -r 'sort_by(.fileSize) | reverse | .[0:10] | 
+  .[] | "  - \(.filename): \(.fileSize / 1048576 | round)MB"'
 ```
 
 ## Related

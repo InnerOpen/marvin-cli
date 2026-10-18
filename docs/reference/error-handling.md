@@ -196,9 +196,9 @@ marvin publish entries --json | jq -r '.[].slug'
 # For Publishing API, check entry is published
 marvin platform entries --json | jq '.[] | select(.slug == "homepage")'
 
-# Verify resource exists
+# Verify it exists
 marvin publish collections  # List all collections
-marvin publish resources     # List all resources
+marvin publish entries         # List all entries
 ```
 
 ### Configuration Errors
@@ -305,7 +305,7 @@ marvin --workspace correct-slug publish entries
 
 # List available content
 marvin publish collections
-marvin publish assets
+marvin publish entries
 ```
 
 ## Error Recovery

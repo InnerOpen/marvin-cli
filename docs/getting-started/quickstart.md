@@ -99,8 +99,12 @@ marvin publish collections
 
 ### List Assets
 
+The Publishing API has no asset routes. An entry carries its assets inline, and the asset library
+is under the Platform API (needs a user token, see `marvin login`):
+
 ```bash
-marvin publish assets
+marvin publish entry <slug> --json | jq '.assets'
+marvin platform assets list
 ```
 
 ## Step 6: Try Different Output Formats
@@ -120,7 +124,7 @@ marvin publish entries --json > entries.json
 ### CSV for Spreadsheets
 
 ```bash
-marvin publish assets --csv > assets.csv
+marvin platform assets list --csv > assets.csv
 ```
 
 ### YAML Output
@@ -160,27 +164,30 @@ marvin publish collection-entries featured
 ### Find Assets
 
 ```bash
-# All assets
-marvin publish assets
+# All assets in the library (user token)
+marvin platform assets list
 
 # Only images
-marvin publish assets --type image
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]'
 
 # Only videos
-marvin publish assets --type video
+marvin platform assets list --json | jq '[.[] | select(.assetType == "video")]'
+
+# The assets one entry uses
+marvin publish entry <slug> --json | jq '.assets'
 ```
 
 ### Inspect Resources
 
 ```bash
-# All resources
-marvin publish resources
+# All resources in the library (user token)
+marvin platform resources list
 
-# Get a specific resource
-marvin publish resource kuroki-s022
+# Get a specific resource, by id
+marvin platform resources get <id>
 
-# Find entries using a resource
-marvin publish resource-entries kuroki-s022
+# The resources one entry uses
+marvin publish entry <slug> --json | jq '.resources'
 ```
 
 ## Using with Multiple Workspaces
@@ -235,9 +242,6 @@ marvin publish entries           # List entries
 marvin publish entry <slug>      # Get entry
 marvin publish collections       # List collections
 marvin publish collection <slug> # Get collection
-marvin publish resources         # List resources
-marvin publish resource <slug>   # Get resource
-marvin publish assets            # List assets
 ```
 
 ### Platform API Commands
