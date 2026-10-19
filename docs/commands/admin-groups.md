@@ -12,7 +12,7 @@ marvin admin groups list [--page <number>] [--per-page <number>] [--all]
 marvin admin groups create (--data <json|@file|-> | --file <path>)
 marvin admin groups get <id>
 marvin admin groups update <id> (--data <json|@file|-> | --file <path>)
-marvin admin groups delete <id> --yes [--force]
+marvin admin groups delete <id> --yes [--force] [--confirm-name <name>] [--skip-backup]
 
 marvin admin workspace-members list <workspace-id>
 marvin admin workspace-members get <workspace-id> <user-id>
@@ -67,12 +67,26 @@ marvin admin groups update 5b0e8c14-2d7f-4a36-b9d1-6e3f0a7c8d25 \
 ```bash
 marvin admin groups delete 5b0e8c14-2d7f-4a36-b9d1-6e3f0a7c8d25 --yes
 marvin admin groups delete 5b0e8c14-2d7f-4a36-b9d1-6e3f0a7c8d25 --yes --force
+marvin admin groups delete 5b0e8c14-2d7f-4a36-b9d1-6e3f0a7c8d25 --yes --skip-backup
+marvin admin groups delete 5b0e8c14-2d7f-4a36-b9d1-6e3f0a7c8d25 --yes --confirm-name "Marketing"
 ```
 
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--yes` | Confirm the deletion (required) | off |
 | `--force` | Delete even if the group has members or content | off |
+| `--confirm-name <name>` | The workspace's name, sent to the server as confirmation | the workspace's own name, looked up from `<id>` |
+| `--skip-backup` | Delete without a recent backup | off |
+
+The server checks two things before it deletes a workspace:
+
+- **Name confirmation.** The request must carry the workspace's name. `--yes` is your confirmation, so
+  by default the CLI fetches the workspace and sends its name. Pass `--confirm-name` to send a name you
+  type yourself; if it doesn't match the server refuses with 400 `confirm_name_mismatch`.
+- **A recent backup.** A backup bundle of the workspace from the last 24 hours must exist, otherwise the
+  server refuses with 409 `backup_required`. The CLI then tells you to run
+  `marvin admin backups create <id>` (see [Admin Backups](admin-backups.md)) or to repeat the delete with
+  `--skip-backup`.
 
 Without `--yes` the command exits 1 without calling the API. Without `--force` the server may refuse to
 delete a group that still has members or content. With `--json` the result is `{"deleted": "<id>"}`.
