@@ -63,6 +63,41 @@ describe('CLI bug fixes', () => {
       expect(user.createApiToken).toHaveBeenCalledWith({ name: 'ci', description: 'nightly', integrationId: 'generic' })
     })
 
+    describe('--pin', () => {
+      const lowburn = { workspace: { id: '40fd3997-6922-457d-8268-d89b8b932ce0', slug: 'lowburnstudio', name: 'LowBurnStudio' }, role: 'OWNER' }
+      const mash = { workspace: { id: '11111111-1111-4111-8111-111111111111', slug: 'mash-burn-co', name: 'Mash & Burn Co.' }, role: 'OWNER' }
+      let workspaces: any
+      beforeEach(() => {
+        workspaces = { list: vi.fn().mockResolvedValue([mash, lowburn]) }
+        vi.mocked(clientFactory.createPlatformClient).mockResolvedValue({ user, workspaces } as any)
+      })
+
+      it('pins the token to a workspace given by slug, sending its id as groupId', async () => {
+        await run('user', 'tokens', 'create', '--name', 'ci', '--pin', 'lowburnstudio', '--json')
+        expect(user.createApiToken).toHaveBeenCalledWith({
+          name: 'ci', description: undefined, integrationId: 'generic', groupId: lowburn.workspace.id,
+        })
+      })
+
+      it('accepts the workspace id too', async () => {
+        await run('user', 'tokens', 'create', '--name', 'ci', '--pin', mash.workspace.id, '--json')
+        expect(user.createApiToken.mock.calls[0][0].groupId).toBe(mash.workspace.id)
+      })
+
+      it('refuses a workspace the person is not in, and creates nothing', async () => {
+        await run('user', 'tokens', 'create', '--name', 'ci', '--pin', 'elsewhere')
+        expect(io.err()).toContain('No workspace "elsewhere"')
+        expect(user.createApiToken).not.toHaveBeenCalled()
+        expect(process.exitCode).toBe(1)
+      })
+
+      it('sends no groupId without --pin (a global token)', async () => {
+        await run('user', 'tokens', 'create', '--name', 'ci', '--json')
+        expect(user.createApiToken.mock.calls[0][0]).not.toHaveProperty('groupId')
+        expect(workspaces.list).not.toHaveBeenCalled()
+      })
+    })
+
     it('rejects --expires instead of silently dropping it', async () => {
       // subcommands don't inherit exitOverride, so commander calls process.exit (trapped by vitest)
       await expect(run('user', 'tokens', 'create', '--name', 'ci', '--expires', '2027-01-01')).rejects.toThrow(/process\.exit/)
