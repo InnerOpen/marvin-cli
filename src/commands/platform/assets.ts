@@ -2,7 +2,7 @@ import { handleCommandError } from '../../shared/error-handler.js';
 import { Command } from "commander";
 import { readFileSync, statSync } from "fs";
 import { basename } from "path";
-import { Blob } from "buffer";
+import { File } from "buffer";
 import { clientFactory } from "../../shared/clients.js";
 import { renderList, renderData } from "../../output.js";
 import { getOutputMode, type PlatformCommandOptions } from "../../shared/types.js";
@@ -65,8 +65,9 @@ export function registerPlatformAssetCommands(parent: Command): void {
         const stats = statSync(path);
         const filename = basename(path);
 
-        // Create blob from buffer
-        const file = new Blob([fileBuffer]) as File;
+        // The server reads the file's type from its name's extension, so the name goes with the bytes: a bare Blob
+        // uploaded every file as application/octet-stream ("other"), which no picture or audio step can use.
+        const file = new File([fileBuffer], filename) as unknown as globalThis.File;
 
         // Parse metadata if provided
         const metadata = cmdOpts.metadata ? JSON.parse(cmdOpts.metadata) : undefined;
