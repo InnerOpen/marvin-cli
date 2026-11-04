@@ -21,6 +21,7 @@ import { registerIntegrationCommands } from "./integrations.js";
 import { registerSiteCommands } from "./site.js";
 import { registerDashboardCommand } from "./dashboard.js";
 import { registerBlueprintCommands } from "./blueprints.js";
+import { registerWorkerCommands } from "./workers.js";
 import { registerIncomingWebhookCommands } from "./incoming-webhooks.js";
 import { registerTagCommands } from "./tags.js";
 import { createAiCommand } from "../ai/index.js";
@@ -59,6 +60,7 @@ export function createPlatformCommand(): Command {
   registerSiteCommands(platform);
   registerDashboardCommand(platform);
   registerBlueprintCommands(platform);
+  registerWorkerCommands(platform);
   registerIncomingWebhookCommands(platform);
   registerTagCommands(platform);
 

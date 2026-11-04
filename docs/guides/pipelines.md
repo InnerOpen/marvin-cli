@@ -35,8 +35,8 @@ marvin publish entries --entry-type page --json | jq -r '.[].title'
 # Get featured entry slugs
 marvin publish entries --collection featured --json | jq -r '.[].slug'
 
-# Get first 10 image URLs
-marvin publish assets --type image --limit 10 --json | jq -r '.[].url'
+# Get first 10 image URLs (the asset library; needs a user token, see `marvin login`)
+marvin platform assets list --json | jq -r '[.[] | select(.assetType == "image")][:10][].publicUrl'
 ```
 
 ### Pipe to File
@@ -101,9 +101,9 @@ marvin publish entries --json | \
   }'
 
 # Add computed values
-marvin publish assets --json | \
+marvin platform assets list --json | \
   jq '.[] | . + {
-    sizeInMB: (.size / 1048576 | round),
+    sizeInMB: (.fileSize / 1048576 | round),
     category: (.mimeType | split("/")[0])
   }'
 ```
@@ -126,7 +126,7 @@ marvin publish assets --json | \
 jq -n \
   --argjson entries "$(marvin publish entries --json)" \
   --argjson collections "$(marvin publish collections --json)" \
-  --argjson assets "$(marvin publish assets --json)" \
+  --argjson assets "$(marvin platform assets list --json)" \
   '{
     entries: $entries,
     collections: $collections,
@@ -138,25 +138,16 @@ jq -n \
 ### Join Data
 
 ```bash
-# Get entries with full resource details
-marvin publish entries --json | \
-  jq -c '.[] | select(.resources | length > 0)' | \
-  while read -r entry; do
-    SLUG=$(echo "$entry" | jq -r '.slug')
-    RESOURCES=$(echo "$entry" | jq -r '.resources[]')
-    
-    # Fetch each resource
-    for resource in $RESOURCES; do
-      marvin publish resource "$resource" --json
-    done | jq -s "{entry: \"$SLUG\", resources: .}"
-  done | jq -s .
+# Get entries with their resources (a full entry carries its resources inline)
+marvin publish entries --expand full --json | \
+  jq '[.[] | select(.resources | length > 0) | {entry: .slug, resources}]'
 ```
 
 ### Cross-Reference
 
 ```bash
 # Find which entries use each asset
-marvin publish assets --json | jq -c '.[]' | while read -r asset; do
+marvin platform assets list --json | jq -c '.[]' | while read -r asset; do
   ASSET_ID=$(echo "$asset" | jq -r '.id')
   
   # Find entries with this asset
@@ -182,13 +173,13 @@ marvin publish entries --json | \
       })'
 
 # Group assets by MIME type with stats
-marvin publish assets --json | \
+marvin platform assets list --json | \
   jq 'group_by(.mimeType) | 
       map({
         type: .[0].mimeType,
         count: length,
-        totalSize: (map(.size) | add),
-        avgSize: (map(.size) | add / length | round)
+        totalSize: (map(.fileSize) | add),
+        avgSize: (map(.fileSize) | add / length | round)
       })'
 ```
 
@@ -201,9 +192,9 @@ marvin publish entries --json | \
       map({title, publishedAt})'
 
 # Largest assets
-marvin publish assets --json | \
-  jq 'sort_by(.size) | reverse | .[0:10] | 
-      map({filename, size, mimeType})'
+marvin platform assets list --json | \
+  jq 'sort_by(.fileSize) | reverse | .[0:10] | 
+      map({filename, fileSize, mimeType})'
 
 # Alphabetical entry list
 marvin publish entries --json | \
@@ -224,11 +215,11 @@ marvin publish entries --json | \
 
 # Images larger than 1MB uploaded this month
 MONTH=$(date +%Y-%m)
-marvin publish assets --json | \
+marvin platform assets list --json | \
   jq --arg month "$MONTH" \
      '.[] | select(
        (.mimeType | startswith("image/")) and
-       .size > 1048576 and
+       .fileSize > 1048576 and
        (.uploadedAt | startswith($month))
      )'
 ```
@@ -244,26 +235,26 @@ marvin publish entries --json | \
       map({type: .[0].entryType, count: length})'
 
 # Total asset storage
-marvin publish assets --json | \
-  jq 'map(.size) | add' | \
+marvin platform assets list --json | \
+  jq 'map(.fileSize) | add' | \
   numfmt --to=iec-i --suffix=B
 
 # Average asset size
-marvin publish assets --json | \
-  jq 'map(.size) | add / length | round'
+marvin platform assets list --json | \
+  jq 'map(.fileSize) | add / length | round'
 ```
 
 ### Min/Max/Average
 
 ```bash
 # Asset size statistics
-marvin publish assets --json | \
+marvin platform assets list --json | \
   jq '{
-    total: (map(.size) | add),
+    total: (map(.fileSize) | add),
     count: length,
-    min: (map(.size) | min),
-    max: (map(.size) | max),
-    avg: (map(.size) | add / length | round)
+    min: (map(.fileSize) | min),
+    max: (map(.fileSize) | max),
+    avg: (map(.fileSize) | add / length | round)
   }'
 
 # Entry publication timeline
@@ -279,8 +270,8 @@ marvin publish entries --json | \
 
 ```bash
 # Asset size distribution
-marvin publish assets --json | \
-  jq 'map(.size) | sort | . as $arr | 
+marvin platform assets list --json | \
+  jq 'map(.fileSize) | sort | . as $arr | 
       {
         p50: $arr[($arr | length * 0.5 | floor)],
         p90: $arr[($arr | length * 0.9 | floor)],
@@ -425,7 +416,7 @@ marvin publish entries --json | \
     "No description: \(.title) (\(.slug))"'
 
 # Find assets with no alt text
-marvin publish assets --json | \
+marvin platform assets list --json | \
   jq -r '.[] | 
     select(.metadata.alt == null or .metadata.alt == "") | 
     "Missing alt text: \(.filename)"'
@@ -485,7 +476,7 @@ marvin publish collections --json > "$OUTPUT_DIR/collections.json"
 
 # Fetch resources
 echo "Fetching resources..."
-marvin publish resources --json > "$OUTPUT_DIR/resources.json"
+marvin platform resources list --json > "$OUTPUT_DIR/resources.json"
 
 # Create entry pages
 echo "Creating entry pages..."
@@ -520,12 +511,12 @@ marvin publish entries --json | \
   jq -s . > "$EXPORT_DIR/entries.json"
 
 # Export assets with URLs
-marvin publish assets --json | \
+marvin platform assets list --json | \
   jq '.[] | {
     filename: .filename,
-    url: .url,
+    url: .publicUrl,
     type: .mimeType,
-    size: .size,
+    size: .fileSize,
     alt: .metadata.alt
   }' | \
   jq -s . > "$EXPORT_DIR/assets.json"
@@ -598,13 +589,13 @@ marvin publish entries --json | \
       })' > analytics/entry-stats.json
 
 # Asset stats by type
-marvin publish assets --json | \
+marvin platform assets list --json | \
   jq 'group_by(.mimeType | split("/")[0]) | 
       map({
         category: .[0].mimeType | split("/")[0],
         count: length,
-        totalSize: (map(.size) | add),
-        avgSize: (map(.size) | add / length | round)
+        totalSize: (map(.fileSize) | add),
+        avgSize: (map(.fileSize) | add / length | round)
       })' > analytics/asset-stats.json
 
 # Publication timeline

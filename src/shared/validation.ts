@@ -229,3 +229,23 @@ export function validatePositiveInteger(
 
   return parsed;
 }
+
+/**
+ * Parse a CLI value as an integer >= 0 (offsets)
+ */
+export function validateNonNegativeInteger(
+  value: string,
+  fieldName: string
+): number {
+  const parsed = parseInt(value, 10);
+
+  if (isNaN(parsed)) {
+    throw new Error(`${fieldName} must be a number, got: ${value}`);
+  }
+
+  if (parsed < 0) {
+    throw new Error(`${fieldName} must be 0 or more, got: ${parsed}`);
+  }
+
+  return parsed;
+}

@@ -127,6 +127,29 @@ The CLI has three families of commands, one per API:
 (no site token, or no user token) are hidden from `marvin --help`. Every command takes `--help`, and a
 command that needs a workspace role says so in its help text, e.g. "(needs workspace ADMIN)".
 
+### Command reference
+
+Every command, with its arguments, options and an example, is documented under
+[docs/commands](docs/commands/overview.md) (also published with `mkdocs`; see `npm run docs:serve`).
+
+| Group | Docs |
+|---|---|
+| `login`, `logout`, `register`, `forgot-password`, `reset-password` | [Authentication](docs/commands/auth.md) |
+| `workspace` (use, list, token, export, import, preferences, stats, backups) | [Workspaces](docs/commands/workspaces.md) |
+| `publish` (site, entries, collections, renderers) | [Site](docs/commands/site.md), [Entries](docs/commands/entries.md), [Collections](docs/commands/collections.md), [Renderers](docs/commands/renderers.md) |
+| `platform entries`, `collections`, `resources`, `assets` | [Entries](docs/commands/platform-entries.md), [Collections](docs/commands/platform-collections.md), [Smart collections](docs/commands/smart-collections.md), [Resources](docs/commands/platform-resources.md), [Assets](docs/commands/platform-assets.md), [Review queue](docs/commands/review.md), [Tags](docs/commands/tags.md) |
+| `platform entry-types`, `forms`, `blueprints`, `workers` | [Entry types](docs/commands/entry-types.md), [Forms](docs/commands/forms.md), [Blueprints](docs/commands/blueprints.md), [Workers](docs/commands/workers.md) |
+| `platform webhooks`, `incoming-webhooks`, `api-clients`, `integrations` | [Webhooks](docs/commands/webhooks.md), [Incoming webhooks](docs/commands/incoming-webhooks.md), [API clients](docs/commands/api-clients.md), [Integrations](docs/commands/integrations.md) |
+| `platform workflows`, `scheduled-tasks`, `site`, `event-log`, `dashboard`; `events` | [Workflows](docs/commands/workflows.md), [Scheduled tasks](docs/commands/scheduled-tasks.md), [Site rebuild](docs/commands/site-rebuild.md), [Event log](docs/commands/event-log.md), [Events](docs/commands/events.md) |
+| `platform workspace-members`, `invites` | [Members and invites](docs/commands/workspace-members.md) |
+| `platform email`, `email-templates`, `email-subscriptions` | [Email](docs/commands/email.md), [Email templates](docs/commands/email-templates.md) |
+| `platform secrets`, `variables` | [Secrets and variables](docs/commands/secrets-variables.md) |
+| `platform ai` (providers, models, operations, executions, settings) | [AI](docs/commands/ai.md) |
+| `user` (profile, tokens, change-password) | [User account](docs/commands/user.md) |
+| `admin users`, `admin system`, `admin maintenance`, `admin scheduled-tasks` | [Users](docs/commands/admin-users.md), [System](docs/commands/admin-system.md), [Maintenance and scheduled tasks](docs/commands/admin-maintenance.md) |
+| `admin backups`, `admin email`, `admin groups`, `admin workspace-members` | [Backups](docs/commands/admin-backups.md), [Email](docs/commands/admin-email.md), [Groups and members](docs/commands/admin-groups.md) |
+| `system` (health, version) | [Health and version](docs/commands/system.md) |
+
 ### Publishing API
 
 ```bash
@@ -139,12 +162,6 @@ marvin publish entry about                   # one entry by slug
 marvin publish collections                   # collections
 marvin publish collection featured           # one collection
 marvin publish collection-entries featured   # its entries, in order
-marvin publish resources                     # resources
-marvin publish resource kuroki-s022          # one resource
-marvin publish resource-entries kuroki-s022  # entries that use it
-marvin publish assets --type image           # assets, filtered by type
-marvin publish asset hero-image              # one asset
-marvin publish asset hero-image --download --out-file hero.jpg
 marvin publish renderers                     # renderers the workspace needs
 ```
 
@@ -181,11 +198,7 @@ marvin events list --connected                          # event types something 
 marvin events show entry_published                      # what sends it, what happens, recent events
 ```
 
-`marvin platform --help` lists every group: entries, collections, resources, assets, entry-types,
-forms, webhooks, invites, api-clients, workspace-members, variables, secrets, email templates and
-subscriptions, scheduled tasks, the event log, workflows, integrations (connections, event
-subscriptions, error handling), site rebuilds, the dashboard, blueprints, incoming webhooks, tags,
-and AI (providers, models, operations, settings).
+`marvin platform --help` lists every group.
 
 ### Admin (SUPER_ADMIN)
 
@@ -219,7 +232,7 @@ Table is the default.
 marvin publish entries                   # table
 marvin publish entries --json            # JSON
 marvin publish collections --yaml        # YAML
-marvin publish resources --csv > resources.csv
+marvin publish collections --csv > collections.csv
 ```
 
 **stdout carries data only.** Confirmations ("✓ Created…"), progress and warnings go to stderr, so
@@ -262,8 +275,8 @@ marvin publish entries --json | jq 'length'
 # Does an entry exist?
 if marvin publish entry about --json > /dev/null 2>&1; then echo "exists"; fi
 
-# Names of all image assets
-marvin publish assets --type image --json | jq -r '.[].name'
+# Names of one entry's assets
+marvin publish entry hero --json | jq -r '.assets[].name'
 
 # Every webhook, across all pages
 marvin platform webhooks list --all --json | jq -r '.[].name'

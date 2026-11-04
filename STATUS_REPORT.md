@@ -67,7 +67,7 @@ TOTAL              |    82     |   30/82      |   30/82
 
 **Platform Coverage: 17/18 (94%)** - Missing only the preview endpoint
 
-### Publishing API Endpoints (11) - ✅ ALL IMPLEMENTED
+### Publishing API Endpoints (6) - ✅ ALL IMPLEMENTED
 
 | Endpoint | SDK Module | CLI Command | Status |
 |----------|------------|-------------|--------|
@@ -76,14 +76,9 @@ TOTAL              |    82     |   30/82      |   30/82
 | `/api/publish/{workspace}/entries/{slug}` | ✅ entries.get | ✅ `publish entry` | Complete |
 | `/api/publish/{workspace}/collections` | ✅ collections.list | ✅ `publish collections` | Complete |
 | `/api/publish/{workspace}/collections/{slug}` | ✅ collections.get | ✅ `publish collection` | Complete |
-| `/api/publish/{workspace}/resources` | ✅ resources.list | ✅ `publish resources` | Complete |
-| `/api/publish/{workspace}/resources/{slug}` | ✅ resources.get | ✅ `publish resource` | Complete |
-| `/api/publish/{workspace}/resources/{slug}/entries` | ✅ resources.entries | ✅ `publish resource-entries` | Complete |
-| `/api/publish/{workspace}/assets` | ✅ assets.list | ✅ `publish assets` | Complete |
-| `/api/publish/{workspace}/assets/{slug}` | ✅ assets.get | ✅ `publish asset` | Complete |
 | `/api/publish/{workspace}/collections/{slug}/entries` | ✅ collections.entries | ✅ `publish collection-entries` | Complete |
 
-**Publishing Coverage: 11/11 (100%)** ✅
+**Publishing Coverage: 6/6 (100%)** (the asset and resource routes were removed in SDK 6) ✅
 
 ### SDK Architecture Status
 

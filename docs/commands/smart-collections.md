@@ -72,3 +72,7 @@ marvin platform collections order --data @order.json        # [{"id": "…", "so
 Sets the order collections are listed in, system collections included. Ids that don't belong to a
 collection in this workspace are skipped; the command says how many. With `--json` it prints
 `{"ok": true, "updated": <n>}`.
+
+## See Also
+
+- [Platform Collections](platform-collections.md) - every `platform collections` command, including `list`, `get`, `delete`, `entries`, `reorder` and `update-entry`

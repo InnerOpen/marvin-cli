@@ -11,6 +11,17 @@ import { addDataOptions, readJsonInput } from '../../shared/json-input.js';
 import { say, emitDeleted } from '../../shared/io.js';
 import type { PlatformCommandOptions } from '../../shared/types.js';
 
+/** A workspace the person belongs to, by slug or id, as the id the API wants. */
+async function resolveWorkspaceId(client: { workspaces: { list(): Promise<any[]> } }, ref: string): Promise<string> {
+  const mine = (await client.workspaces.list()) ?? [];
+  const hit = mine.find((w) => w.workspace?.id === ref || w.workspace?.slug === ref);
+  if (!hit) {
+    const known = mine.map((w) => w.workspace?.slug).filter(Boolean).join(', ') || 'none';
+    throw new Error(`No workspace "${ref}" among the ones you belong to (${known}).`);
+  }
+  return hit.workspace.id;
+}
+
 export function registerTokenCommands(parent: Command): void {
   const tokens = parent
     .command('tokens')
@@ -30,7 +41,8 @@ export function registerTokenCommands(parent: Command): void {
           description: 'description',
           createdAt: 'createdAt',
           lastUsedAt: 'lastUsedAt',
-          expiresAt: 'expiresAt',
+          enabled: 'enabled',
+          groupId: 'groupId', // the workspace a token is pinned to; empty for a global token
         } as any;
         renderList(tokenList as any, columns, getOutputMode(opts));
       } catch (error) {
@@ -43,23 +55,28 @@ export function registerTokenCommands(parent: Command): void {
     .description('Create a new API token')
     .requiredOption('-n, --name <name>', 'Token name')
     .option('-d, --description <description>', 'Token description')
-    .option('-e, --expires <date>', 'Expiration date (ISO 8601)')
+    .option('--pin <workspace>', 'Pin the token to one workspace you belong to (slug or id); omit for a global token. Fixed at creation.')
     .action(async (options) => {
       try {
         const opts = parent.optsWithGlobals<PlatformCommandOptions>();
         const client = await clientFactory.createPlatformClient(opts);
 
-        const data = {
+        // groupId is on the API but not yet in the SDK's ApiTokenCreate type; the SDK posts the body as given
+        const data: Record<string, unknown> = {
           name: options.name,
           description: options.description,
-          integrationId: options.name,
+          integrationId: 'generic', // the API's default; a personal token belongs to no particular integration
         };
+        if (options.pin) {
+          data.groupId = await resolveWorkspaceId(client, options.pin);
+        }
 
-        const token = await client.user.createApiToken(data);
+        const token = await client.user.createApiToken(data as any);
         say('⚠️  IMPORTANT: Save this token now - it will not be shown again!');
         renderData(token, getOutputMode(opts));
       } catch (error) {
         handleCommandError(error);
+        process.exitCode = 1;
       }
     });
 

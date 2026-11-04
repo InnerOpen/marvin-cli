@@ -70,45 +70,56 @@ marvin publish entries --entry-type project --limit 20
 
 ## Asset Filtering
 
-### Filter by MIME Type
+The Publishing API has no asset routes, so assets come from the asset library
+(`marvin platform assets list`, which needs a user token; see `marvin login`) or from an entry,
+which carries its assets inline (`marvin publish entry <slug> --json | jq .assets`). The library
+list has no filter options; filter the output with `jq`.
 
-Filter assets by MIME type prefix:
+### Filter by Type
 
 ```bash
-# All images (image/*)
-marvin publish assets --type image
+# All images
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]'
 
-# All videos (video/*)
-marvin publish assets --type video
+# All videos
+marvin platform assets list --json | jq '[.[] | select(.assetType == "video")]'
 
-# All audio files (audio/*)
-marvin publish assets --type audio
+# All audio files
+marvin platform assets list --json | jq '[.[] | select(.assetType == "audio")]'
 
-# PDFs
-marvin publish assets --type application/pdf
+# PDFs (by MIME type)
+marvin platform assets list --json | jq '[.[] | select(.mimeType == "application/pdf")]'
 ```
 
 ### Limit Assets
 
 ```bash
 # First 50 assets
-marvin publish assets --limit 50
+marvin platform assets list --json | jq '.[:50]'
 
 # First 20 images
-marvin publish assets --type image --limit 20
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")][:20]'
+```
+
+### Assets on One Entry
+
+```bash
+marvin publish entry about --json | jq '.assets'
 ```
 
 ## Resource Filtering
 
 ### Find Entries Using a Resource
 
-Get all entries that reference a specific resource:
+The Publishing API has no resource routes, so look through the entries: a full entry carries its
+resources inline.
 
 ```bash
-marvin publish resource-entries kuroki-s022
+marvin publish entries --expand full --json | \
+  jq -r '.[] | select(any(.resources[]?; .slug == "kuroki-s022")) | .slug'
 ```
 
-This shows all entries (projects, articles, etc.) that use the specified resource.
+This lists the entries (projects, articles, etc.) that use the resource.
 
 ## Post-Processing with jq
 
@@ -146,8 +157,8 @@ marvin publish entries --json | \
   jq '.[] | select(.metadata.featured == true)'
 
 # Assets larger than 1MB
-marvin publish assets --json | \
-  jq '.[] | select(.size > 1048576)'
+marvin platform assets list --json | \
+  jq '.[] | select(.fileSize > 1048576)'
 ```
 
 ### Complex Filters
@@ -159,7 +170,7 @@ marvin publish entries --json | \
                    .publishedAt | startswith("2026-07"))'
 
 # Images uploaded in last 30 days
-marvin publish assets --json | \
+marvin platform assets list --json | \
   jq --arg date "$(date -d '30 days ago' +%Y-%m-%d)" \
      '.[] | select(.type | startswith("image/") and 
                    .uploadedAt > $date)'
@@ -283,7 +294,7 @@ marvin publish entries --json | \
       map({type: .[0].entryType, count: length})'
 
 # Assets by type
-marvin publish assets --json | \
+marvin platform assets list --json | \
   jq 'group_by(.mimeType) | 
       map({type: .[0].mimeType, count: length})'
 ```
@@ -292,16 +303,16 @@ marvin publish assets --json | \
 
 ```bash
 # Total asset size
-marvin publish assets --json | \
-  jq 'map(.size) | add'
+marvin platform assets list --json | \
+  jq 'map(.fileSize) | add'
 
 # Average asset size
-marvin publish assets --json | \
-  jq 'map(.size) | add / length'
+marvin platform assets list --json | \
+  jq 'map(.fileSize) | add / length'
 
 # Min/max asset size
-marvin publish assets --json | \
-  jq 'map(.size) | min, max'
+marvin platform assets list --json | \
+  jq 'map(.fileSize) | min, max'
 ```
 
 ## Field Selection

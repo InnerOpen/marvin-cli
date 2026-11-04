@@ -1,5 +1,32 @@
 # Migration Guide
 
+## 4.0.0
+
+4.0.0 moves to `@inneropen/marvin-sdk` 6 and follows the Publishing API, which no longer has asset
+or resource routes.
+
+### `publish assets`, `asset`, `resources`, `resource` and `resource-entries` are removed
+
+The Publishing API serves workspace, site, entry types, entries and collections only. Published
+entries carry their assets (with public URLs) and resources inline:
+
+```bash
+marvin publish entry hero --json | jq '.assets, .resources'
+marvin publish entries --expand full --json | jq '[.[].assets[]]'
+```
+
+To list or download assets and resources, use the Platform API: `marvin platform assets list`,
+`marvin platform assets download <id> --out-file <path>`, `marvin platform resources list`.
+
+### `publish collections --limit/--offset` page on the server
+
+`--limit` and `--offset` are sent to the API, so you can read past the server's default page of 20
+(at most 100 per request). Needs SDK 6.1.
+
+### `user tokens create`
+
+Sends the API's default `integrationId` (`generic`) instead of the token's name.
+
 ## 3.3.0
 
 3.3.0 adds `marvin events` and removes nothing. One alias is deprecated.

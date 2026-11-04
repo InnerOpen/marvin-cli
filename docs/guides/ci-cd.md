@@ -223,11 +223,12 @@ jobs:
           echo "Backing up collections..."
           marvin publish collections --json > "$BACKUP_DIR/collections.json"
           
+          # Resources and assets come from the libraries, which need a user token (MARVIN_USER_TOKEN)
           echo "Backing up resources..."
-          marvin publish resources --json > "$BACKUP_DIR/resources.json"
+          marvin platform resources list --json > "$BACKUP_DIR/resources.json"
           
           echo "Backing up assets..."
-          marvin publish assets --json > "$BACKUP_DIR/assets.json"
+          marvin platform assets list --json > "$BACKUP_DIR/assets.json"
           
           echo "Backing up site config..."
           marvin publish site --json > "$BACKUP_DIR/site.json"
@@ -461,11 +462,12 @@ pipeline {
                     echo "Backing up collections..."
                     marvin publish collections --json > "$BACKUP_DIR/collections.json"
                     
+                    # Resources and assets come from the libraries, which need a user token (MARVIN_USER_TOKEN)
                     echo "Backing up resources..."
-                    marvin publish resources --json > "$BACKUP_DIR/resources.json"
+                    marvin platform resources list --json > "$BACKUP_DIR/resources.json"
                     
                     echo "Backing up assets..."
-                    marvin publish assets --json > "$BACKUP_DIR/assets.json"
+                    marvin platform assets list --json > "$BACKUP_DIR/assets.json"
                     
                     tar -czf "backup-$DATE.tar.gz" "$BACKUP_DIR"
                     
@@ -855,7 +857,7 @@ echo "✓ Validation passed"
       echo ""
       echo "Entries: $(marvin publish entries --json | jq 'length')"
       echo "Collections: $(marvin publish collections --json | jq 'length')"
-      echo "Assets: $(marvin publish assets --json | jq 'length')"
+      echo "Assets: $(marvin platform assets list --json | jq 'length')"
       echo ""
       echo "By Type:"
       marvin publish entries --json | \

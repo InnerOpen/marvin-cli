@@ -4,17 +4,24 @@ import { renderList, renderJson, renderYaml } from "../../output.js";
 import { getOutputMode, type PublishCommandOptions } from "../../shared/types.js";
 import { collectionColumns, entryColumns } from "../../shared/columns.js";
 import { handleCommandError } from "../../shared/error-handler.js";
+import { validatePositiveInteger, validateNonNegativeInteger } from "../../shared/validation.js";
+
+/** The most the publishing API returns per request. */
+const MAX_PAGE_SIZE = 100;
 
 export function registerCollectionCommands(parent: Command): void {
   // List collections
   parent
     .command("collections")
     .description("List collections")
-    .option("--limit <number>", "Limit", (v) => Number(v))
-    .option("--offset <number>", "Offset", (v) => Number(v))
-    .action(async function(this: Command) {
+    .option("--limit <number>", `Show at most this many collections (server default 20, at most ${MAX_PAGE_SIZE})`)
+    .option("--offset <number>", "Skip this many collections first")
+    .action(async function(this: Command, cmdOpts) {
       try {
         const opts = this.optsWithGlobals<PublishCommandOptions>();
+        const limit = cmdOpts.limit === undefined ? undefined : validatePositiveInteger(cmdOpts.limit, "--limit");
+        if (limit !== undefined && limit > MAX_PAGE_SIZE) throw new Error(`--limit can be at most ${MAX_PAGE_SIZE}`);
+        const offset = cmdOpts.offset === undefined ? undefined : validateNonNegativeInteger(cmdOpts.offset, "--offset");
 
         // Normalize token option
         if (!opts.token && (opts as any).siteToken) {
@@ -22,7 +29,7 @@ export function registerCollectionCommands(parent: Command): void {
         }
 
         const client = clientFactory.createPublishClient(opts);
-        const collections = await client.collections.list();
+        const collections = await client.collections.list({ limit, offset });
 
         renderList(collections, collectionColumns, getOutputMode(opts));
       } catch (error) {

@@ -28,8 +28,6 @@ All commands registered and functional:
 - `marvin publish site`
 - `marvin publish entries` / `marvin entries` (backward compatible)
 - `marvin publish collections` / `marvin collections`
-- `marvin publish resources` / `marvin resources`
-- `marvin publish assets` / `marvin assets`
 
 ### Platform API (CRUD Operations)
 All commands registered and functional:

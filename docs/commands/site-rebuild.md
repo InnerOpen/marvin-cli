@@ -37,8 +37,9 @@ marvin platform site rebuild
 marvin platform site rebuild --reason "Nightly content sync"
 ```
 
-`--reason` (at most 200 characters) goes into the build log; without it the server uses
-"Rebuild requested by <your name>".
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--reason <text>` | Why, for the build log (at most 200 characters) | "Rebuild requested by <your name>" |
 
 Table mode prints the outcome on stderr:
 
@@ -76,6 +77,8 @@ configure, nothing is queued, and the command exits 1.
 marvin platform site rebuild-status
 marvin platform site rebuild-status --json
 ```
+
+Takes no options. In table mode it prints:
 
 ```
 Configured:  yes

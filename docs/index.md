@@ -88,8 +88,8 @@ Build automated workflows for content reporting, backups, and data processing.
 # Daily content report
 marvin publish entries --json | jq '.[] | select(.status == "published") | .title'
 
-# Export all assets
-marvin publish assets --csv > assets-$(date +%Y%m%d).csv
+# Export all collections
+marvin publish collections --csv > collections-$(date +%Y%m%d).csv
 ```
 
 ### For CI/CD

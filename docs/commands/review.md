@@ -2,7 +2,9 @@
 
 Work through what's waiting in a workspace: entries by status, AI suggestions that need a yes or
 no, AI-generated assets awaiting approval, and the dashboard that counts all of it. Plus the
-scheduling flags on `entries update`.
+scheduling flags on `entries update`. The commands themselves are documented on
+[Platform entries](platform-entries.md), [Platform assets](platform-assets.md) and
+[Platform resources](platform-resources.md); this page is the workflow.
 
 ## Commands
 
@@ -19,7 +21,7 @@ marvin platform resources reject-suggestion <id>
 marvin platform entries suggested-assets list <entry-id>
 marvin platform entries suggested-assets approve <entry-id> <asset-id>
 marvin platform entries suggested-assets reject <entry-id> <asset-id>
-marvin platform entries update <id> [--status <s>] [--publish-at <iso>] [--expire-at <iso>] [--data <json|@file|->]
+marvin platform entries update <id> [--status <s>] [--publish-at <iso>] [--expire-at <iso>] [--data <json|@file|-> | --file <path>]
 ```
 
 !!! note "Required role"
@@ -51,12 +53,17 @@ Recent activity
 …
 ```
 
+The **See it with** column names the command that works through each count, and stays empty when the
+count is zero. Recent activity has the columns When, Event, Message and Entity.
+
 **AI suggestions** counts entries, assets and resources with a pending suggestion. **Failures**
 counts failed scheduled-task runs, webhook deliveries and AI executions in the last 7 days. With
 `--json` you get the API's `{attention: {inbox, drafts, needsReview, aiSuggestions, failures},
 recentActivity: [...]}`.
 
 ## Counts and filtered lists
+
+See [`entries list`](platform-entries.md#list) and [`entries counts`](platform-entries.md#counts).
 
 ```bash
 marvin platform entries counts            # every status, zero-filled, plus total
@@ -89,7 +96,9 @@ marvin platform entries apply-suggestion 6f1c…     # commits the changes and c
 marvin platform entries reject-suggestion 6f1c…    # clears it without applying
 ```
 
-`assets` and `resources` have the same two commands. Each prints the updated item.
+[`assets`](platform-assets.md#apply-suggestion-and-reject-suggestion) and
+[`resources`](platform-resources.md#apply-suggestion-and-reject-suggestion) have the same two
+commands (they need EDITOR). Each prints the updated item.
 
 Approve every pending entry suggestion in one go:
 
@@ -125,5 +134,5 @@ marvin platform entries update 6f1c… --status needs_review
 ```
 
 Times are ISO 8601; the CLI rejects one it can't read before calling the API. The flags combine
-with `--data`, and win over the same field in it (`publish_at` or `publishAt`). With only flags, the
-command doesn't wait on stdin for a body.
+with `--data` (or `--file`), and win over the same field in it (`publish_at` or `publishAt`). With
+only flags, the command doesn't wait on stdin for a body. Full options: [`entries update`](platform-entries.md#update).

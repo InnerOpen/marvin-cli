@@ -1,4 +1,5 @@
 import type { OutputMode } from "../output.js";
+import { env } from "../config/environment.js";
 
 /**
  * Common options for all CLI commands
@@ -41,7 +42,7 @@ export function getOutputMode(opts: CommonCommandOptions): OutputMode {
   if (opts.yaml) return "yaml";
   if (opts.csv) return "csv";
 
-  const value = String(opts.output ?? "table").toLowerCase();
+  const value = String(opts.output ?? env.outputFormat ?? "table").toLowerCase();
   if (["table", "json", "yaml", "csv"].includes(value)) {
     return value as OutputMode;
   }

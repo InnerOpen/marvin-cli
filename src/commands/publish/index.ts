@@ -2,8 +2,6 @@ import { Command } from "commander";
 import { registerSiteCommands } from "./site.js";
 import { registerEntryCommands } from "./entries.js";
 import { registerCollectionCommands } from "./collections.js";
-import { registerResourceCommands } from "./resources.js";
-import { registerAssetCommands } from "./assets.js";
 import { registerRendererCommands } from "./renderers.js";
 
 /**
@@ -20,8 +18,6 @@ export function createPublishCommand(): Command {
   registerSiteCommands(publish);
   registerEntryCommands(publish);
   registerCollectionCommands(publish);
-  registerResourceCommands(publish);
-  registerAssetCommands(publish);
   registerRendererCommands(publish);
 
   return publish;

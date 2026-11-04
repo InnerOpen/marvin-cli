@@ -1,591 +1,100 @@
 # API Clients
 
-Manage site client tokens (Publishing API tokens) for your workspace.
-
-!!! note "Required role"
-    Every API client command, reads included, needs the workspace **ADMIN** (or OWNER) role. Without it the command fails with `Permission denied (403)` and names the role it needs. See [Workspace roles](../reference/authentication.md#workspace-roles).
+An API client is a named token for the Publishing API (`marvin publish ...`). Each workspace can have
+several, for example one per site or environment. These commands create them, edit them, and rotate
+their tokens.
 
 ## Commands
 
-### List API Clients
-
 ```bash
-marvin api-clients list
+marvin platform api-clients list
+marvin platform api-clients get <id>
+marvin platform api-clients create (--name <name> [--description <text>] | --data <json|@file|-> | --file <path>)
+marvin platform api-clients update <id> (--name <name> | --description <text> | --data <json|@file|-> | --file <path>)
+marvin platform api-clients delete <id> --yes
+marvin platform api-clients rotate-token <id>
+marvin platform api-clients preview <id>
 ```
 
-### Get API Client
+!!! note "Required role"
+    Every API client command, reads included, needs the workspace **ADMIN** (or OWNER) role. Without
+    it the command fails with `Permission denied (403)` and names the role it needs. See
+    [Workspace roles](../reference/authentication.md#workspace-roles).
+
+`<id>` is the client's UUID (the ID column of `list`).
+
+## List, get, preview
 
 ```bash
-marvin api-clients get <id>
+marvin platform api-clients list
+marvin platform api-clients get 7c1e5d3a-2b9f-4e0a-8d64-5f3a9b1c0e22
+marvin platform api-clients preview 7c1e5d3a-2b9f-4e0a-8d64-5f3a9b1c0e22
 ```
 
-### Create API Client
+`list` columns: ID, Name, Description (first 50 characters), Created. `get` prints the full record
+(slug, enabled, permissions, last-used and created timestamps). `preview` prints the same record as
+the server returns it for a preview, which shows the token prefix and metadata without revealing the
+full token. Neither returns the token itself; that is only shown when a client is created or its
+token is rotated.
+
+## Create
 
 ```bash
-marvin api-clients create --name <name>
-marvin api-clients create --data <json|@file|->
-marvin api-clients create --file <path>
+marvin platform api-clients create --name "Production site" --description "Token for the live website"
+marvin platform api-clients create --data '{"name": "Staging", "slug": "staging"}'
 ```
-
-### Update API Client
-
-```bash
-marvin api-clients update <id> --name <name>
-marvin api-clients update <id> --data <json|@file|->
-marvin api-clients update <id> --file <path>
-```
-
-### Delete API Client
-
-```bash
-marvin api-clients delete <id> --yes
-```
-
-### Rotate Token
-
-```bash
-marvin api-clients rotate-token <id>
-```
-
-### Preview Token
-
-```bash
-marvin api-clients preview <id>
-```
-
-## Description
-
-API clients (site clients) are Publishing API tokens that allow external applications to access published content from your workspace. Create tokens for different environments (production, staging, development) or different applications consuming your content.
-
-**Important:** Tokens are only shown once when created or rotated. Store them securely.
-
-## Authentication
-
-Requires user authentication via `marvin login` and an active workspace.
-
-```bash
-marvin login
-marvin workspace use <workspace>
-```
-
-## Options
-
-### `marvin api-clients list`
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--json` | Output as JSON | `false` |
-| `--yaml` | Output as YAML | `false` |
-| `--csv` | Output as CSV | `false` |
-| `--output <format>` | Output format: table, json, yaml, csv | `table` |
-
-### `marvin api-clients get <id>`
 
 | Option | Description |
 |--------|-------------|
-| `<id>` | API client ID (required) |
-| `--json` | Output as JSON |
-| `--output <format>` | Output format: table, json |
+| `--name <name>` | Client name; a quick way to create without a JSON body |
+| `--description <description>` | Client description (used with `--name`) |
+| `--data <json\|@file\|->` | Full body as inline JSON, `@path`, or `-` for stdin |
+| `--file <path>` | Path to a JSON file (same as `--data @path`; `-` for stdin) |
 
-### `marvin api-clients create`
+`--data` / `--file` win over `--name`. Without any of them the command exits 1 with
+`Provide API client data via --data, --file, or --name`. The body accepts `name` (required), `slug`,
+`description` and `permissions`.
+
+The response includes the client's **token**, shown once. It is printed on stderr as
+`Token: <token>`; when stdout is not a terminal (CI, pipes, logs) that line is masked to the first
+and last four characters. The record printed on stdout (`--json` etc.) is the server's response and
+includes the full `token` field, so capture it from there in scripts:
+
+```bash
+TOKEN=$(marvin platform api-clients create --name "CI build" --json | jq -r .token)
+export MARVIN_SITE_CLIENT_TOKEN="$TOKEN"
+```
+
+## Update
+
+```bash
+marvin platform api-clients update 7c1e5d3a-2b9f-4e0a-8d64-5f3a9b1c0e22 --description "Live site, EU"
+marvin platform api-clients update 7c1e5d3a-2b9f-4e0a-8d64-5f3a9b1c0e22 --data '{"enabled": false}'
+```
+
+`--name` and `--description` are shortcuts; `--data` / `--file` can also set `permissions` and
+`enabled` (set `enabled` to `false` to switch a client off without deleting it). With no option the
+command exits 1 with `Provide API client data via --data, --file, --name, or --description`. The
+token is not changed.
+
+## Rotate token
+
+```bash
+marvin platform api-clients rotate-token 7c1e5d3a-2b9f-4e0a-8d64-5f3a9b1c0e22
+```
+
+Generates a new token and invalidates the old one immediately; every site or job using the old token
+starts failing with 401 until it is updated. The new token is shown once, as for `create`
+(`New Token: ...` on stderr, `token` in the stdout record).
+
+## Delete
+
+```bash
+marvin platform api-clients delete 7c1e5d3a-2b9f-4e0a-8d64-5f3a9b1c0e22 --yes
+```
 
 | Option | Description |
 |--------|-------------|
-| `--name <name>` | Client name |
-| `--description <description>` | Client description |
-| `--data <payload>` | Client data: inline JSON, `@path` to read a file, or `-` for stdin |
-| `--file <path>` | Path to a JSON file (same as `--data @path`) |
+| `--yes` | Skip confirmation prompt (required; without it the command exits 1) |
 
-Either `--name`, `--json`, or `--file` is required.
-
-### `marvin api-clients update <id>`
-
-| Option | Description |
-|--------|-------------|
-| `<id>` | API client ID (required) |
-| `--name <name>` | Client name |
-| `--description <description>` | Client description |
-| `--data <payload>` | Client data: inline JSON, `@path` to read a file, or `-` for stdin |
-| `--file <path>` | Path to a JSON file (same as `--data @path`) |
-
-### `marvin api-clients delete <id>`
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `<id>` | API client ID (required) | - |
-| `--yes` | Skip confirmation prompt | Required |
-
-### `marvin api-clients rotate-token <id>`
-
-| Option | Description |
-|--------|-------------|
-| `<id>` | API client ID (required) |
-
-### `marvin api-clients preview <id>`
-
-| Option | Description |
-|--------|-------------|
-| `<id>` | API client ID (required) |
-| `--json` | Output as JSON |
-| `--output <format>` | Output format: table, json |
-
-## Examples
-
-### Basic Usage
-
-List all API clients:
-
-```bash
-marvin api-clients list
-```
-
-Output:
-
-```
-┌──────────────────────────────┬─────────────────┬──────────────────────┬────────────┐
-│ ID                           │ Name            │ Description          │ Created    │
-├──────────────────────────────┼─────────────────┼──────────────────────┼────────────┤
-│ 01234567-89ab-cdef-0123-4567 │ Production      │ Prod site token      │ 2026-06-01 │
-│ 89abcdef-0123-4567-89ab-cdef │ Staging         │ Staging environment  │ 2026-06-15 │
-│ cdef0123-4567-89ab-cdef-0123 │ Development     │ Local dev            │ 2026-07-01 │
-└──────────────────────────────┴─────────────────┴──────────────────────┴────────────┘
-```
-
-Get a specific API client:
-
-```bash
-marvin api-clients get 01234567-89ab-cdef-0123-456789abcdef
-```
-
-Output:
-
-```
-┌─────────────┬──────────────────────────────────────────┐
-│ Field       │ Value                                    │
-├─────────────┼──────────────────────────────────────────┤
-│ ID          │ 01234567-89ab-cdef-0123-456789abcdef     │
-│ Name        │ Production                               │
-│ Description │ Production site token                    │
-│ Created     │ 2026-06-01T10:00:00Z                     │
-└─────────────┴──────────────────────────────────────────┘
-```
-
-### Create API Client
-
-Create with name and description:
-
-```bash
-marvin api-clients create --name "Production Site" --description "Token for production website"
-```
-
-Output (stderr):
-
-```
-✓ Created API client: 01234567-89ab-cdef-0123-456789abcdef
-⚠️  Save this token securely - it won't be shown again!
-   Token: marvin_sk_abc123def456ghi789jkl012mno345pqr
-```
-
-Create from JSON:
-
-```bash
-marvin api-clients create --data '{
-  "name": "Staging Environment",
-  "description": "Token for staging site"
-}'
-```
-
-Create from file:
-
-```bash
-cat > client.json <<EOF
-{
-  "name": "Mobile App",
-  "description": "Token for iOS and Android apps"
-}
-EOF
-
-marvin api-clients create --file client.json
-```
-
-### Update API Client
-
-Update name and description:
-
-```bash
-marvin api-clients update 01234567-89ab-cdef-0123-4567 \
-  --name "Production (Updated)" \
-  --description "Main production site"
-```
-
-Output (stderr):
-
-```
-✓ Updated API client: 01234567-89ab-cdef-0123-4567
-```
-
-### Delete API Client
-
-Delete a client (requires confirmation):
-
-```bash
-marvin api-clients delete 01234567-89ab-cdef-0123-4567 --yes
-```
-
-Output (stderr):
-
-```
-✓ Deleted API client: 01234567-89ab-cdef-0123-4567
-```
-
-With `--json`, stdout gets `{"deleted": "01234567-89ab-cdef-0123-4567"}`.
-
-### Rotate Token
-
-Generate a new token (invalidates the old one):
-
-```bash
-marvin api-clients rotate-token 01234567-89ab-cdef-0123-456789abcdef
-```
-
-Output (stderr):
-
-```
-✓ Rotated token for API client: 01234567-89ab-cdef-0123-456789abcdef
-⚠️  Save this token securely - it won't be shown again!
-   New Token: marvin_sk_xyz987wvu654tsr321qpo098nml765kji
-```
-
-### Preview Token
-
-View token prefix without revealing full token:
-
-```bash
-marvin api-clients preview 01234567-89ab-cdef-0123-456789abcdef
-```
-
-Output:
-
-```
-┌─────────────┬──────────────────────────────────────────┐
-│ Field       │ Value                                    │
-├─────────────┼──────────────────────────────────────────┤
-│ ID          │ 01234567-89ab-cdef-0123-456789abcdef     │
-│ Name        │ Production                               │
-│ Token Preview│ marvin_sk_abc123...                     │
-└─────────────┴──────────────────────────────────────────┘
-```
-
-### JSON Output
-
-```bash
-marvin api-clients list --json
-```
-
-```json
-[
-  {
-    "id": "01234567-89ab-cdef-0123-456789abcdef",
-    "name": "Production",
-    "description": "Production site token",
-    "createdAt": "2026-06-01T10:00:00Z",
-    "updatedAt": "2026-06-01T10:00:00Z",
-    "lastUsedAt": "2026-07-10T14:30:00Z"
-  },
-  {
-    "id": "89abcdef-0123-4567-89ab-cdef01234567",
-    "name": "Staging",
-    "description": "Staging environment",
-    "createdAt": "2026-06-15T08:00:00Z",
-    "updatedAt": "2026-06-15T08:00:00Z",
-    "lastUsedAt": null
-  }
-]
-```
-
-## Response Fields
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique client ID (UUID) |
-| `name` | string | Client name |
-| `description` | string | Client description |
-| `token` | string | API token (only on create/rotate) |
-| `tokenPreview` | string | Token prefix (on preview) |
-| `createdAt` | string | ISO 8601 timestamp of creation |
-| `updatedAt` | string | ISO 8601 timestamp of last update |
-| `lastUsedAt` | string | ISO 8601 timestamp of last use (null if never used) |
-
-## Use Cases
-
-### Environment-Specific Tokens
-
-Create separate tokens for each environment:
-
-```bash
-# Production
-marvin api-clients create --name "Production" --description "Prod site"
-
-# Staging
-marvin api-clients create --name "Staging" --description "Staging site"
-
-# Development
-marvin api-clients create --name "Development" --description "Local dev"
-```
-
-### Rotate Compromised Token
-
-If a token is compromised, rotate it immediately:
-
-```bash
-# Rotate the token
-marvin api-clients rotate-token <client-id>
-
-# Update your application with the new token
-# The old token is now invalid
-```
-
-### List Active Tokens
-
-```bash
-marvin api-clients list --json | jq '.[] | select(.lastUsedAt != null)'
-```
-
-### Find Unused Tokens
-
-```bash
-marvin api-clients list --json | jq '.[] | select(.lastUsedAt == null) | {name, id, createdAt}'
-```
-
-### Store Token Locally
-
-After creating a token, store it for CLI use:
-
-```bash
-# Create token
-TOKEN=$(marvin api-clients create --name "CLI Access" --json | grep "Token:" | awk '{print $2}')
-
-# Store for workspace
-marvin workspace token "$TOKEN"
-```
-
-## Scripting Examples
-
-### Bash Script
-
-```bash
-#!/bin/bash
-
-# List all API clients and their last usage
-echo "API Clients:"
-marvin api-clients list --json | jq -r '.[] | "\(.name): Last used \(.lastUsedAt // "never")"'
-
-# Find clients not used in 30+ days
-CUTOFF=$(date -u -d '30 days ago' +%Y-%m-%dT%H:%M:%SZ)
-echo -e "\nUnused tokens (30+ days):"
-marvin api-clients list --json | jq -r --arg cutoff "$CUTOFF" '
-  .[] | select(.lastUsedAt < $cutoff or .lastUsedAt == null) | .name
-'
-```
-
-### Node.js
-
-```javascript
-const { execSync } = require('child_process');
-
-// Create a new API client
-function createClient(name, description) {
-  const result = execSync(
-    `marvin api-clients create --name "${name}" --description "${description}" --json`,
-    { encoding: 'utf-8' }
-  );
-  
-  // Extract token from output
-  const tokenMatch = result.match(/Token: (marvin_sk_\w+)/);
-  const token = tokenMatch ? tokenMatch[1] : null;
-  
-  // Parse JSON response
-  const jsonMatch = result.match(/(\{[\s\S]*\})/);
-  const client = jsonMatch ? JSON.parse(jsonMatch[1]) : null;
-  
-  return { client, token };
-}
-
-// Example usage
-const { client, token } = createClient('New Client', 'Auto-generated');
-
-console.log(`Created client: ${client.id}`);
-console.log(`Token: ${token}`);
-
-// Store token securely (example: environment variable)
-console.log(`\nAdd to your .env file:`);
-console.log(`MARVIN_SITE_CLIENT_TOKEN=${token}`);
-```
-
-### Python
-
-```python
-import subprocess
-import json
-import re
-from datetime import datetime, timedelta
-
-# Get all API clients
-result = subprocess.run(
-    ['marvin', 'api-clients', 'list', '--json'],
-    capture_output=True,
-    text=True
-)
-
-clients = json.loads(result.stdout)
-
-# Find stale tokens
-stale_cutoff = datetime.now() - timedelta(days=90)
-
-print("Token Audit:")
-print("-" * 60)
-
-for client in clients:
-    last_used = client.get('lastUsedAt')
-    
-    if last_used is None:
-        status = "⚠️  Never used"
-    else:
-        last_used_dt = datetime.fromisoformat(last_used.replace('Z', '+00:00'))
-        if last_used_dt < stale_cutoff:
-            status = "⚠️  Stale (90+ days)"
-        else:
-            status = "✓ Active"
-    
-    print(f"{client['name']}: {status}")
-    
-print("\nConsider rotating or removing unused tokens")
-```
-
-### Rotate All Tokens
-
-```bash
-#!/bin/bash
-
-# Rotate all API client tokens (emergency procedure)
-echo "⚠️  This will rotate ALL API client tokens!"
-read -p "Are you sure? (yes/no): " confirm
-
-if [ "$confirm" != "yes" ]; then
-  echo "Aborted"
-  exit 1
-fi
-
-marvin api-clients list --json | jq -r '.[].id' | while read id; do
-  echo "Rotating: $id"
-  marvin api-clients rotate-token "$id"
-  echo "---"
-done
-
-echo "All tokens rotated. Update your applications immediately!"
-```
-
-## Security Best Practices
-
-### Token Storage
-
-- **Never commit tokens to version control**
-- Store in environment variables or secure vaults
-- Use different tokens for each environment
-- Rotate tokens regularly (quarterly recommended)
-
-### Token Management
-
-```bash
-# Create environment-specific tokens
-marvin api-clients create --name "Production" --description "Prod only"
-marvin api-clients create --name "Staging" --description "Staging only"
-
-# Don't reuse tokens across environments
-# Don't share tokens between applications
-```
-
-### Audit Token Usage
-
-```bash
-# Regular audit
-marvin api-clients list --json | jq '.[] | {
-  name,
-  created: .createdAt,
-  lastUsed: .lastUsedAt
-}'
-```
-
-### Revoke Compromised Tokens
-
-```bash
-# If a token is compromised:
-
-# Option 1: Rotate (keeps the client, generates new token)
-marvin api-clients rotate-token <client-id>
-
-# Option 2: Delete (removes the client entirely)
-marvin api-clients delete <client-id> --yes
-```
-
-## Error Handling
-
-### 401 Unauthorized
-
-Not authenticated:
-
-```bash
-marvin login
-marvin workspace use <workspace>
-```
-
-### 404 Not Found
-
-Client doesn't exist:
-
-```bash
-# List all clients to find valid IDs
-marvin api-clients list --json | jq -r '.[].id'
-```
-
-### Delete Without Confirmation
-
-Must provide `--yes` flag:
-
-```bash
-marvin api-clients delete <client-id> --yes
-```
-
-### Token Already Stored
-
-When trying to store a token that's already configured:
-
-```bash
-# Remove old token first
-marvin workspace token:remove
-
-# Store new token
-marvin workspace token <new-token>
-```
-
-## Related Commands
-
-- [`marvin workspace token`](workspaces.md) - Store token for CLI usage
-- [`marvin publish entries`](entries.md) - Use Publishing API
-- [`marvin publish collections`](collections.md) - Use Publishing API
-
-## API Reference
-
-This command calls:
-
-```
-GET /api/platform/workspaces/{workspace_id}/api-clients
-GET /api/platform/workspaces/{workspace_id}/api-clients/{id}
-POST /api/platform/workspaces/{workspace_id}/api-clients
-PATCH /api/platform/workspaces/{workspace_id}/api-clients/{id}
-DELETE /api/platform/workspaces/{workspace_id}/api-clients/{id}
-POST /api/platform/workspaces/{workspace_id}/api-clients/{id}/rotate-token
-GET /api/platform/workspaces/{workspace_id}/api-clients/{id}/preview
-```
-
-See [API Mapping](../reference/api-mapping.md) for more details.
+With `--json` the result is `{"deleted": "<id>"}`.

@@ -18,7 +18,7 @@ This command uses the Publishing API (`/api/publish/{workspace}/entry-types`) vi
 
 ## Authentication
 
-Requires a site client token. Set via `marvin login`, `marvin workspace token`, or the `MARVIN_SITE_TOKEN` environment variable.
+Requires a site client token: the `--site-token` / `--token` flag, the token saved for the active workspace (`marvin workspace token` or `marvin login --site-token`), or the `MARVIN_SITE_CLIENT_TOKEN` environment variable.
 
 ## Options
 
@@ -45,15 +45,17 @@ marvin publish renderers
 Output:
 
 ```
-┌──────────────────┬─────────────────┬───────────┬──────────────────────────────────┬─────────────┬──────────┐
-│ Name             │ Slug            │ Renderer  │ Package                          │ Publishable │ Routable │
-├──────────────────┼─────────────────┼───────────┼──────────────────────────────────┼─────────────┼──────────┤
-│ Page             │ page            │ page      │ @inneropen/marvin-renderers-core │ true        │ true     │
-│ Article          │ article         │ article   │ @inneropen/marvin-renderers-core │ true        │ true     │
-│ FAQ              │ faq             │ faq       │ @inneropen/marvin-renderers-core │ true        │ true     │
-│ Navigation Item  │ navigation-item │ navigation│ @inneropen/marvin-renderers-core │ true        │ false    │
-└──────────────────┴─────────────────┴───────────┴──────────────────────────────────┴─────────────┴──────────┘
+┌──────────────────┬─────────────────┬────────────┬──────────────────────────────────┬─────────────┬──────────┐
+│ Name             │ Slug            │ Renderer   │ Package                          │ Publishable │ Routable │
+├──────────────────┼─────────────────┼────────────┼──────────────────────────────────┼─────────────┼──────────┤
+│ Page             │ page            │ page       │ @inneropen/marvin-renderers-core │ yes         │ yes      │
+│ Article          │ article         │ article    │ @inneropen/marvin-renderers-core │ yes         │ yes      │
+│ FAQ              │ faq             │ faq        │ @inneropen/marvin-renderers-core │ yes         │ yes      │
+│ Navigation Item  │ navigation-item │ navigation │ @inneropen/marvin-renderers-core │ yes         │ no       │
+└──────────────────┴─────────────────┴────────────┴──────────────────────────────────┴─────────────┴──────────┘
 ```
+
+Publishable and Routable show `yes` unless the entry type's capability is explicitly `false`.
 
 ### Include All Entry Types
 
@@ -135,17 +137,17 @@ echo "Total: $(marvin publish renderers --all --json | jq 'length')"
 
 ## Relationship to entry-types
 
-The `entry-types` command (under the Platform API) shows entry type schemas and field definitions. The `publish renderers` command (under the Publishing API) focuses on rendering metadata — which renderers are needed and what capabilities each type has.
+The `platform entry-types` commands (Platform API) show entry type schemas and field definitions. The `publish renderers` command (under the Publishing API) focuses on rendering metadata — which renderers are needed and what capabilities each type has.
 
 | Command | API | Focus |
 |---------|-----|-------|
-| `marvin entry-types list` | Platform | Schema, fields, validation |
+| `marvin platform entry-types list` | Platform | Schema, fields, validation |
 | `marvin publish renderers` | Publishing | Renderer, package, capabilities |
 
 ## Related Commands
 
-- [`marvin entry-types list`](entry-types.md) - View entry type schemas (Platform API)
-- [`marvin entries`](entries.md) - List entries (can filter by entry type)
+- [`marvin platform entry-types list`](entry-types.md) - View entry type schemas (Platform API)
+- [`marvin publish entries`](entries.md) - List entries (can filter by entry type)
 
 ## API Reference
 

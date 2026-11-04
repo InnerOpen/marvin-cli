@@ -34,6 +34,14 @@ export class Environment {
   get workspaceSlug(): string | undefined {
     return process.env.MARVIN_WORKSPACE_SLUG;
   }
+
+  /**
+   * Default output format (table, json, yaml, csv); the --output/--json/--yaml/--csv flags win.
+   * Environment variable: MARVIN_OUTPUT_FORMAT
+   */
+  get outputFormat(): string | undefined {
+    return process.env.MARVIN_OUTPUT_FORMAT?.trim() || undefined;
+  }
 }
 
 // Singleton instance

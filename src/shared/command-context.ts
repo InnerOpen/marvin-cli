@@ -23,7 +23,7 @@ function outputModeOf(opts: { output?: string; json?: boolean; yaml?: boolean; c
   if (opts.json === true) return "json";
   if (opts.yaml === true) return "yaml";
   if (opts.csv === true) return "csv";
-  const value = String(opts.output ?? "table").toLowerCase() as OutputMode;
+  const value = String(opts.output ?? env.outputFormat ?? "table").toLowerCase() as OutputMode;
   return OUTPUT_MODES.includes(value) ? value : undefined;
 }
 

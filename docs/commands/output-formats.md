@@ -271,20 +271,12 @@ marvin publish entries --yaml
 marvin publish entries --csv
 ```
 
-### Environment Variable
+### Precedence
 
-Set a default format:
-
-```bash
-export MARVIN_OUTPUT_FORMAT=json
-marvin publish entries  # Uses JSON
-```
-
-### Override Order
-
-1. Command-line flag (highest priority)
-2. Environment variable
-3. Default (table)
+If more than one is given, `--json` wins, then `--yaml`, then `--csv`, then `--output <format>`;
+with none of them the default comes from the `MARVIN_OUTPUT_FORMAT` environment variable
+(`table`, `json`, `yaml` or `csv`), and without that the format is `table`. A flag always beats the
+variable. An unsupported `--output` or `MARVIN_OUTPUT_FORMAT` value is an error.
 
 ## Use Case Examples
 
@@ -305,7 +297,7 @@ marvin publish entry homepage --json | jq .
 marvin publish entries --json > entries.json
 
 # Export assets to CSV for tracking
-marvin publish assets --csv > assets-$(date +%Y%m%d).csv
+marvin platform assets list --csv > assets-$(date +%Y%m%d).csv
 
 # Export site config to YAML
 marvin publish site --yaml > site-config.yaml
@@ -318,13 +310,13 @@ marvin publish site --yaml > site-config.yaml
 PAGE_COUNT=$(marvin publish entries --entry-type page --json | jq 'length')
 echo "Published pages: $PAGE_COUNT"
 
-# Check if entry exists
-if marvin publish entry homepage --json >/dev/null 2>&1; then
+# Check if entry exists (an unknown slug prints [])
+if [ "$(marvin publish entry homepage --json | jq 'length')" -gt 0 ]; then
   echo "Homepage is published"
 fi
 
 # Get all image assets
-marvin publish assets --type image --json | jq -r '.[].url'
+marvin platform assets list --json | jq '[.[] | select(.assetType == "image")]' | jq -r '.[].publicUrl'
 ```
 
 ### Reporting
@@ -335,7 +327,7 @@ echo "Content Report - Week $(date +%W)"
 echo "================================"
 echo "Total Entries: $(marvin publish entries --json | jq 'length')"
 echo "Total Collections: $(marvin publish collections --json | jq 'length')"
-echo "Total Assets: $(marvin publish assets --json | jq 'length')"
+echo "Total Assets: $(marvin platform assets list --json | jq 'length')"
 
 # Export to CSV for analysis
 marvin publish entries --csv > report-$(date +%Y%m%d).csv

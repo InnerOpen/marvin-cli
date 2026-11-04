@@ -88,7 +88,7 @@ MARVIN_EMAIL=user@example.com
 ```
 
 **Used by:**
-- `marvin auth login` (if not provided, prompts)
+- `marvin login` (if not provided, prompts)
 
 **Security:** Avoid in production, use API client instead
 
@@ -106,7 +106,7 @@ MARVIN_PASSWORD=mypassword
 ```
 
 **Used by:**
-- `marvin auth login` (if not provided, prompts)
+- `marvin login` (if not provided, prompts)
 
 **Security:** ⚠️ Never hardcode or commit to version control
 
@@ -181,7 +181,7 @@ MARVIN_OUTPUT_FORMAT=json
 
 **Default:** `table`
 
-**Override:** `--output <format>`, `--json`, `--yaml`, `--csv`
+**Override:** `--output <format>`, `--json`, `--yaml`, `--csv` (a flag always wins over the variable)
 
 ---
 

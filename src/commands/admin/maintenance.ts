@@ -4,11 +4,10 @@ import { getOutputMode } from '../../shared/types.js';
 import { handleCommandError } from '../../shared/error-handler.js';
 import type { PlatformCommandOptions } from "../../shared/types.js";
 import { renderData } from "../../output.js";
-import { say, emitOk } from "../../shared/io.js";
 
 export function registerAdminMaintenanceCommands(parent: Command): void {
   const maintenance = new Command("maintenance")
-    .description("System maintenance operations");
+    .description("System maintenance information (cleanup runs as scheduled tasks: `admin scheduled-tasks run <slug>`)");
 
   parent.addCommand(maintenance);
 
@@ -23,73 +22,6 @@ export function registerAdminMaintenanceCommands(parent: Command): void {
 
         const globalOpts = parent.optsWithGlobals<PlatformCommandOptions>();
         renderData(summary, getOutputMode(globalOpts));
-      } catch (error) {
-        handleCommandError(error);
-        process.exitCode = 1;
-      }
-    });
-
-  // Clean temp
-  maintenance
-    .command("clean-temp")
-    .description("Clean temporary files")
-    .action(async function(this: Command) {
-      try {
-        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
-        const result = await client.adminMaintenance.cleanTemp();
-        emitOk(result, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ ${result.message}`);
-      } catch (error) {
-        handleCommandError(error);
-        process.exitCode = 1;
-      }
-    });
-
-  // Cleanup
-  maintenance
-    .command("cleanup")
-    .description("Run all cleanup operations (events, tokens)")
-    .action(async function(this: Command) {
-      try {
-        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
-
-        say("Cleaning up events...");
-        const events = await client.adminMaintenance.cleanupEvents();
-        say("Cleaning up tokens...");
-        const tokens = await client.adminMaintenance.cleanupTokens();
-
-        emitOk({ events, tokens }, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()),
-          `✓ ${events.message} (${events.deleted} deleted)`,
-          `✓ ${tokens.message} (${tokens.deleted} deleted)`);
-      } catch (error) {
-        handleCommandError(error);
-        process.exitCode = 1;
-      }
-    });
-
-  // Clear cache
-  maintenance
-    .command("clear-cache")
-    .description("Clear application cache")
-    .action(async function(this: Command) {
-      try {
-        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
-        const result = await client.adminMaintenance.clearCache();
-        emitOk(result, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ ${result.message}`);
-      } catch (error) {
-        handleCommandError(error);
-        process.exitCode = 1;
-      }
-    });
-
-  // Optimize database
-  maintenance
-    .command("optimize")
-    .description("Optimize database")
-    .action(async function(this: Command) {
-      try {
-        const client = await clientFactory.createPlatformClient(parent.optsWithGlobals<PlatformCommandOptions>());
-        const result = await client.adminMaintenance.optimizeDatabase();
-        emitOk(result, getOutputMode(parent.optsWithGlobals<PlatformCommandOptions>()), `✓ ${result.message}`);
       } catch (error) {
         handleCommandError(error);
         process.exitCode = 1;

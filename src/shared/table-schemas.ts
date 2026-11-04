@@ -54,7 +54,7 @@ type ColSpec<T> = Record<string, keyof T & string>
 // ---------------------------------------------------------------------------
 
 /** A `marvin events list` row: the connections summary plus the type's name and category from the catalogue. */
-export type EventTypeRow = EventConnectionCounts & { name: string; category: string | null }
+export type EventTypeRow = Omit<EventConnectionCounts, 'name' | 'category'> & { name: string; category: string | null }
 
 /** How `marvin events list` shows an event type without a category. */
 export const NO_CATEGORY = '—'
