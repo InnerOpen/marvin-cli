@@ -1,3 +1,32 @@
+# [4.0.0](https://github.com/InnerOpen/marvin-cli/compare/v3.3.0...v4.0.0) (2026-11-04)
+
+
+### Bug Fixes
+
+* **assets:** upload sends the file's name so its type is detected ([#2](https://github.com/InnerOpen/marvin-cli/issues/2)) ([fb4e51d](https://github.com/InnerOpen/marvin-cli/commit/fb4e51d1fd1f809efc0bb6c84c2e94dd69abedc5))
+* **cli:** commands send what the API takes ([f24c866](https://github.com/InnerOpen/marvin-cli/commit/f24c866f6908d1fcf663387620aef81831a680a0))
+* **user:** tokens create sends the API's default integrationId ([65792d6](https://github.com/InnerOpen/marvin-cli/commit/65792d68c657f90cb97ec7d73927d3ba86ac3933))
+
+
+### Features
+
+* **admin:** groups delete sends confirm_name and supports --skip-backup ([aae1e3f](https://github.com/InnerOpen/marvin-cli/commit/aae1e3fe6d13076728791375851a6b5ded6c77c2))
+* **admin:** maintenance cleanup runs as scheduled tasks; `run` takes a slug ([4846c83](https://github.com/InnerOpen/marvin-cli/commit/4846c83f64f2703029dc66b3e665a6471253e1d2))
+* **publish:** collections --limit/--offset page on the server ([4ac2f50](https://github.com/InnerOpen/marvin-cli/commit/4ac2f507f5887af1590281715898b345f2c11a37))
+* **publish:** move to SDK 6; drop publish assets and resources commands ([faa7121](https://github.com/InnerOpen/marvin-cli/commit/faa7121280e18f2985f71f7512a3101eb2cb84fd))
+* **user:** tokens create --pin <workspace> pins a personal token to one workspace ([651f221](https://github.com/InnerOpen/marvin-cli/commit/651f221943df47bbc1f7a654a53c2c2d4559faa8))
+* **workers:** marvin platform workers setup adds the record types workers use ([#3](https://github.com/InnerOpen/marvin-cli/issues/3)) ([6729fda](https://github.com/InnerOpen/marvin-cli/commit/6729fda401c4f564ca8bc07fc7c62d0d38c2d450))
+
+
+### BREAKING CHANGES
+
+* **publish:** `marvin publish assets`, `asset`, `resources`, `resource` and
+`resource-entries` are removed. Read assets and resources from
+`marvin publish entry <slug> --json`, or use `marvin platform assets|resources`.
+* **admin:** `admin maintenance clean-temp`, `cleanup`, `clear-cache` and `optimize` are removed;
+use `admin scheduled-tasks run cleanup_temp_files | prune_revoked_tokens | prune_event_logs |
+optimize_database`.
+
 # [3.3.0](https://github.com/InnerOpen/marvin-cli/compare/v3.2.0...v3.3.0) (2026-10-06)
 
 
