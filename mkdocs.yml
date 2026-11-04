@@ -103,6 +103,7 @@ nav:
           - Site Rebuild: commands/site-rebuild.md
           - Review Queue: commands/review.md
           - Blueprints: commands/blueprints.md
+          - Workers: commands/workers.md
           - Incoming Webhooks: commands/incoming-webhooks.md
           - Tags: commands/tags.md
           - Smart Collections: commands/smart-collections.md
