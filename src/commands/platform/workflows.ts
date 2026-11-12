@@ -20,6 +20,8 @@ import { TABLE_SCHEMAS } from "../../shared/table-schemas.js";
 import { addDataOptions, readJsonInput } from "../../shared/json-input.js";
 import { say, warn, emitDeleted, emitOk } from "../../shared/io.js";
 import { validatePositiveInteger } from "../../shared/validation.js";
+import { collect, parseRunInputs } from "../../shared/run-inputs.js";
+import { waitForJob } from "../../shared/job-wait.js";
 
 /** A retry the integration error policy queued for a failed step (`retries` on a run's detail). */
 interface IntegrationRetry {
@@ -302,7 +304,11 @@ export function registerWorkflowCommands(parent: Command): void {
 
   workflows
     .command("run <workflow>")
-    .description("Run a workflow now, skipping its trigger and conditions; --dry-run shows what it would do")
+    .description("Run a workflow now, skipping its trigger and conditions; --dry-run shows what it would do; --wait follows the worker job it starts")
+    .option("--input <name=value>", "A run input by name, repeated for more; a value starting with @ is read from that file (@- from standard input)", collect, [] as string[])
+    .option("--wait", "Wait for the worker job the run starts (a render, a check, an import) and print its result and log; exits 1 if it fails or time runs out")
+    .option("--timeout <seconds>", "With --wait: how long to wait for the job", "600")
+    .option("--poll <seconds>", "With --wait: how often to look at the job", "2")
     .option("--dry-run", "Resolve every step's inputs but execute and record nothing (works on a disabled workflow)")
     .option("--entry-id <id>", "With --dry-run: test an event-triggered workflow against this entry's latest event")
     .option("--event-id <id>", "With --dry-run: test an event-triggered workflow against this event")
@@ -319,9 +325,23 @@ export function registerWorkflowCommands(parent: Command): void {
         const id = await resolveWorkflowId(client, ref);
 
         if (!cmdOpts.dryRun) {
-          const result = await client.automations.run(id);
-          emitOk(result, mode, `${result.ok ? "✓" : "✗"} Ran workflow ${ref}: ${result.status}, ${result.ran} target(s)`);
-          if (!result.ok) process.exitCode = 1;
+          const inputs = parseRunInputs(cmdOpts.input);
+          const result = await (Object.keys(inputs).length ? client.automations.run(id, inputs) : client.automations.run(id));
+          const started = (result as { result?: { entry_id?: string } }).result?.entry_id;
+          if (!cmdOpts.wait || !started) {
+            emitOk(result, mode, `${result.ok ? "✓" : "✗"} Ran workflow ${ref}: ${result.status}, ${result.ran} target(s)`);
+            if (cmdOpts.wait && result.ok) warn("--wait: this run started no job to wait for");
+            if (!result.ok) process.exitCode = 1;
+            return;
+          }
+          const { job, finished } = await waitForJob(() => client.entries.get(started), {
+            timeoutMs: validatePositiveInteger(cmdOpts.timeout, "--timeout") * 1000,
+            pollMs: validatePositiveInteger(cmdOpts.poll, "--poll") * 1000,
+          });
+          const failed = !result.ok || job?.status === "failed" || (job !== null && !finished);
+          emitOk({ ...result, job }, mode, `${failed ? "✗" : "✓"} Ran workflow ${ref}: ${job ? `${job.kind} ${job.slug} ${finished ? job.status : `still ${job.status} after ${cmdOpts.timeout}s`}` : result.status}`);
+          if (mode === "table" && job?.log) say(job.log);
+          if (failed) process.exitCode = 1;
           return;
         }
 

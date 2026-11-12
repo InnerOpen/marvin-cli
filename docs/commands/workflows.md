@@ -24,7 +24,7 @@ marvin platform workflows enable <workflow>
 marvin platform workflows disable <workflow>
 marvin platform workflows validate [workflow] [--data <json|@file|->]
 marvin platform workflows preview [workflow] [--data <json|@file|->] [--payload <json>]
-marvin platform workflows run <workflow> [--dry-run] [--entry-id <id> | --event-id <id>]
+marvin platform workflows run <workflow> [--input <name=value>]... [--wait [--timeout <s>] [--poll <s>]] [--dry-run] [--entry-id <id> | --event-id <id>]
 marvin platform workflows samples <workflow> [--limit <n>]
 marvin platform workflows executions <workflow> [--status <status>] [--limit <n>]
 marvin platform workflows execution <workflow> <execution-id>
@@ -165,18 +165,28 @@ marvin platform workflows run tag-new-posts                      # run now
 marvin platform workflows run tag-new-posts --dry-run            # what it would do
 marvin platform workflows run tag-new-posts --dry-run --entry-id <entry-id>
 marvin platform workflows run tag-new-posts --dry-run --event-id <event-id>
+marvin platform workflows run check-some-fountain-text --input text=@draft.fountain --wait   # inputs, and the job's result
 ```
 
 | Argument / option | Description | Default |
 |-------------------|-------------|---------|
 | `<workflow>` | Workflow id or slug | |
 | `--dry-run` | Resolve every step's inputs but execute and record nothing (works on a disabled workflow) | |
+| `--input <name=value>` | A run input by name (the workflow's manual-trigger inputs); repeat for more. A value starting with `@` is read from that file, `@-` from stdin | |
+| `--wait` | Wait for the worker job the run starts (a render, a check, an import) and print its result and log. Exits 1 if the job fails or is not done in time | |
+| `--timeout <seconds>` | With `--wait`: how long to wait | `600` |
+| `--poll <seconds>` | With `--wait`: how often to look at the job | `2` |
 | `--entry-id <id>` | With `--dry-run`: test against this entry's latest event | |
 | `--event-id <id>` | With `--dry-run`: test against this event | |
 
 A real run is the Manual trigger: it skips the trigger and the conditions and runs the actions now.
 It prints `{"ok": ..., "status": "ran", "ran": <targets>, "result": {...}}` in JSON mode and
 **exits 1 when the run isn't ok**. A disabled workflow can't be run (409).
+
+A workflow that does real work (a render, a check, an import) makes a `job` entry and a worker picks it up, so
+the run itself finishes at once. With `--wait` the CLI looks at that job (the entry the run's last step created:
+its `kind`, and a `status` of queued, claimed, running, done or failed) until it is done, then prints its `log`
+(and, in JSON mode, `job.result`). That is the same as the MCP `run_workflow` tool's `wait`.
 
 `--dry-run` evaluates the target and conditions and resolves each action's inputs, but executes
 nothing (no AI call, no change, no webhook POST) and records nothing. It works on a disabled
