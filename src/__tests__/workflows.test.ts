@@ -4,6 +4,9 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Command } from 'commander'
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { createPlatformCommand } from '../commands/platform/index.js'
 import { clientFactory } from '../shared/clients.js'
 import { resetCommandContext, trackCommandContext } from '../shared/command-context.js'
@@ -44,6 +47,7 @@ async function run(...args: string[]): Promise<void> {
 describe('platform workflows', () => {
   let io: Captured
   let automations: any
+  let entries: any
 
   beforeEach(() => {
     resetCommandContext()
@@ -69,7 +73,8 @@ describe('platform workflows', () => {
       preview: vi.fn(),
       options: vi.fn().mockResolvedValue({ triggerTypes: ['event'] }),
     }
-    vi.mocked(clientFactory.createPlatformClient).mockResolvedValue({ automations } as any)
+    entries = { get: vi.fn() }
+    vi.mocked(clientFactory.createPlatformClient).mockResolvedValue({ automations, entries } as any)
   })
 
   afterEach(() => {
@@ -127,6 +132,47 @@ describe('platform workflows', () => {
     expect(automations.run).toHaveBeenCalledWith(WF_ID)
     expect(automations.dryRun).not.toHaveBeenCalled()
     expect(JSON.parse(io.out())).toMatchObject({ ok: true, status: 'ran', ran: 2 })
+  })
+
+  it('passes --input values to the run, a @file value read from the file', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'marvin-run-'))
+    writeFileSync(join(dir, 'draft.fountain'), 'INT. ROOM - DAY\n\nMARA\nHi.\n')
+    await run('run', WF_ID, '--input', 'mode=add', '--input', `text=@${join(dir, 'draft.fountain')}`, '--json')
+    expect(automations.run).toHaveBeenCalledWith(WF_ID, { mode: 'add', text: 'INT. ROOM - DAY\n\nMARA\nHi.\n' })
+  })
+
+  it('refuses a malformed or repeated --input before calling the API', async () => {
+    await run('run', WF_ID, '--input', 'nameless')
+    expect(process.exitCode).toBe(1)
+    expect(io.err()).toContain('--input needs name=value')
+    await run('run', WF_ID, '--input', 'a=1', '--input', 'a=2')
+    expect(io.err()).toContain('--input a is given twice')
+    expect(automations.run).not.toHaveBeenCalled()
+  })
+
+  it('--wait follows the job the run started and prints its result and log', async () => {
+    automations.run.mockResolvedValue({ status: 'ran', ok: true, ran: 1, result: { op: 'create', entry_id: 'j1', slug: 'check-a-fountain' } })
+    entries.get
+      .mockResolvedValueOnce({ slug: 'check-a-fountain', dataJson: { kind: 'check-fountain', status: 'queued' } })
+      .mockResolvedValueOnce({ slug: 'check-a-fountain', dataJson: { kind: 'check-fountain', status: 'done', result: { errors: 7 }, log: 'Checked the Fountain.' } })
+    await run('run', WF_ID, '--input', 'text=x', '--wait', '--poll', '1', '--json')
+    expect(entries.get).toHaveBeenCalledWith('j1')
+    expect(JSON.parse(io.out())).toMatchObject({ ok: true, job: { slug: 'check-a-fountain', kind: 'check-fountain', status: 'done', result: { errors: 7 } } })
+    expect(process.exitCode).not.toBe(1)
+  })
+
+  it('--wait exits 1 when the job fails, and says so when the run started no job', async () => {
+    automations.run.mockResolvedValue({ status: 'ran', ok: true, ran: 1, result: { entry_id: 'j1' } })
+    entries.get.mockResolvedValue({ slug: 'render-1', dataJson: { kind: 'render', status: 'failed', log: 'ffmpeg failed' } })
+    await run('run', WF_ID, '--wait')
+    expect(process.exitCode).toBe(1)
+    expect(io.err()).toContain('render render-1 failed')
+    expect(io.err()).toContain('ffmpeg failed')
+    process.exitCode = 0
+    automations.run.mockResolvedValue({ status: 'ran', ok: true, ran: 1, result: {} })
+    await run('run', WF_ID, '--wait')
+    expect(io.err()).toContain('started no job to wait for')
+    expect(process.exitCode).not.toBe(1)
   })
 
   it('dry-runs against a chosen sample', async () => {
