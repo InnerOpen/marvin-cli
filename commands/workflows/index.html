@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
     
     
       
@@ -3172,7 +3172,7 @@ the command fails with <code>Permission denied (403)</code> and names the role i
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>disable<span class="w"> </span>&lt;workflow&gt;
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>validate<span class="w"> </span><span class="o">[</span>workflow<span class="o">]</span><span class="w"> </span><span class="o">[</span>--data<span class="w"> </span>&lt;json<span class="p">|</span>@file<span class="p">|</span>-&gt;<span class="o">]</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>preview<span class="w"> </span><span class="o">[</span>workflow<span class="o">]</span><span class="w"> </span><span class="o">[</span>--data<span class="w"> </span>&lt;json<span class="p">|</span>@file<span class="p">|</span>-&gt;<span class="o">]</span><span class="w"> </span><span class="o">[</span>--payload<span class="w"> </span>&lt;json&gt;<span class="o">]</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>run<span class="w"> </span>&lt;workflow&gt;<span class="w"> </span><span class="o">[</span>--dry-run<span class="o">]</span><span class="w"> </span><span class="o">[</span>--entry-id<span class="w"> </span>&lt;id&gt;<span class="w"> </span><span class="p">|</span><span class="w"> </span>--event-id<span class="w"> </span>&lt;id&gt;<span class="o">]</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>run<span class="w"> </span>&lt;workflow&gt;<span class="w"> </span><span class="o">[</span>--input<span class="w"> </span>&lt;<span class="nv">name</span><span class="o">=</span>value&gt;<span class="o">]</span>...<span class="w"> </span><span class="o">[</span>--wait<span class="w"> </span><span class="o">[</span>--timeout<span class="w"> </span>&lt;s&gt;<span class="o">]</span><span class="w"> </span><span class="o">[</span>--poll<span class="w"> </span>&lt;s&gt;<span class="o">]]</span><span class="w"> </span><span class="o">[</span>--dry-run<span class="o">]</span><span class="w"> </span><span class="o">[</span>--entry-id<span class="w"> </span>&lt;id&gt;<span class="w"> </span><span class="p">|</span><span class="w"> </span>--event-id<span class="w"> </span>&lt;id&gt;<span class="o">]</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>samples<span class="w"> </span>&lt;workflow&gt;<span class="w"> </span><span class="o">[</span>--limit<span class="w"> </span>&lt;n&gt;<span class="o">]</span>
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>executions<span class="w"> </span>&lt;workflow&gt;<span class="w"> </span><span class="o">[</span>--status<span class="w"> </span>&lt;status&gt;<span class="o">]</span><span class="w"> </span><span class="o">[</span>--limit<span class="w"> </span>&lt;n&gt;<span class="o">]</span>
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>execution<span class="w"> </span>&lt;workflow&gt;<span class="w"> </span>&lt;execution-id&gt;
@@ -3372,6 +3372,7 @@ also passes the conditions). A definition without a target query has nothing to 
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>run<span class="w"> </span>tag-new-posts<span class="w"> </span>--dry-run<span class="w">            </span><span class="c1"># what it would do</span>
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>run<span class="w"> </span>tag-new-posts<span class="w"> </span>--dry-run<span class="w"> </span>--entry-id<span class="w"> </span>&lt;entry-id&gt;
 </span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>run<span class="w"> </span>tag-new-posts<span class="w"> </span>--dry-run<span class="w"> </span>--event-id<span class="w"> </span>&lt;event-id&gt;
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>marvin<span class="w"> </span>platform<span class="w"> </span>workflows<span class="w"> </span>run<span class="w"> </span>check-some-fountain-text<span class="w"> </span>--input<span class="w"> </span><span class="nv">text</span><span class="o">=</span>@draft.fountain<span class="w"> </span>--wait<span class="w">   </span><span class="c1"># inputs, and the job's result</span>
 </span></code></pre></div>
 <table>
 <thead>
@@ -3393,6 +3394,26 @@ also passes the conditions). A definition without a target query has nothing to 
 <td></td>
 </tr>
 <tr>
+<td><code>--input &lt;name=value&gt;</code></td>
+<td>A run input by name (the workflow's manual-trigger inputs); repeat for more. A value starting with <code>@</code> is read from that file, <code>@-</code> from stdin</td>
+<td></td>
+</tr>
+<tr>
+<td><code>--wait</code></td>
+<td>Wait for the worker job the run starts (a render, a check, an import) and print its result and log. Exits 1 if the job fails or is not done in time</td>
+<td></td>
+</tr>
+<tr>
+<td><code>--timeout &lt;seconds&gt;</code></td>
+<td>With <code>--wait</code>: how long to wait</td>
+<td><code>600</code></td>
+</tr>
+<tr>
+<td><code>--poll &lt;seconds&gt;</code></td>
+<td>With <code>--wait</code>: how often to look at the job</td>
+<td><code>2</code></td>
+</tr>
+<tr>
 <td><code>--entry-id &lt;id&gt;</code></td>
 <td>With <code>--dry-run</code>: test against this entry's latest event</td>
 <td></td>
@@ -3407,6 +3428,10 @@ also passes the conditions). A definition without a target query has nothing to 
 <p>A real run is the Manual trigger: it skips the trigger and the conditions and runs the actions now.
 It prints <code>{"ok": ..., "status": "ran", "ran": &lt;targets&gt;, "result": {...}}</code> in JSON mode and
 <strong>exits 1 when the run isn't ok</strong>. A disabled workflow can't be run (409).</p>
+<p>A workflow that does real work (a render, a check, an import) makes a <code>job</code> entry and a worker picks it up, so
+the run itself finishes at once. With <code>--wait</code> the CLI looks at that job (the entry the run's last step created:
+its <code>kind</code>, and a <code>status</code> of queued, claimed, running, done or failed) until it is done, then prints its <code>log</code>
+(and, in JSON mode, <code>job.result</code>). That is the same as the MCP <code>run_workflow</code> tool's <code>wait</code>.</p>
 <p><code>--dry-run</code> evaluates the target and conditions and resolves each action's inputs, but executes
 nothing (no AI call, no change, no webhook POST) and records nothing. It works on a disabled
 workflow. The result's <code>plan</code> lists each step with its resolved inputs and status (<code>success</code> = would
@@ -3648,7 +3673,7 @@ prints the API's record, including <code>actions</code>, <code>retryChain</code>
       <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotation", "content.code.copy", "toc.follow"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
       
     
   </body>
