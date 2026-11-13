@@ -1,3 +1,15 @@
+# [4.1.0](https://github.com/InnerOpen/marvin-cli/compare/v4.0.0...v4.1.0) (2026-11-13)
+
+
+### Bug Fixes
+
+* **workers:** setup says when a same-named record type does not fit and exits 1 ([#6](https://github.com/InnerOpen/marvin-cli/issues/6)) ([041f4ee](https://github.com/InnerOpen/marvin-cli/commit/041f4ee95429410c78db9c5a5b8779d6946188d5))
+
+
+### Features
+
+* **workflows:** run takes --input name=value (a [@file](https://github.com/file) value is read from the file) and --wait follows the worker job the run starts and prints its result ([#5](https://github.com/InnerOpen/marvin-cli/issues/5)) ([2a86e88](https://github.com/InnerOpen/marvin-cli/commit/2a86e883b8667b592ee0493c30759d88721ed5c1))
+
 # [4.0.0](https://github.com/InnerOpen/marvin-cli/compare/v3.3.0...v4.0.0) (2026-11-04)
 
 
