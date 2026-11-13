@@ -14,7 +14,7 @@ vi.mock('../shared/clients.js', () => ({
   ClientFactory: class {},
 }))
 
-const result = (slug: string, created: boolean) => ({ slug, kind: 'entry_type', name: slug, created, updated: false, detail: '' })
+const result = (slug: string, created: boolean, extra: Record<string, unknown> = {}) => ({ slug, kind: 'entry_type', name: slug, created, updated: false, detail: '', ...extra })
 
 function buildProgram(): Command {
   const program = new Command('marvin')
@@ -55,6 +55,21 @@ describe('platform workers setup', () => {
     await run('setup')
     expect(io.err()).toContain('already set up for workers')
     expect(io.err()).not.toContain('Next:')
+  })
+
+  it('does not call a same-named type with other fields "set up": it says so and exits 1', async () => {
+    blueprints.applyMany.mockResolvedValue([
+      result('job', false, { fits: false, detail: 'a entry type with slug job already exists — left as it is, but it lacks fields this one defines: kind, status' }),
+      result('job-kind', true),
+      result('worker', true),
+    ])
+    process.exitCode = undefined
+    await run('setup')
+    expect(io.err()).toContain('1 existing record type(s) are not the ones workers use')
+    expect(io.err()).not.toContain('already set up')
+    expect(io.err()).not.toContain('Next:')
+    expect(process.exitCode).toBe(1)
+    process.exitCode = undefined
   })
 
   it('prints the results as JSON when asked', async () => {

@@ -4,7 +4,7 @@
  * A worker (the `marvin-worker` project: a runner, a dispatcher) reads and writes three kinds of record by slug: `job`,
  * `job-kind` and `worker`. Core ships them as the "Workers" blueprints, and `setup` adds whichever are missing. It is
  * `blueprints apply` for those three, with the next steps said out loud. Like any blueprint it never overwrites what
- * is already there, so running it twice is safe. Applying needs workspace ADMIN.
+ * is already there, so running it twice is safe. A same-named type that lacks the fields workers use is not "already there": it is reported and the exit code is 1. Applying needs workspace ADMIN.
  */
 
 import { Command } from "commander";
@@ -18,10 +18,13 @@ import { say } from "../../shared/io.js";
 /** The slugs of the record types workers need (core's "Workers" blueprints). */
 export const WORKER_BLUEPRINTS = ["job", "job-kind", "worker"] as const;
 
+/** `fits` is false when a record type of that name exists without the fields workers use (a "job" type for job postings, say). */
+const doesNotFit = (r: BlueprintApplyResult): boolean => (r as { fits?: boolean }).fits === false;
+
 const COLUMNS = {
   Type: "slug",
   Name: "name",
-  Result: (r: BlueprintApplyResult) => (r.created ? "created" : "already there"),
+  Result: (r: BlueprintApplyResult) => (r.created ? "created" : doesNotFit(r) ? "DOES NOT FIT" : "already there"),
   Detail: "detail",
 } as const;
 
@@ -45,8 +48,22 @@ export function registerWorkerCommands(parent: Command): void {
           return;
         }
         const created = results.filter((r) => r.created).length;
-        say(created ? `✓ Added ${created} of ${results.length} record type(s) for workers` : "✓ This workspace is already set up for workers");
+        const misfits = results.filter(doesNotFit);
+        say(
+          misfits.length
+            ? `✗ ${misfits.length} existing record type(s) are not the ones workers use${created ? ` (added ${created} other(s))` : ""}`
+            : created
+              ? `✓ Added ${created} of ${results.length} record type(s) for workers`
+              : "✓ This workspace is already set up for workers",
+        );
         renderList(results, COLUMNS, mode);
+        if (misfits.length) {
+          say("");
+          say("A record type with the same slug exists but lacks the fields workers read and write, so nothing was changed.");
+          say("Rename it (or add those fields to it), then run this again.");
+          process.exitCode = 1;
+          return;
+        }
         if (created) {
           say("");
           say("Next: make a token pinned to this workspace, then start a runner with it.");
